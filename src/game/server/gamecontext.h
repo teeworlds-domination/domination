@@ -130,6 +130,7 @@ public:
 	void CreatePlayerSpawn(vec2 Pos);
 	void CreateDeath(vec2 Pos, int Who);
 	void CreateSound(vec2 Pos, int Sound, int64 Mask=-1);
+	void CreateGlobalSound(int Sound);
 
 	// network
 	void SendChat(int ChatterClientID, int Mode, int To, const char *pText);
@@ -176,6 +177,7 @@ public:
 	virtual const char *GameType() const;
 	virtual const char *Version() const;
 	virtual const char *NetVersion() const;
+	virtual const char *ModVersion() const;
 };
 
 inline int64 CmaskAll() { return -1; }

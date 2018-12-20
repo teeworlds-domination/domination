@@ -13,11 +13,12 @@
 
 #include "entities/character.h"
 #include "gamemodes/ctf.h"
-#include "gamemodes/dm.h"
 #include "gamemodes/lms.h"
 #include "gamemodes/lts.h"
-#include "gamemodes/mod.h"
 #include "gamemodes/tdm.h"
+
+#include "gamemodes/dom.h"
+
 #include "gamecontext.h"
 #include "player.h"
 
@@ -188,6 +189,18 @@ void CGameContext::CreateSound(vec2 Pos, int Sound, int64 Mask)
 	}
 }
 
+void CGameContext::CreateGlobalSound(int Sound)
+{
+	if (Sound < 0)
+		return;
+
+	for(int i = 0; i < MAX_CLIENTS; ++i)
+	{
+		if(m_apPlayers[i])
+			CreateSound(m_apPlayers[i]->m_ViewPos, Sound, CmaskOne(i));
+	}
+}
+
 void CGameContext::SendChat(int ChatterClientID, int Mode, int To, const char *pText)
 {
 	char aBuf[256];
@@ -214,7 +227,12 @@ void CGameContext::SendChat(int ChatterClientID, int Mode, int To, const char *p
 	Msg.m_TargetID = -1;
 
 	if(Mode == CHAT_ALL)
-		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	{
+		if (str_comp_num(Msg.m_pMessage, "/", 1) == 0)
+			static_cast<CGameControllerDOM *>(m_pController)->SendChatCommand(ChatterClientID, Msg.m_pMessage);
+		else
+			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+	}
 	else if(Mode == CHAT_TEAM)
 	{
 		// pack one for the recording only
@@ -1426,21 +1444,18 @@ void CGameContext::OnInit()
 		Server()->SnapSetStaticsize(i, m_NetObjHandler.GetObjSize(i));
 
 	m_Layers.Init(Kernel());
-	m_Collision.Init(&m_Layers);
 
 	// select gametype
-	if(str_comp_nocase(g_Config.m_SvGametype, "mod") == 0)
-		m_pController = new CGameControllerMOD(this);
-	else if(str_comp_nocase(g_Config.m_SvGametype, "ctf") == 0)
-		m_pController = new CGameControllerCTF(this);
-	else if(str_comp_nocase(g_Config.m_SvGametype, "lms") == 0)
-		m_pController = new CGameControllerLMS(this);
-	else if(str_comp_nocase(g_Config.m_SvGametype, "lts") == 0)
-		m_pController = new CGameControllerLTS(this);
-	else if(str_comp_nocase(g_Config.m_SvGametype, "tdm") == 0)
-		m_pController = new CGameControllerTDM(this);
-	else
-		m_pController = new CGameControllerDM(this);
+	// if(str_comp_nocase(g_Config.m_SvGametype, "ddom") == 0)
+	// 	m_pController = new CGameControllerDDOM(this);
+	// else if(str_comp_nocase(g_Config.m_SvGametype, "kdom") == 0)
+	// 	m_pController = new CGameControllerKDOM(this);
+	// else if(str_comp_nocase(g_Config.m_SvGametype, "conq") == 0)
+	// 	m_pController = new CGameControllerCONQ(this);
+	// else if(str_comp_nocase(g_Config.m_SvGametype, "lts") == 0) // TODO survival flag should be optionally available for all other dom gametypes
+	//	m_pController = new CGameControllerLTS(this);
+	// else
+		m_pController = new CGameControllerDOM(this);
 
 	// create all entities from the game layer
 	CMapItemLayerTilemap *pTileMap = m_Layers.GameLayer();
@@ -1451,13 +1466,15 @@ void CGameContext::OnInit()
 		{
 			int Index = pTiles[y*pTileMap->m_Width+x].m_Index;
 
-			if(Index >= ENTITY_OFFSET)
+			if(Index >= 160)
 			{
 				vec2 Pos(x*32.0f+16.0f, y*32.0f+16.0f);
 				m_pController->OnEntity(Index-ENTITY_OFFSET, Pos);
 			}
 		}
 	}
+
+	m_Collision.Init(&m_Layers); // TODO why moved down?
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 
@@ -1534,5 +1551,6 @@ bool CGameContext::IsClientPlayer(int ClientID) const
 const char *CGameContext::GameType() const { return m_pController && m_pController->GetGameType() ? m_pController->GetGameType() : ""; }
 const char *CGameContext::Version() const { return GAME_VERSION; }
 const char *CGameContext::NetVersion() const { return GAME_NETVERSION; }
+const char *CGameContext::ModVersion() const { return GAME_MODVERSION; }
 
 IGameServer *CreateGameServer() { return new CGameContext; }

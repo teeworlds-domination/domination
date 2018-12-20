@@ -31,7 +31,7 @@ void CCollision::Init(class CLayers *pLayers)
 	{
 		int Index = m_pTiles[i].m_Index;
 
-		if(Index > 128)
+		if(Index > 191)
 			continue;
 
 		switch(Index)
@@ -45,6 +45,26 @@ void CCollision::Init(class CLayers *pLayers)
 		case TILE_NOHOOK:
 			m_pTiles[i].m_Index = COLFLAG_SOLID|COLFLAG_NOHOOK;
 			break;
+		case TILE_DOM_FLAG_A:
+		case TILE_DOM_CAPAREA_A:
+			m_pTiles[i].m_Index = COLFLAG_DOM_CAPAREA_A;
+			break;
+		case TILE_DOM_FLAG_B:
+		case TILE_DOM_CAPAREA_B:
+			m_pTiles[i].m_Index = COLFLAG_DOM_CAPAREA_B;
+			break;
+		case TILE_DOM_FLAG_C:
+		case TILE_DOM_CAPAREA_C:
+			m_pTiles[i].m_Index = COLFLAG_DOM_CAPAREA_C;
+			break;
+		case TILE_DOM_FLAG_D:
+		case TILE_DOM_CAPAREA_D:
+			m_pTiles[i].m_Index = COLFLAG_DOM_CAPAREA_D;
+			break;
+		case TILE_DOM_FLAG_E:
+		case TILE_DOM_CAPAREA_E:
+			m_pTiles[i].m_Index = COLFLAG_DOM_CAPAREA_E;
+			break;
 		default:
 			m_pTiles[i].m_Index = 0;
 		}
@@ -56,7 +76,7 @@ int CCollision::GetTile(int x, int y) const
 	int Nx = clamp(x/32, 0, m_Width-1);
 	int Ny = clamp(y/32, 0, m_Height-1);
 
-	return m_pTiles[Ny*m_Width+Nx].m_Index > 128 ? 0 : m_pTiles[Ny*m_Width+Nx].m_Index;
+	return m_pTiles[Ny*m_Width+Nx].m_Index > 191 ? 0 : m_pTiles[Ny*m_Width+Nx].m_Index;
 }
 
 bool CCollision::IsTileSolid(int x, int y) const

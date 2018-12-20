@@ -14,6 +14,25 @@
 */
 class IGameController
 {
+protected:
+	enum EGameState
+	{
+		// internal game states
+		IGS_WARMUP_GAME,		// warmup started by game because there're not enough players (infinite)
+		IGS_WARMUP_USER,		// warmup started by user action via rcon or new match (infinite or timer)
+
+		IGS_START_COUNTDOWN,	// start countown to unpause the game or start match/round (tick timer)
+
+		IGS_GAME_PAUSED,		// game paused (infinite or tick timer)
+		IGS_GAME_RUNNING,		// game running (infinite)
+
+		IGS_END_MATCH,			// match is over (tick timer)
+		IGS_END_ROUND,			// round is over (tick timer)
+ 	};
+	EGameState m_GameState;
+	int m_GameStateTimer;
+
+private:
 	class CGameContext *m_pGameServer;
 	class IServer *m_pServer;
 
@@ -37,27 +56,9 @@ class IGameController
 	void DoTeamBalance();
 
 	// game
-	enum EGameState
-	{
-		// internal game states
-		IGS_WARMUP_GAME,		// warmup started by game because there're not enough players (infinite)
-		IGS_WARMUP_USER,		// warmup started by user action via rcon or new match (infinite or timer)
-
-		IGS_START_COUNTDOWN,	// start countown to unpause the game or start match/round (tick timer)
-
-		IGS_GAME_PAUSED,		// game paused (infinite or tick timer)
-		IGS_GAME_RUNNING,		// game running (infinite)
-		
-		IGS_END_MATCH,			// match is over (tick timer)
-		IGS_END_ROUND,			// round is over (tick timer)
- 	};
-	EGameState m_GameState;
-	int m_GameStateTimer;
-
 	virtual void DoWincheckMatch();
 	virtual void DoWincheckRound() {};
 	bool HasEnoughPlayers() const { return (IsTeamplay() && m_aTeamSize[TEAM_RED] > 0 && m_aTeamSize[TEAM_BLUE] > 0) || (!IsTeamplay() && m_aTeamSize[TEAM_RED] > 1); }
-	void ResetGame();
 	void SetGameState(EGameState GameState, int Timer=0);
 	void StartMatch();
 	void StartRound();
@@ -66,6 +67,20 @@ class IGameController
 	char m_aMapWish[128];
 	
 	void CycleMap();
+
+	// team
+	int ClampTeam(int Team) const;
+
+protected:
+	CGameContext *GameServer() const { return m_pGameServer; }
+	IServer *Server() const { return m_pServer; }
+
+	// game
+	int m_GameStartTick;
+	int m_MatchCount;
+	int m_RoundCount;
+	int m_SuddenDeath;
+	int m_aTeamscore[NUM_TEAMS];
 
 	// spawn
 	struct CSpawnEval
@@ -82,28 +97,17 @@ class IGameController
 		int m_FriendlyTeam;
 		float m_Score;
 	};
+
 	vec2 m_aaSpawnPoints[3][64];
 	int m_aNumSpawnPoints[3];
-	
+
 	float EvaluateSpawnPos(CSpawnEval *pEval, vec2 Pos) const;
-	void EvaluateSpawnType(CSpawnEval *pEval, int Type) const;
-
-	// team
-	int ClampTeam(int Team) const;
-
-protected:
-	CGameContext *GameServer() const { return m_pGameServer; }
-	IServer *Server() const { return m_pServer; }
-
-	// game
-	int m_GameStartTick;
-	int m_MatchCount;
-	int m_RoundCount;
-	int m_SuddenDeath;
-	int m_aTeamscore[NUM_TEAMS];
+	virtual void EvaluateSpawnType(CSpawnEval *pEval, int Type) const;
 
 	void EndMatch() { SetGameState(IGS_END_MATCH, TIMER_END); }
 	void EndRound() { SetGameState(IGS_END_ROUND, TIMER_END/2); }
+
+	void ResetGame();
 
 	// info
 	int m_GameFlags;
@@ -164,7 +168,7 @@ public:
 	void OnPlayerInfoChange(class CPlayer *pPlayer);
 	void OnPlayerReadyChange(class CPlayer *pPlayer);
 
-	void OnReset();
+	virtual void OnReset();
 
 	// game
 	enum
@@ -201,7 +205,7 @@ public:
 	void ChangeMap(const char *pToMap);
 
 	//spawn
-	bool CanSpawn(int Team, vec2 *pPos) const;
+	virtual bool CanSpawn(int Team, vec2 *pPos);
 	bool GetStartRespawnState() const;
 
 	// team
@@ -213,6 +217,8 @@ public:
 	
 	int GetRealPlayerNum() const { return m_aTeamSize[TEAM_RED]+m_aTeamSize[TEAM_BLUE]; }
 	int GetStartTeam();
+
+	virtual float GetRespawnDelay(bool Self);
 };
 
 #endif

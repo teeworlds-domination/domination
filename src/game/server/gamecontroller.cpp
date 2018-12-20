@@ -214,6 +214,8 @@ void IGameController::DoTeamBalance()
 // event
 int IGameController::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, int Weapon)
 {
+	pVictim->GetPlayer()->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()*GetRespawnDelay(false);
+
 	// do scoreing
 	if(!pKiller || Weapon == WEAPON_GAME)
 		return 0;
@@ -227,7 +229,7 @@ int IGameController::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, int
 			pKiller->m_Score++; // normal kill
 	}
 	if(Weapon == WEAPON_SELF)
-		pVictim->GetPlayer()->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()*3.0f;
+		pVictim->GetPlayer()->m_RespawnTick = Server()->Tick()+Server()->TickSpeed()*GetRespawnDelay(true);
 
 
 	// update spectator modes for dead players in survival
@@ -239,6 +241,11 @@ int IGameController::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, int
 	}
 
 	return 0;
+}
+
+float IGameController::GetRespawnDelay(bool Self)
+{
+	return Self? 3.0f : 0.5f;
 }
 
 void IGameController::OnCharacterSpawn(CCharacter *pChr)
@@ -972,7 +979,7 @@ void IGameController::CycleMap()
 }
 
 // spawn
-bool IGameController::CanSpawn(int Team, vec2 *pOutPos) const
+bool IGameController::CanSpawn(int Team, vec2 *pOutPos)
 {
 	// spectators can't spawn
 	if(Team == TEAM_SPECTATORS || GameServer()->m_World.m_Paused || GameServer()->m_World.m_ResetRequested)
