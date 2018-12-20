@@ -45,6 +45,8 @@ public:
 	virtual bool OnEntity(int Index, vec2 Pos) override;
 	virtual void OnReset() override;
 
+	virtual void OnCapture(int Team) {};
+
 	void SendChat(int ClientID, const char *pText) const;
 	virtual void SendChatCommand(int ClientID, const char *pCommand);
 	virtual void SendChatInfo(int ClientID);

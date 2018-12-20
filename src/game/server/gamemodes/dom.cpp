@@ -250,6 +250,7 @@ void CGameControllerDOM::UpdateCaptureProcess()
 					else
 					{
 						++m_aTeamDominationSpots[m_apDominationSpots[i]->m_Team];
+						OnCapture(m_apDominationSpots[i]->m_Team);
 						str_format(aBuf, sizeof(aBuf), "%s captured spot %s for the %s. (%s: %i/%i, %s: %i/%i)",
 							Server()->ClientName(m_apDominationSpots[i]->m_pCapCharacter->GetPlayer()->GetCID()), m_apDominationSpots[i]->GetSpotName(), m_apDominationSpots[i]->GetTeamName(m_apDominationSpots[i]->m_Team),
 							m_apDominationSpots[i]->GetTeamName(0), m_aTeamDominationSpots[0], m_NumOfDominationSpots, m_apDominationSpots[i]->GetTeamName(1), m_aTeamDominationSpots[1], m_NumOfDominationSpots);
@@ -330,48 +331,46 @@ void CGameControllerDOM::SendChat(int ClientID, const char *pText) const
 
 void CGameControllerDOM::SendChatCommand(int ClientID, const char *pCommand)
 {
-	if (str_comp_nocase(pCommand, "/info") == 0 || str_comp_nocase(pCommand, "/help") == 0)
-		SendChatInfo(ClientID);
-	else if (str_comp_nocase(pCommand, "/spots") == 0 || str_comp_nocase(pCommand, "/domspots") == 0)
-		SendChatStats(ClientID);
-	else
-		SendChat(ClientID, "Unknown command. Type '/help' for more information about this mod.");
+	if (ClientID >= 0 && ClientID < MAX_CLIENTS)
+	{
+		if (str_comp_nocase(pCommand, "/info") == 0 || str_comp_nocase(pCommand, "/help") == 0)
+		{
+			char aBuf[64];
+			str_format(aBuf, sizeof(aBuf), "Domination Mod (%s) by Slayer, orig. by ziltoide and Oy.", GameServer()->ModVersion());
+			SendChat(ClientID, aBuf);
+
+			SendChat(ClientID, "——————————————————————————————");
+			SendChatInfo(ClientID);
+		}
+		else if (str_comp_nocase(pCommand, "/spots") == 0 || str_comp_nocase(pCommand, "/domspots") == 0)
+			SendChatStats(ClientID);
+		else
+			SendChat(ClientID, "Unknown command. Type '/help' for more information about this mod.");
+	}
 }
 
 void CGameControllerDOM::SendChatInfo(int ClientID)
 {
-	if (ClientID >= 0 && ClientID < MAX_CLIENTS)
-	{
-		char aBuf[64];
-		str_format(aBuf, sizeof(aBuf), "Domination Mod (%s) by Slayer, orig. by ziltoide and Oy.", GameServer()->ModVersion());
-		SendChat(ClientID, aBuf);
-
-		SendChat(ClientID, "———————————————————");
-
-		// TODO send proper gameplay explanation
-		str_format(aBuf, sizeof(aBuf), "TODO DomCapPoints %d Setting blablub.", g_Config.m_SvDomCapPoints);
-		SendChat(ClientID, aBuf);
-	}
+	SendChat(ClientID, "Capture domination spots.");
+	SendChat(ClientID, "Tip: Capture together to reduce the required time.");
+	SendChat(ClientID, "For each captured spot, your teams score increases over time.");
 }
 
 void CGameControllerDOM::SendChatStats(int ClientID)
 {
-	if (ClientID >= 0 && ClientID < MAX_CLIENTS)
+	SendChat(ClientID, "——— Domination Spots ———");
+
+	if (m_NumOfDominationSpots == 0)
+		SendChat(ClientID, "No domination spots available on this map.");
+	else
 	{
-		SendChat(ClientID, "——— Domination Spots ———");
-		
-		if (m_NumOfDominationSpots == 0)
-			SendChat(ClientID, "No domination spots available on this map.");
-		else
-		{
-			char aBuf[32];
-			for (int i = 0; i < DOM_MAXDSPOTS; ++i)
-				if (m_aDominationSpotsEnabled[i])
-				{
-					str_format(aBuf, sizeof(aBuf), "%s: %s", m_apDominationSpots[i]->GetSpotName(), m_apDominationSpots[i]->GetTeamName());
-					SendChat(ClientID, aBuf);
-				}
-		}
+		char aBuf[32];
+		for (int i = 0; i < DOM_MAXDSPOTS; ++i)
+			if (m_aDominationSpotsEnabled[i])
+			{
+				str_format(aBuf, sizeof(aBuf), "%s: %s", m_apDominationSpots[i]->GetSpotName(), m_apDominationSpots[i]->GetTeamName());
+				SendChat(ClientID, aBuf);
+			}
 	}
 }
 
