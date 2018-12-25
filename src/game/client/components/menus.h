@@ -71,6 +71,7 @@ private:
 	*/
 
 	int DoIcon(int ImageId, int SpriteId, const CUIRect *pRect);
+	void DoIconColor(int ImageId, int SpriteId, const CUIRect *pRect, const vec4& Color);
 	int DoButton_GridHeader(const void *pID, const char *pText, int Checked, const CUIRect *pRect);
 	int DoButton_GridHeaderIcon(CButtonContainer *pBC, int ImageID, int SpriteID, const CUIRect *pRect, int Corners);
 
@@ -269,6 +270,8 @@ private:
 	static float ms_BackgroundAlpha;
 
 	// for settings
+	bool m_NeedRestartPlayer;
+	bool m_NeedRestartTee;
 	bool m_NeedRestartGraphics;
 	bool m_NeedRestartSound;
 	int m_TeePartSelected;
@@ -539,7 +542,7 @@ private:
 	void RenderServerbrowserInfoTab(CUIRect View);
 	void RenderServerbrowserFriendList(CUIRect View);
 	void RenderDetailInfo(CUIRect View, const CServerInfo *pInfo);
-	void RenderDetailScoreboard(CUIRect View, const CServerInfo *pInfo, int RowCount);
+	void RenderDetailScoreboard(CUIRect View, const CServerInfo *pInfo, int RowCount, vec4 TextColor = vec4(1,1,1,1));
 	void RenderServerbrowserServerDetail(CUIRect View, const CServerInfo *pInfo);
 	//void RenderServerbrowserFriends(CUIRect View);
 	void RenderServerbrowserBottomBox(CUIRect View);

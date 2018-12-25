@@ -419,7 +419,7 @@ int CMenus::DoBrowserEntry(const void *pID, CUIRect View, const CServerInfo *pEn
 			Icon.Margin(2.0f, &Icon);
 			int Level = pEntry->m_ServerLevel;
 
-			DoIcon(IMAGE_LEVELICONS, Level==0 ? (Selected ? SPRITE_LEVEL_A_B : SPRITE_LEVEL_A_A) : Level==1 ? (Selected ? SPRITE_LEVEL_B_B : SPRITE_LEVEL_B_A) : (Selected ? SPRITE_LEVEL_C_B : SPRITE_LEVEL_C_A), &Icon);
+			DoIcon(IMAGE_LEVELICONS, Level==0 ? SPRITE_LEVEL_A_ON : Level==1 ? SPRITE_LEVEL_B_ON : SPRITE_LEVEL_C_ON, &Icon);
 
 			Rect.VSplitLeft(Rect.h, &Icon, &Rect);
 			Icon.Margin(2.0f, &Icon);
@@ -575,7 +575,7 @@ int CMenus::DoBrowserEntry(const void *pID, CUIRect View, const CServerInfo *pEn
 			CUIRect Icon;
 			Button.VSplitLeft(Button.h, &Icon, &Button);
 			Icon.y -= 0.5f;
-			DoGameIcon(pEntry->m_aGameType, &Icon, Selected ? CGameIcon::GAMEICON_OFF : CGameIcon::GAMEICON_ON);
+			DoGameIcon(pEntry->m_aGameType, &Icon, CGameIcon::GAMEICON_FULL);
 
 			// gametype text
 			CTextCursor Cursor;
@@ -594,6 +594,10 @@ int CMenus::DoBrowserEntry(const void *pID, CUIRect View, const CServerInfo *pEn
 	{
 		CUIRect Info;
 		View.HSplitTop(ms_aBrowserCols[0].m_Rect.h, 0, &View);
+
+		if(ReturnValue && UI()->MouseInside(&View))
+			ReturnValue++;
+
 		View.VSplitLeft(160.0f, &Info, &View);
 		RenderDetailInfo(Info, pEntry);
 
@@ -602,11 +606,8 @@ int CMenus::DoBrowserEntry(const void *pID, CUIRect View, const CServerInfo *pEn
 		NewClipArea.x = View.x;
 		NewClipArea.w = View.w;
 		UI()->ClipEnable(&NewClipArea);
-		RenderDetailScoreboard(View, pEntry, 4);
+		RenderDetailScoreboard(View, pEntry, 4, vec4(TextBaseColor.r, TextBaseColor.g, TextBaseColor.b, TextAlpha));
 		UI()->ClipEnable(&OldClipArea);
-
-		if(ReturnValue && UI()->MouseInside(&View))
-			ReturnValue++;
 	}
 
 	TextRender()->TextOutlineColor(0.0f, 0.0f, 0.0f, 0.3f);
@@ -1840,14 +1841,14 @@ void CMenus::RenderDetailInfo(CUIRect View, const CServerInfo *pInfo)
 	if(pInfo)
 	{
 		CUIRect Row;
+		// Localize("Map"); Localize("Game type"); Localize("Version"); Localize("Casual"); Localize("Normal"); Localize("Difficulty"); Localize("Competitive"); 
 		static CLocConstString s_aLabels[] = {
-			"Map",			// Localize - these strings are localized within CLocConstString
+			"Map",		
 			"Game type",
 			"Version",
 			"Difficulty" };
-
 		static CLocConstString s_aDifficulty[] = {
-			"Casual",			// Localize - these strings are localized within CLocConstString
+			"Casual",
 			"Normal",
 			"Competitive" };
 
@@ -1897,7 +1898,7 @@ void CMenus::RenderDetailInfo(CUIRect View, const CServerInfo *pInfo)
 	}
 }
 
-void CMenus::RenderDetailScoreboard(CUIRect View, const CServerInfo *pInfo, int RowCount)
+void CMenus::RenderDetailScoreboard(CUIRect View, const CServerInfo *pInfo, int RowCount, vec4 TextColor)
 {
 	// slected filter
 	CBrowserFilter *pFilter = 0;
@@ -1914,6 +1915,8 @@ void CMenus::RenderDetailScoreboard(CUIRect View, const CServerInfo *pInfo, int 
 		return;
 	CServerFilterInfo FilterInfo;
 	pFilter->GetFilter(&FilterInfo);
+
+	TextRender()->TextColor(TextColor.r, TextColor.g, TextColor.b, TextColor.a);
 
 	// server scoreboard
 	CTextCursor Cursor;
@@ -2027,7 +2030,7 @@ void CMenus::RenderDetailScoreboard(CUIRect View, const CServerInfo *pInfo, int 
 					TextRender()->TextEx(&Cursor, pName, (int)(s - pName));
 					TextRender()->TextColor(0.4f, 0.4f, 1.0f, 1.0f);
 					TextRender()->TextEx(&Cursor, s, str_length(g_Config.m_BrFilterString));
-					TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
+					TextRender()->TextColor(TextColor.r, TextColor.g, TextColor.b, TextColor.a);
 					TextRender()->TextEx(&Cursor, s + str_length(g_Config.m_BrFilterString), -1);
 				}
 				else
@@ -2049,7 +2052,7 @@ void CMenus::RenderDetailScoreboard(CUIRect View, const CServerInfo *pInfo, int 
 					TextRender()->TextEx(&Cursor, pClan, (int)(s - pClan));
 					TextRender()->TextColor(0.4f, 0.4f, 1.0f, 1.0f);
 					TextRender()->TextEx(&Cursor, s, str_length(g_Config.m_BrFilterString));
-					TextRender()->TextColor(1.0f, 1.0f, 1.0f, 1.0f);
+					TextRender()->TextColor(TextColor.r, TextColor.g, TextColor.b, TextColor.a);
 					TextRender()->TextEx(&Cursor, s + str_length(g_Config.m_BrFilterString), -1);
 				}
 				else
