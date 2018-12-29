@@ -40,6 +40,7 @@ void CGameControllerKDOM::OnCapture(int Team)
 
 void CGameControllerKDOM::SendChatInfo(int ClientID)
 {
+	CGameControllerDOM::SendChat(ClientID, "GAMETYPE: KILL DOMINATION");
 	CGameControllerDOM::SendChat(ClientID, "Capture domination spots.");
 	CGameControllerDOM::SendChat(ClientID, "Tip: Capture together to reduce the required time.");
 	CGameControllerDOM::SendChat(ClientID, "Gain team scores by killing your enemies.");

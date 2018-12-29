@@ -359,6 +359,7 @@ void CGameControllerDOM::SendChatCommand(int ClientID, const char *pCommand)
 
 void CGameControllerDOM::SendChatInfo(int ClientID)
 {
+	SendChat(ClientID, "GAMETYPE: DOMINATION");
 	SendChat(ClientID, "Capture domination spots.");
 	SendChat(ClientID, "Tip: Capture together to reduce the required time.");
 	SendChat(ClientID, "For each captured spot, your teams score increases over time.");
