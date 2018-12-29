@@ -135,6 +135,7 @@ MACRO_CONFIG_INT(SvVoteKickBantime, sv_vote_kick_bantime, 5, 0, 1440, CFGFLAG_SA
 MACRO_CONFIG_STR(SvDomCapTimes, sv_dom_captimes, 32, "5 6 7 8 9 10 11 12", CFGFLAG_SAVE|CFGFLAG_SERVER, "Captimes for dynamic capturing")
 MACRO_CONFIG_STR(SvDomUseSpots, sv_dom_use_spots, 32, "1 1 1 1 1", CFGFLAG_SAVE|CFGFLAG_SERVER, "En-/disables domination spots")
 MACRO_CONFIG_INT(SvDomCapPoints, sv_dom_cappoints, 5, 0, 100, CFGFLAG_SAVE|CFGFLAG_SERVER, "Number of points a player gets for capturing a domination spot")
+MACRO_CONFIG_INT(SvDomCapMsg, sv_dom_capmsg, 0, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Print capture message to chat, additionally to broadcast overview")
 
 MACRO_CONFIG_INT(SvDomRespawnDelay, sv_dom_respawn_delay, 2, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "How many seconds to wait before respawning")
 MACRO_CONFIG_STR(SvDomScorings, sv_dom_scorings, 64, "2.0 1.0 0.7 0.5 0.4", CFGFLAG_SAVE|CFGFLAG_SERVER, "Dompoints for dynamic capturing")

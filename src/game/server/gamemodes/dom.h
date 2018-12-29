@@ -34,7 +34,6 @@ protected:
 	virtual void Init();
 	virtual void UpdateCaptureProcess();
 	virtual void UpdateBroadcast();
-	virtual void UpdateBroadcast2();
 	virtual void UpdateScoring();
 
 public:
