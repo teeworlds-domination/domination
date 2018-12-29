@@ -25,7 +25,7 @@ void CDominationSpot::Reset()
 	m_IsGettingCaptured = false;
 	m_FlagY = 0.0f;
 	sscanf(g_Config.m_SvDomCapTimes, "%d %d %d %d %d %d %d %d", m_aCapTimes + 1, m_aCapTimes + 2, m_aCapTimes + 3, m_aCapTimes + 4, m_aCapTimes + 5, m_aCapTimes + 6, m_aCapTimes + 7, m_aCapTimes +8);
-	for (int i = 1; i < MAX_CLIENTS / DOM_NUMOFTEAMS + 1; ++i)
+	for (int i = 1; i < MAX_PLAYERS / DOM_NUMOFTEAMS + 1; ++i)
 		if (m_aCapTimes[i] < 0)
 			m_aCapTimes[i] = 0;
 		else if (m_aCapTimes[i] > 60)
@@ -46,7 +46,7 @@ void CDominationSpot::Snap(int SnappingClient)
 
 void CDominationSpot::StartCapturing(const int CaptureTeam, const int CaptureTeamSize, const int DefTeamSize)
 {
-	m_Timer = m_aCapTimes[min(CaptureTeamSize, MAX_CLIENTS / DOM_NUMOFTEAMS + 1)] * Server()->TickSpeed();
+	m_Timer = m_aCapTimes[min(CaptureTeamSize, MAX_PLAYERS / DOM_NUMOFTEAMS + 1)] * Server()->TickSpeed();
 	if (DefTeamSize > CaptureTeamSize)	//	handicap (faster capturing) for smaller team
 		m_Timer = m_Timer * CaptureTeamSize / DefTeamSize;
 	m_CapTeam = CaptureTeam;
