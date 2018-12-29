@@ -257,9 +257,9 @@ void CGameControllerDOM::UpdateCaptureProcess()
 			//	start capturing process
 			if (m_apDominationSpots[i]->m_Team == DOM_NEUTRAL)
 			{
-				if (!aaPlayerStats[i][DOM_RED] && aaPlayerStats[i][DOM_BLUE])
+				if (aaPlayerStats[i][DOM_RED] < aaPlayerStats[i][DOM_BLUE])
 					m_apDominationSpots[i]->StartCapturing(DOM_BLUE, aTeamSize[DOM_BLUE], aTeamSize[DOM_RED]);
-				if (!aaPlayerStats[i][DOM_BLUE] && aaPlayerStats[i][DOM_RED])
+				if (aaPlayerStats[i][DOM_RED] > aaPlayerStats[i][DOM_BLUE])
 					m_apDominationSpots[i]->StartCapturing(DOM_RED, aTeamSize[DOM_RED], aTeamSize[DOM_BLUE]);
 			}
 			else
