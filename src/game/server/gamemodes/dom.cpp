@@ -1,5 +1,6 @@
 #include <float.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <engine/shared/config.h>
 
@@ -198,8 +199,7 @@ void CGameControllerDOM::UpdateCaptureProcess()
 		pPlayer = GameServer()->m_apPlayers[i];
 		if(pPlayer && pPlayer->GetTeam() != TEAM_SPECTATORS)
 			++aTeamSize[pPlayer->GetTeam()];
-		if (!pPlayer || pPlayer->GetTeam() == TEAM_SPECTATORS ||
-			!pPlayer->GetCharacter() || !pPlayer->GetCharacter()->IsAlive())
+		if (!pPlayer || pPlayer->GetTeam() == TEAM_SPECTATORS || !pPlayer->GetCharacter() || !pPlayer->GetCharacter()->IsAlive())
 			continue;
 		DomCaparea = min(GameServer()->Collision()->GetCollisionAt(static_cast<int>(pPlayer->GetCharacter()->GetPos().x),
 			static_cast<int>(pPlayer->GetCharacter()->GetPos().y)) >> 3, 5) - 1;
@@ -232,13 +232,13 @@ void CGameControllerDOM::UpdateCaptureProcess()
 				if (m_apDominationSpots[i]->UpdateCapturing(aaPlayerStats[i][m_apDominationSpots[i]->m_CapTeam]))
 				{
 					//	capturing successful
-					char aBuf[256];	//	capture chat message
+					// char aBuf[256];
 					if (m_apDominationSpots[i]->m_Team == DOM_NEUTRAL)
 					{
 						--m_aTeamDominationSpots[m_apDominationSpots[i]->m_CapTeam ^ 1];
-						str_format(aBuf, sizeof(aBuf), "%s took spot %s away from the %s. (%s: %i/%i, %s: %i/%i)",
-							Server()->ClientName(m_apDominationSpots[i]->m_pCapCharacter->GetPlayer()->GetCID()), m_apDominationSpots[i]->GetSpotName(), m_apDominationSpots[i]->GetTeamName(m_apDominationSpots[i]->m_CapTeam ^ 1),
-							m_apDominationSpots[i]->GetTeamName(0), m_aTeamDominationSpots[0], m_NumOfDominationSpots, m_apDominationSpots[i]->GetTeamName(1), m_aTeamDominationSpots[1], m_NumOfDominationSpots);
+						// str_format(aBuf, sizeof(aBuf), "%s took spot %s away from the %s. (%s: %i/%i, %s: %i/%i)",
+						// 	Server()->ClientName(m_apDominationSpots[i]->m_pCapCharacter->GetPlayer()->GetCID()), m_apDominationSpots[i]->GetSpotName(), m_apDominationSpots[i]->GetTeamName(m_apDominationSpots[i]->m_CapTeam ^ 1),
+						// 	m_apDominationSpots[i]->GetTeamName(0), m_aTeamDominationSpots[0], m_NumOfDominationSpots, m_apDominationSpots[i]->GetTeamName(1), m_aTeamDominationSpots[1], m_NumOfDominationSpots);
 						if (!aaPlayerStats[i][m_apDominationSpots[i]->m_CapTeam ^ 1])
 							m_apDominationSpots[i]->StartCapturing(m_apDominationSpots[i]->m_CapTeam, aTeamSize[m_apDominationSpots[i]->m_CapTeam], aTeamSize[m_apDominationSpots[i]->m_CapTeam ^ 1]);
 					}
@@ -246,14 +246,14 @@ void CGameControllerDOM::UpdateCaptureProcess()
 					{
 						++m_aTeamDominationSpots[m_apDominationSpots[i]->m_Team];
 						OnCapture(m_apDominationSpots[i]->m_Team);
-						str_format(aBuf, sizeof(aBuf), "%s captured spot %s for the %s. (%s: %i/%i, %s: %i/%i)",
-							Server()->ClientName(m_apDominationSpots[i]->m_pCapCharacter->GetPlayer()->GetCID()), m_apDominationSpots[i]->GetSpotName(), m_apDominationSpots[i]->GetTeamName(m_apDominationSpots[i]->m_Team),
-							m_apDominationSpots[i]->GetTeamName(0), m_aTeamDominationSpots[0], m_NumOfDominationSpots, m_apDominationSpots[i]->GetTeamName(1), m_aTeamDominationSpots[1], m_NumOfDominationSpots);
+						// str_format(aBuf, sizeof(aBuf), "%s captured spot %s for the %s. (%s: %i/%i, %s: %i/%i)",
+						// 	Server()->ClientName(m_apDominationSpots[i]->m_pCapCharacter->GetPlayer()->GetCID()), m_apDominationSpots[i]->GetSpotName(), m_apDominationSpots[i]->GetTeamName(m_apDominationSpots[i]->m_Team),
+						// 	m_apDominationSpots[i]->GetTeamName(0), m_aTeamDominationSpots[0], m_NumOfDominationSpots, m_apDominationSpots[i]->GetTeamName(1), m_aTeamDominationSpots[1], m_NumOfDominationSpots);
 					}
-					GameServer()->SendChat(-1, CHAT_ALL, -1, aBuf);
+					// GameServer()->SendChat(-1, CHAT_ALL, -1, aBuf);
 				}
 			}
-			else		//	stop capturing process
+			else
 				m_apDominationSpots[i]->StopCapturing();
 			m_UpdateBroadcast = true;
 		}
@@ -276,12 +276,7 @@ void CGameControllerDOM::UpdateCaptureProcess()
 
 void CGameControllerDOM::UpdateBroadcast()
 {
-	//	update caturing broadcast timer
-	if (m_LastBroadcastTick != -1 && m_LastBroadcastTick + Server()->TickSpeed() <= Server()->Tick())
-		m_LastBroadcastTick = -1;
-
-	//	update caturing broadcast message
-	if (m_LastBroadcastTick == -1 && m_UpdateBroadcast)
+	if (m_LastBroadcastTick + Server()->TickSpeed() <= Server()->Tick())
 	{
 		char aBuf[256] = {0};
 		int TextLen = 0;
@@ -294,10 +289,33 @@ void CGameControllerDOM::UpdateBroadcast()
 					sprintf(aBuf + TextLen, "%c: %s %2i,", m_apDominationSpots[i]->GetSpotName()[0], m_apDominationSpots[i]->m_Team == DOM_RED ? "No Red" : "No Blue", (m_apDominationSpots[i]->m_Timer - 1) / Server()->TickSpeed() + 1);
 		}
 		if (TextLen)
+		{
 			aBuf[TextLen - 1] = 0;
-		GameServer()->SendBroadcast(aBuf, -1);
+			SendBroadcast(-1, aBuf);
+		}
+		else
+			SendBroadcast(-1, "");
 		m_LastBroadcastTick = Server()->Tick();
-		m_UpdateBroadcast = false;
+	}
+}
+
+void CGameControllerDOM::SendBroadcast(int ClientID, const char *pText) const
+{
+	char aBuf[1024] = {0};
+	int TextLen = 0;
+	if(strlen(pText) > 0)
+		TextLen += snprintf(aBuf + TextLen, sizeof(aBuf), "%s\\n", pText);
+	for (int i = 0; i < DOM_MAXDSPOTS; ++i)
+	{
+		// TODO update color based on time
+		// TODO 🔒
+		if (m_aDominationSpotsEnabled[i])
+			TextLen += snprintf(aBuf + TextLen, sizeof(aBuf), "%s[—%c—] ", m_apDominationSpots[i]->GetTeamBroadcastColor(), m_apDominationSpots[i]->GetSpotName()[0]);
+	}
+	if (TextLen)
+	{
+		aBuf[TextLen - 1] = 0;
+		GameServer()->SendBroadcast(aBuf, ClientID);
 	}
 }
 

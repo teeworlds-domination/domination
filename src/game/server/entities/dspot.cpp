@@ -108,3 +108,13 @@ const char* CDominationSpot::GetSpotName() const
 	default: return "Area 51";	//	should never occur
 	}
 }
+
+const char* CDominationSpot::GetTeamBroadcastColor() const
+{
+	switch(m_Team)
+	{
+	case DOM_RED:  return "^900";
+	case DOM_BLUE: return "^009";
+	default:       return "^999";
+	}
+}

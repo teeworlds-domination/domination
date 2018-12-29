@@ -28,6 +28,7 @@ public:
 	const bool UpdateCapturing(const int NumCapturePlayers);
 	void StopCapturing();
 	const char *GetSpotName() const;
+	const char *GetTeamBroadcastColor() const;
 	const char *GetTeamName(const int Team) const;
 	const char *GetTeamName() const { return GetTeamName(m_Team); }
 };

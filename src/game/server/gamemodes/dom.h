@@ -34,6 +34,7 @@ protected:
 	virtual void Init();
 	virtual void UpdateCaptureProcess();
 	virtual void UpdateBroadcast();
+	virtual void UpdateBroadcast2();
 	virtual void UpdateScoring();
 
 public:
@@ -49,6 +50,7 @@ public:
 
 	virtual void OnCapture(int Team) {};
 
+	virtual void SendBroadcast(int ClientID, const char *pText) const;
 	void SendChat(int ClientID, const char *pText) const;
 	virtual void SendChatCommand(int ClientID, const char *pCommand);
 	virtual void SendChatInfo(int ClientID);
