@@ -9,6 +9,7 @@ public:
 	vec2 m_Pos;                  // Flag position
 	int m_Team;                  // Owner Team
 	int m_CapTeam;               // Capturing Team
+	int m_CapTime;               // Time needed for capturing process
 	int m_Timer;                 // Timer for capturing process
 	int m_IsGettingCaptured;     // Reports if a capturing process is running
 	CCharacter* m_pCapCharacter; // This character gets the capturing points
@@ -25,7 +26,7 @@ public:
 	virtual void Snap(int SnappingClient) override;
 
 	void StartCapturing(const int CaptureTeam, const int CaptureTeamSize, const int DefTeamSize);
-	const bool UpdateCapturing(const int NumCapturePlayers);
+	const bool UpdateCapturing(const int NumCapturePlayers, const int NumDefPlayers);
 	void StopCapturing();
 	const char *GetSpotName() const;
 	const char *GetTeamBroadcastColor() const;

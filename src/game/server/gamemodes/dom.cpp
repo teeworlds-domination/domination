@@ -226,36 +226,30 @@ void CGameControllerDOM::UpdateCaptureProcess()
 		if (m_apDominationSpots[i]->m_IsGettingCaptured)
 		{
 			//	capturing process already running
-			if ((m_apDominationSpots[i]->m_Team == DOM_NEUTRAL && aaPlayerStats[i][m_apDominationSpots[i]->m_CapTeam] && !aaPlayerStats[i][m_apDominationSpots[i]->m_CapTeam ^ 1]) ||
-				(m_apDominationSpots[i]->m_Team != DOM_NEUTRAL && aaPlayerStats[i][m_apDominationSpots[i]->m_CapTeam]))
+			if (m_apDominationSpots[i]->UpdateCapturing(aaPlayerStats[i][m_apDominationSpots[i]->m_CapTeam], aaPlayerStats[i][m_apDominationSpots[i]->m_CapTeam ^ 1]))
 			{
-				if (m_apDominationSpots[i]->UpdateCapturing(aaPlayerStats[i][m_apDominationSpots[i]->m_CapTeam]))
+				//	capturing successful
+				char aBuf[256];
+				if (m_apDominationSpots[i]->m_Team == DOM_NEUTRAL)
 				{
-					//	capturing successful
-					char aBuf[256];
-					if (m_apDominationSpots[i]->m_Team == DOM_NEUTRAL)
-					{
-						--m_aTeamDominationSpots[m_apDominationSpots[i]->m_CapTeam ^ 1];
-						str_format(aBuf, sizeof(aBuf), "%s took spot %s away from the %s. (%s: %i/%i, %s: %i/%i)",
-							Server()->ClientName(m_apDominationSpots[i]->m_pCapCharacter->GetPlayer()->GetCID()), m_apDominationSpots[i]->GetSpotName(), m_apDominationSpots[i]->GetTeamName(m_apDominationSpots[i]->m_CapTeam ^ 1),
-							m_apDominationSpots[i]->GetTeamName(0), m_aTeamDominationSpots[0], m_NumOfDominationSpots, m_apDominationSpots[i]->GetTeamName(1), m_aTeamDominationSpots[1], m_NumOfDominationSpots);
-						if (!aaPlayerStats[i][m_apDominationSpots[i]->m_CapTeam ^ 1])
-							m_apDominationSpots[i]->StartCapturing(m_apDominationSpots[i]->m_CapTeam, aTeamSize[m_apDominationSpots[i]->m_CapTeam], aTeamSize[m_apDominationSpots[i]->m_CapTeam ^ 1]);
-					}
-					else
-					{
-						++m_aTeamDominationSpots[m_apDominationSpots[i]->m_Team];
-						OnCapture(m_apDominationSpots[i]->m_Team);
-						str_format(aBuf, sizeof(aBuf), "%s captured spot %s for the %s. (%s: %i/%i, %s: %i/%i)",
-							Server()->ClientName(m_apDominationSpots[i]->m_pCapCharacter->GetPlayer()->GetCID()), m_apDominationSpots[i]->GetSpotName(), m_apDominationSpots[i]->GetTeamName(m_apDominationSpots[i]->m_Team),
-							m_apDominationSpots[i]->GetTeamName(0), m_aTeamDominationSpots[0], m_NumOfDominationSpots, m_apDominationSpots[i]->GetTeamName(1), m_aTeamDominationSpots[1], m_NumOfDominationSpots);
-					}
-					if (g_Config.m_SvDomCapMsg)
-						GameServer()->SendChat(-1, CHAT_ALL, -1, aBuf);
+					--m_aTeamDominationSpots[m_apDominationSpots[i]->m_CapTeam ^ 1];
+					str_format(aBuf, sizeof(aBuf), "%s took spot %s away from the %s. (%s: %i/%i, %s: %i/%i)",
+						Server()->ClientName(m_apDominationSpots[i]->m_pCapCharacter->GetPlayer()->GetCID()), m_apDominationSpots[i]->GetSpotName(), m_apDominationSpots[i]->GetTeamName(m_apDominationSpots[i]->m_CapTeam ^ 1),
+						m_apDominationSpots[i]->GetTeamName(0), m_aTeamDominationSpots[0], m_NumOfDominationSpots, m_apDominationSpots[i]->GetTeamName(1), m_aTeamDominationSpots[1], m_NumOfDominationSpots);
+					if (!aaPlayerStats[i][m_apDominationSpots[i]->m_CapTeam ^ 1])
+						m_apDominationSpots[i]->StartCapturing(m_apDominationSpots[i]->m_CapTeam, aTeamSize[m_apDominationSpots[i]->m_CapTeam], aTeamSize[m_apDominationSpots[i]->m_CapTeam ^ 1]);
 				}
+				else
+				{
+					++m_aTeamDominationSpots[m_apDominationSpots[i]->m_Team];
+					OnCapture(m_apDominationSpots[i]->m_Team);
+					str_format(aBuf, sizeof(aBuf), "%s captured spot %s for the %s. (%s: %i/%i, %s: %i/%i)",
+						Server()->ClientName(m_apDominationSpots[i]->m_pCapCharacter->GetPlayer()->GetCID()), m_apDominationSpots[i]->GetSpotName(), m_apDominationSpots[i]->GetTeamName(m_apDominationSpots[i]->m_Team),
+						m_apDominationSpots[i]->GetTeamName(0), m_aTeamDominationSpots[0], m_NumOfDominationSpots, m_apDominationSpots[i]->GetTeamName(1), m_aTeamDominationSpots[1], m_NumOfDominationSpots);
+				}
+				if (g_Config.m_SvDomCapMsg)
+					GameServer()->SendChat(-1, CHAT_ALL, -1, aBuf);
 			}
-			else
-				m_apDominationSpots[i]->StopCapturing();
 			m_UpdateBroadcast = true;
 		}
 		else

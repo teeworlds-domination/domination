@@ -20,6 +20,8 @@ CDominationSpot::CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id) : CEn
 
 void CDominationSpot::Reset()
 {
+	m_CapTime = 0;
+	m_Timer = -1;
 	m_Team = DOM_NEUTRAL;
 	m_CapTeam = DOM_NEUTRAL;
 	m_IsGettingCaptured = false;
@@ -47,21 +49,39 @@ void CDominationSpot::Snap(int SnappingClient)
 
 void CDominationSpot::StartCapturing(const int CaptureTeam, const int CaptureTeamSize, const int DefTeamSize)
 {
-	m_Timer = m_aCapTimes[min(CaptureTeamSize, MAX_PLAYERS / DOM_NUMOFTEAMS + 1)] * Server()->TickSpeed();
+	m_CapTime = m_aCapTimes[min(CaptureTeamSize, MAX_PLAYERS / DOM_NUMOFTEAMS + 1)];
 	if (DefTeamSize > CaptureTeamSize)	//	handicap (faster capturing) for smaller team
-		m_Timer = m_Timer * CaptureTeamSize / DefTeamSize;
+		m_CapTime = m_CapTime * CaptureTeamSize / DefTeamSize;
+	m_Timer = m_CapTime * Server()->TickSpeed();
 	m_CapTeam = CaptureTeam;
 	m_pCapCharacter = 0;
 	m_IsGettingCaptured = true;
-	m_FlagCounter = (m_Team == DOM_NEUTRAL ? -1.0f : 1.0f) * (static_cast<float>(DOM_FLAG_WAY) / static_cast<float>(m_Timer));
+	m_FlagCounter = (m_Team == DOM_NEUTRAL ? -1.0f : 1.0f) * (static_cast<float>(DOM_FLAG_WAY) / static_cast<float>(m_CapTime));
 	m_FlagY = m_Team == DOM_NEUTRAL ? DOM_FLAG_WAY : 0.0f;
 }
 
-const bool CDominationSpot::UpdateCapturing(const int NumCapturePlayers)
+const bool CDominationSpot::UpdateCapturing(const int NumCapturePlayers, const int NumDefPlayers)
 {
-	m_FlagY += m_FlagCounter * NumCapturePlayers;
-	m_Timer -= NumCapturePlayers;
-	if (m_Timer < 1)
+	int DiffPlayers = NumCapturePlayers - NumDefPlayers;
+	if (!DiffPlayers)
+	{
+		if (NumCapturePlayers) // even number on both sides
+			return false;
+		else
+			DiffPlayers = -1; // no player at all
+	}
+
+	m_Timer -= DiffPlayers;
+
+	if (m_Timer / Server()->TickSpeed() >= m_CapTime)
+	{
+		// recaptured
+		StopCapturing();
+		return false;
+	}
+
+	m_FlagY += m_FlagCounter * DiffPlayers;
+	if (m_Timer <= 0)
 	{
 		//	capturing successful
 		if (m_Team == DOM_RED || m_Team == DOM_BLUE)
