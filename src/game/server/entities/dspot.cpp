@@ -56,7 +56,7 @@ void CDominationSpot::StartCapturing(const int CaptureTeam, const int CaptureTea
 	m_CapTeam = CaptureTeam;
 	m_pCapCharacter = 0;
 	m_IsGettingCaptured = true;
-	m_FlagCounter = (m_Team == DOM_NEUTRAL ? -1.0f : 1.0f) * (static_cast<float>(DOM_FLAG_WAY) / static_cast<float>(m_CapTime));
+	m_FlagCounter = (m_Team == DOM_NEUTRAL ? -1.0f : 1.0f) * (static_cast<float>(DOM_FLAG_WAY) / static_cast<float>(m_Timer));
 	m_FlagY = m_Team == DOM_NEUTRAL ? DOM_FLAG_WAY : 0.0f;
 }
 
