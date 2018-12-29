@@ -25,9 +25,10 @@ void CDominationSpot::Reset()
 	m_IsGettingCaptured = false;
 	m_FlagY = 0.0f;
 	sscanf(g_Config.m_SvDomCapTimes, "%d %d %d %d %d %d %d %d", m_aCapTimes + 1, m_aCapTimes + 2, m_aCapTimes + 3, m_aCapTimes + 4, m_aCapTimes + 5, m_aCapTimes + 6, m_aCapTimes + 7, m_aCapTimes +8);
+	m_aCapTimes[0] = 5;
 	for (int i = 1; i < MAX_PLAYERS / DOM_NUMOFTEAMS + 1; ++i)
-		if (m_aCapTimes[i] < 0)
-			m_aCapTimes[i] = 0;
+		if (m_aCapTimes[i] <= 0)
+			m_aCapTimes[i] = m_aCapTimes[i - 1];
 		else if (m_aCapTimes[i] > 60)
 			m_aCapTimes[i] = 60;
 	m_aCapTimes[0] = m_aCapTimes[1];
