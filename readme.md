@@ -28,8 +28,6 @@ Gametype: Domination
 	- red: red team gains points for this spot
 	- blue: blue team gains points for this spot
 * if multiple player of one team capture together, the capturing runs faster
-* neutral spots can only be captured by a team, if the opponent team has no player in the capture area
-* red and blue spots can always be captured
 * teamscore: every spot increases the teamscore over time
 * player score: increases by killing an opponent tee (+1), capturing a spot (neutral, own team) and killing an opponent capturing player
 * handicap: if a team is outnumbered, their players can capture faster
