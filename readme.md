@@ -46,6 +46,16 @@ Gametype: Kill Domination
      - team has 5 dom-spots: 5 points
 
 
+Gametype: Conquest
+-------------------------
+* capturing and player scoring work as in domination
+* your team starts with one spot (red: A, blue: E)
+* you can only capture the next spot (red: B, blue: D)
+* win the game by capturing and holding all spots
+* teamscore displays the number of spots your team holds
+* you spawn behind your last spot
+
+
 Teeworlds [![CircleCI](https://circleci.com/gh/teeworlds/teeworlds.svg?style=svg)](https://circleci.com/gh/teeworlds/teeworlds)
 =========
 
