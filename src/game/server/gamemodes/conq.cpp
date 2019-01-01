@@ -569,7 +569,8 @@ void CGameControllerCONQ::SendChatInfo(int ClientID)
 	CGameControllerDOM::SendChat(ClientID, "GAMETYPE: CONQUEST");
 	CGameControllerDOM::SendChat(ClientID, "Capture domination spots.");
 	CGameControllerDOM::SendChat(ClientID, "Tip: Capture together to reduce the required time.");
-	CGameControllerDOM::SendChat(ClientID, "Win the game by capturing all spots.");
+	CGameControllerDOM::SendChat(ClientID, "Win the match by capturing all spots.");
+	CGameControllerDOM::SendChat(ClientID, "(This mod is enjoyed best with enabled broadcast color.)");
 }
 
 void CGameControllerCONQ::SendChatCommand(int ClientID, const char *pCommand)

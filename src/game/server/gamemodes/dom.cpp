@@ -415,6 +415,7 @@ void CGameControllerDOM::SendChatInfo(int ClientID)
 	SendChat(ClientID, "Capture domination spots.");
 	SendChat(ClientID, "Tip: Capture together to reduce the required time.");
 	SendChat(ClientID, "For each captured spot, your teams score increases over time.");
+	SendChat(ClientID, "(This mod is enjoyed best with enabled broadcast color.)");
 }
 
 void CGameControllerDOM::SendChatStats(int ClientID)
