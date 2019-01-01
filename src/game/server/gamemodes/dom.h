@@ -32,9 +32,17 @@ protected:
 	virtual bool EvaluateSpawnPos2(CSpawnEval *pEval, vec2 Pos) const;
 	virtual void EvaluateSpawnType(CSpawnEval *pEval, int Type) const override;
 	virtual void Init();
+
+	virtual void StartCapturing(int SpotNumber, int RedTeamSize, int BlueTeamSize, bool Consecutive);
+	virtual void Capture(int SpotNumber);
+	virtual void Neutralize(int SpotNumber);
+
 	virtual void UpdateCaptureProcess();
 	virtual void UpdateBroadcast();
 	virtual void UpdateScoring();
+
+	virtual const char* GetBroadcastPre(int SpotNumber) const;
+	virtual const char* GetBroadcastPost(int SpotNumber) const;
 
 public:
 	CGameControllerDOM(class CGameContext *pGameServer);
@@ -47,7 +55,8 @@ public:
 	virtual bool OnEntity(int Index, vec2 Pos) override;
 	virtual void OnReset() override;
 
-	virtual void OnCapture(int Team) {};
+	virtual void OnCapture(int SpotNumber, int Team) {};
+	virtual void OnNeutralize(int SpotNumber, int Team) {};
 
 	virtual void SendBroadcast(int ClientID, const char *pText) const;
 	void SendChat(int ClientID, const char *pText) const;

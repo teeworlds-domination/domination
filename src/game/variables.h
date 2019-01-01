@@ -106,7 +106,7 @@ MACRO_CONFIG_INT(SvMatchSwap, sv_match_swap, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVE
 MACRO_CONFIG_INT(SvPowerups, sv_powerups, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Allow powerups like ninja")
 MACRO_CONFIG_INT(SvScorelimit, sv_scorelimit, 20, 0, 1000, CFGFLAG_SAVE|CFGFLAG_SERVER, "Score limit (0 disables)")
 MACRO_CONFIG_INT(SvTimelimit, sv_timelimit, 0, 0, 1000, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time limit in minutes (0 disables)")
-MACRO_CONFIG_STR(SvGametype, sv_gametype, 32, "dm", CFGFLAG_SAVE|CFGFLAG_SERVER, "Game type (dm, tdm, ctf, lms, lts)")
+MACRO_CONFIG_STR(SvGametype, sv_gametype, 32, "dom", CFGFLAG_SAVE|CFGFLAG_SERVER, "Game type (dom, kdom, conq)")
 MACRO_CONFIG_INT(SvTournamentMode, sv_tournament_mode, 0, 0, 2, CFGFLAG_SAVE|CFGFLAG_SERVER, "Tournament mode. When enabled, players joins the server as spectator (2=additional restricted spectator chat)")
 MACRO_CONFIG_INT(SvPlayerReadyMode, sv_player_ready_mode, 0, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "When enabled, players can pause/unpause the game and start the game on warmup via their ready state")
 MACRO_CONFIG_INT(SvSpamprotection, sv_spamprotection, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Spam protection")
@@ -142,7 +142,8 @@ MACRO_CONFIG_STR(SvDomScorings, sv_dom_scorings, 64, "2.0 1.0 0.7 0.5 0.4", CFGF
 
 MACRO_CONFIG_INT(SvKdomCapTeamscoreMultiplier, sv_kdom_capscore, 0, 0, 100, CFGFLAG_SAVE|CFGFLAG_SERVER, "Multiplier for the score the team gets for capturing a domination spot")
 
-//MACRO_CONFIG_INT(SvDomWintime, sv_dom_wintime, 20, 5, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time a team has to hold all domination spots and win the game")
+MACRO_CONFIG_INT(SvConqRespawnDelay, sv_conq_respawn_delay, 15, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "How many seconds to wait before respawning")
+MACRO_CONFIG_INT(SvConqWintime, sv_conq_wintime, 30, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time a team has to recapture their base spot (0 = infinite)")
 
 // debug
 #ifdef CONF_DEBUG // this one can crash the server if not used correctly

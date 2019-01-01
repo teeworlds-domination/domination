@@ -19,6 +19,7 @@
 
 #include "gamemodes/dom.h"
 #include "gamemodes/kdom.h"
+#include "gamemodes/conq.h"
 
 #include "gamecontext.h"
 #include "player.h"
@@ -1451,8 +1452,8 @@ void CGameContext::OnInit()
 	 	m_pController = new CGameControllerKDOM(this);
 	// else if(str_comp_nocase(g_Config.m_SvGametype, "ddom") == 0)
 	// 	m_pController = new CGameControllerKDOM(this);
-	// else if(str_comp_nocase(g_Config.m_SvGametype, "conq") == 0)
-	// 	m_pController = new CGameControllerCONQ(this);
+	else if(str_comp_nocase(g_Config.m_SvGametype, "conq") == 0)
+		m_pController = new CGameControllerCONQ(this);
 	// else if(str_comp_nocase(g_Config.m_SvGametype, "lts") == 0) // TODO survival flag should be optionally available for all other dom gametypes
 	//	m_pController = new CGameControllerLTS(this);
 	else

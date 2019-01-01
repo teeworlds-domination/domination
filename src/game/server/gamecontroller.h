@@ -122,6 +122,8 @@ protected:
 
 	void UpdateGameInfo(int ClientID);
 
+	int GetTeamSize(int Team) { return m_aTeamSize[Team]; }
+
 public:
 	IGameController(class CGameContext *pGameServer);
 	virtual ~IGameController() {};

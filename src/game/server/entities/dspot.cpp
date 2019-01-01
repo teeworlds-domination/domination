@@ -25,6 +25,7 @@ void CDominationSpot::Reset()
 	m_Team = DOM_NEUTRAL;
 	m_CapTeam = DOM_NEUTRAL;
 	m_IsGettingCaptured = false;
+	m_IsLocked[DOM_RED] = m_IsLocked[DOM_BLUE] = false;
 	m_FlagY = 0.0f;
 	sscanf(g_Config.m_SvDomCapTimes, "%d %d %d %d %d %d %d %d", m_aCapTimes + 1, m_aCapTimes + 2, m_aCapTimes + 3, m_aCapTimes + 4, m_aCapTimes + 5, m_aCapTimes + 6, m_aCapTimes + 7, m_aCapTimes +8);
 	m_aCapTimes[0] = 5;
@@ -47,8 +48,11 @@ void CDominationSpot::Snap(int SnappingClient)
 	}
 }
 
-void CDominationSpot::StartCapturing(const int CaptureTeam, const int CaptureTeamSize, const int DefTeamSize)
+void CDominationSpot::StartCapturing(const int CaptureTeam, const int CaptureTeamSize, const int DefTeamSize, const bool Consecutive)
 {
+	if (!Consecutive && m_IsLocked[CaptureTeam])
+		return;
+
 	m_CapTime = m_aCapTimes[min(CaptureTeamSize, MAX_PLAYERS / DOM_NUMOFTEAMS + 1)];
 	if (DefTeamSize > CaptureTeamSize)	//	handicap (faster capturing) for smaller team
 		m_CapTime = m_CapTime * CaptureTeamSize / DefTeamSize;

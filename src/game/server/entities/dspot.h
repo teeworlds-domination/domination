@@ -11,7 +11,8 @@ public:
 	int m_CapTeam;               // Capturing Team
 	int m_CapTime;               // Time needed for capturing process
 	int m_Timer;                 // Timer for capturing process
-	int m_IsGettingCaptured;     // Reports if a capturing process is running
+	bool m_IsGettingCaptured;    // Reports if a capturing process is running
+	bool m_IsLocked[2];          // Capturing this spot is locked for this team
 	CCharacter* m_pCapCharacter; // This character gets the capturing points
 
 protected:
@@ -25,9 +26,14 @@ public:
 	virtual void Reset() override;
 	virtual void Snap(int SnappingClient) override;
 
-	void StartCapturing(const int CaptureTeam, const int CaptureTeamSize, const int DefTeamSize);
+	void StartCapturing(const int CaptureTeam, const int CaptureTeamSize, const int DefTeamSize, const bool Consecutive);
 	const bool UpdateCapturing(const int NumCapturePlayers, const int NumDefPlayers);
 	void StopCapturing();
+
+	bool IsLocked(int Team) const { return m_IsLocked[Team]; }
+	void Lock(int Team) { m_IsLocked[Team] = true; }
+	void Unlock(int Team) { m_IsLocked[Team] = false; }
+
 	const char *GetSpotName() const;
 	const char *GetTeamBroadcastColor() const;
 	const char *GetTeamName(const int Team) const;
