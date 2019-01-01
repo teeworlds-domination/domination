@@ -118,6 +118,13 @@ int CGameControllerDOM::OnCharacterDeath(class CCharacter *pVictim, class CPlaye
 	return HadFlag;
 }
 
+void CGameControllerDOM::OnPlayerConnect(CPlayer *pPlayer)
+{
+	IGameController::OnPlayerConnect(pPlayer);
+	pPlayer->m_RespawnTick = IsGameRunning()? Server()->Tick()+Server()->TickSpeed()*GetRespawnDelay(false) : Server()->Tick();
+	SendChatInfoWithHeader(pPlayer->GetCID());
+}
+
 float CGameControllerDOM::GetRespawnDelay(bool Self)
 {
 	return max(IGameController::GetRespawnDelay(Self), Self ? g_Config.m_SvDomRespawnDelay + 3.0f : g_Config.m_SvDomRespawnDelay);
@@ -383,18 +390,23 @@ void CGameControllerDOM::SendChatCommand(int ClientID, const char *pCommand)
 	{
 		if (str_comp_nocase(pCommand, "/info") == 0 || str_comp_nocase(pCommand, "/help") == 0)
 		{
-			char aBuf[64];
-			str_format(aBuf, sizeof(aBuf), "Domination Mod (%s) by Slayer, orig. by ziltoide and Oy.", GameServer()->ModVersion());
-			SendChat(ClientID, aBuf);
-
-			SendChat(ClientID, "——————————————————————————————");
-			SendChatInfo(ClientID);
+			SendChatInfoWithHeader(ClientID);
 		}
 		else if (str_comp_nocase(pCommand, "/spots") == 0 || str_comp_nocase(pCommand, "/domspots") == 0)
 			SendChatStats(ClientID);
 		else
 			SendChat(ClientID, "Unknown command. Type '/help' for more information about this mod.");
 	}
+}
+
+void CGameControllerDOM::SendChatInfoWithHeader(int ClientID)
+{
+	char aBuf[64];
+	str_format(aBuf, sizeof(aBuf), "Domination Mod (%s) by Slayer, orig. by ziltoide and Oy.", GameServer()->ModVersion());
+	SendChat(ClientID, aBuf);
+
+	SendChat(ClientID, "——————————————————————————————");
+	SendChatInfo(ClientID);
 }
 
 void CGameControllerDOM::SendChatInfo(int ClientID)

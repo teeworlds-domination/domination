@@ -19,6 +19,9 @@ class CDominationSpot;
 
 class CGameControllerDOM : public IGameController
 {
+private:
+	void SendChatInfoWithHeader(int ClientID);
+
 protected:
 	class CDominationSpot *m_apDominationSpots[DOM_MAXDSPOTS];	//	domination spots
 	float m_aTeamscoreTick[DOM_NUMOFTEAMS];						//	number of ticks a team captured the dspots (updated)
@@ -53,6 +56,7 @@ public:
 
 	virtual int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 	virtual bool OnEntity(int Index, vec2 Pos) override;
+	virtual void OnPlayerConnect(class CPlayer *pPlayer) override;
 	virtual void OnReset() override;
 
 	virtual void OnCapture(int SpotNumber, int Team) {};
