@@ -23,9 +23,9 @@ int CGameControllerKDOM::OnCharacterDeath(class CCharacter *pVictim, class CPlay
 	{
 		// do team scoring
 		if(pKiller == pVictim->GetPlayer() || pKiller->GetTeam() == pVictim->GetPlayer()->GetTeam())
-			m_aTeamscore[pKiller->GetTeam()] -= m_aTeamDominationSpots[pKiller->GetTeam()];
+			m_aTeamscore[pKiller->GetTeam()] -= m_aNumOfTeamDominationSpots[pKiller->GetTeam()];
 		else
-			m_aTeamscore[pKiller->GetTeam()] += m_aTeamDominationSpots[pKiller->GetTeam()];
+			m_aTeamscore[pKiller->GetTeam()] += m_aNumOfTeamDominationSpots[pKiller->GetTeam()];
 	}
 	
 	return CGameControllerDOM::OnCharacterDeath(pVictim, pKiller, Weapon);
@@ -35,7 +35,7 @@ void CGameControllerKDOM::OnCapture(int SpotNumber, int Team)
 {
 	CGameControllerDOM::OnCapture(SpotNumber, Team);
 
-	m_aTeamscore[Team] += g_Config.m_SvKdomCapTeamscoreMultiplier * (m_aTeamDominationSpots[Team] - 1);
+	m_aTeamscore[Team] += g_Config.m_SvKdomCapTeamscoreMultiplier * (m_aNumOfTeamDominationSpots[Team] - 1);
 }
 
 void CGameControllerKDOM::SendChatInfo(int ClientID)

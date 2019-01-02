@@ -25,7 +25,7 @@ private:
 protected:
 	class CDominationSpot *m_apDominationSpots[DOM_MAXDSPOTS];	//	domination spots
 	float m_aTeamscoreTick[DOM_NUMOFTEAMS];						//	number of ticks a team captured the dspots (updated)
-	int m_aTeamDominationSpots[DOM_NUMOFTEAMS];					//	number of owned dspots per team
+	int m_aNumOfTeamDominationSpots[DOM_NUMOFTEAMS];					//	number of owned dspots per team
 	float m_DompointsCounter;									//	points a domination point generates in a second
 	int m_aDominationSpotsEnabled[DOM_MAXDSPOTS];				//	enable/disables the usage for every domination spot
 	bool m_UpdateBroadcast;										//	reports if the capturing braoadcast message should be changed

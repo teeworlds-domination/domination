@@ -53,13 +53,13 @@ void CGameControllerCONQ::Init()
 			break;
 		}
 
-		m_apDominationSpots[SpotRed]->m_Team = DOM_RED;
-		m_apDominationSpots[SpotBlue]->m_Team = DOM_BLUE;
+		m_apDominationSpots[SpotRed]->SetTeam(DOM_RED);
+		m_apDominationSpots[SpotBlue]->SetTeam(DOM_BLUE);
 
 		OnCapture(SpotRed, DOM_RED);
 		OnCapture(SpotBlue, DOM_BLUE);
 
-		m_aTeamDominationSpots[DOM_RED] = m_aTeamDominationSpots[DOM_BLUE] = 1;
+		m_aNumOfTeamDominationSpots[DOM_RED] = m_aNumOfTeamDominationSpots[DOM_BLUE] = 1;
 
 		CalculateSpawns();
 	}
@@ -91,9 +91,9 @@ void CGameControllerCONQ::DoWincheckMatch()
 	//	check if teams have players alive
 	for (int i = 0; i < DOM_NUMOFTEAMS; ++i)
 	{
-		if (m_NumOfDominationSpots == m_aTeamDominationSpots[i ^ 1])
+		if (m_NumOfDominationSpots == m_aNumOfTeamDominationSpots[i ^ 1])
 			EndMatch(); // Opponent owns all spots -> game over
-		else if (!m_aTeamDominationSpots[i])
+		else if (!m_aNumOfTeamDominationSpots[i])
 		{
 			bool PlayerAlive = false;
 			for (int j = 0; j < MAX_CLIENTS; ++j)
@@ -109,7 +109,7 @@ void CGameControllerCONQ::DoWincheckMatch()
 			if (g_Config.m_SvConqWintime && m_WinTick == -1)
 				m_WinTick = Server()->Tick();
 		}
-		else if (m_aTeamDominationSpots[i ^ 1] && m_WinTick != -1)
+		else if (m_aNumOfTeamDominationSpots[i ^ 1] && m_WinTick != -1)
 			m_WinTick = -1; // both teams have spots -> reset WinTick
 	}
 
@@ -142,7 +142,7 @@ void CGameControllerCONQ::EvaluateSpawnType(CSpawnEval *pEval, int Team) const
 		{
 			if (!m_aDominationSpotsEnabled[i])
 				continue;
-			if (m_apDominationSpots[i]->m_Team == pEval->m_FriendlyTeam) // own dspot
+			if (m_apDominationSpots[i]->GetTeam() == pEval->m_FriendlyTeam) // own dspot
 				SpawnSpot = i;
 			else if (SpawnSpot != -1)
 				break;
@@ -154,7 +154,7 @@ void CGameControllerCONQ::EvaluateSpawnType(CSpawnEval *pEval, int Team) const
 		{
 			if (!m_aDominationSpotsEnabled[i])
 				continue;
-			if (m_apDominationSpots[i]->m_Team == pEval->m_FriendlyTeam) // own dspot
+			if (m_apDominationSpots[i]->GetTeam() == pEval->m_FriendlyTeam) // own dspot
 				SpawnSpot = i;
 			else if (SpawnSpot != -1)
 				break;
@@ -338,13 +338,13 @@ void CGameControllerCONQ::CalculateSpotSpawns(int Spot, int Team)
 
 float CGameControllerCONQ::EvaluateSpawnPos3(vec2 Pos, int LastOwnSpot, int LastEnemySpot, int PreviousOwnSpot, bool &IsStartpointAfterPreviousSpot) const
 {
-	float DistanceOwnSpot = min(FLT_MAX, distance(Pos, m_apDominationSpots[LastOwnSpot]->m_Pos));
+	float DistanceOwnSpot = min(FLT_MAX, distance(Pos, m_apDominationSpots[LastOwnSpot]->GetPos()));
 	float DistanceEnemySpot = FLT_MAX;
 
 	if (LastEnemySpot >= 0)
 	{
-		DistanceEnemySpot = min(FLT_MAX, distance(Pos, m_apDominationSpots[LastEnemySpot]->m_Pos));
-		float DistanceOwnToEnemySpot = min(FLT_MAX, distance(m_apDominationSpots[LastOwnSpot]->m_Pos, m_apDominationSpots[LastEnemySpot]->m_Pos));
+		DistanceEnemySpot = min(FLT_MAX, distance(Pos, m_apDominationSpots[LastEnemySpot]->GetPos()));
+		float DistanceOwnToEnemySpot = min(FLT_MAX, distance(m_apDominationSpots[LastOwnSpot]->GetPos(), m_apDominationSpots[LastEnemySpot]->GetPos()));
 
 		if (DistanceOwnSpot > DistanceEnemySpot || DistanceEnemySpot < (DistanceOwnToEnemySpot - (DistanceOwnSpot*0.3f)))
 			return FLT_MAX;
@@ -354,8 +354,8 @@ float CGameControllerCONQ::EvaluateSpawnPos3(vec2 Pos, int LastOwnSpot, int Last
 		IsStartpointAfterPreviousSpot = true;
 	else
 	{
-		float DistancePreviousToOwnSpot = min(FLT_MAX, distance(m_apDominationSpots[PreviousOwnSpot]->m_Pos, m_apDominationSpots[LastOwnSpot]->m_Pos));
-		if (DistanceOwnSpot < DistancePreviousToOwnSpot || (LastEnemySpot >= 0 && DistanceEnemySpot < min(FLT_MAX, distance(m_apDominationSpots[PreviousOwnSpot]->m_Pos, m_apDominationSpots[LastEnemySpot]->m_Pos))))
+		float DistancePreviousToOwnSpot = min(FLT_MAX, distance(m_apDominationSpots[PreviousOwnSpot]->GetPos(), m_apDominationSpots[LastOwnSpot]->GetPos()));
+		if (DistanceOwnSpot < DistancePreviousToOwnSpot || (LastEnemySpot >= 0 && DistanceEnemySpot < min(FLT_MAX, distance(m_apDominationSpots[PreviousOwnSpot]->GetPos(), m_apDominationSpots[LastEnemySpot]->GetPos()))))
 			IsStartpointAfterPreviousSpot = true;
 		else
 			IsStartpointAfterPreviousSpot = false;
@@ -395,7 +395,7 @@ void CGameControllerCONQ::OnCapture(int SpotNumber, int Team)
 			{
 				if (!m_aDominationSpotsEnabled[i])
 					continue;
-				if (m_apDominationSpots[i]->m_Team != DOM_RED)
+				if (m_apDominationSpots[i]->GetTeam() != DOM_RED)
 				{
 					HasAllPreviousSpots = false;
 					break;
@@ -408,7 +408,7 @@ void CGameControllerCONQ::OnCapture(int SpotNumber, int Team)
 			{
 				if (!m_aDominationSpotsEnabled[i])
 					continue;
-				if (m_apDominationSpots[i]->m_Team != DOM_RED)
+				if (m_apDominationSpots[i]->GetTeam() != DOM_RED)
 				{
 					m_apDominationSpots[i]->Unlock(DOM_RED);
 					break;
@@ -424,7 +424,7 @@ void CGameControllerCONQ::OnCapture(int SpotNumber, int Team)
 			{
 				if (!m_aDominationSpotsEnabled[i])
 					continue;
-				if (m_apDominationSpots[i]->m_Team != DOM_BLUE)
+				if (m_apDominationSpots[i]->GetTeam() != DOM_BLUE)
 				{
 					HasAllPreviousSpots = false;
 					break;
@@ -437,7 +437,7 @@ void CGameControllerCONQ::OnCapture(int SpotNumber, int Team)
 			{
 				if (!m_aDominationSpotsEnabled[i])
 					continue;
-				if (m_apDominationSpots[i]->m_Team != DOM_BLUE)
+				if (m_apDominationSpots[i]->GetTeam() != DOM_BLUE)
 				{
 					m_apDominationSpots[i]->Unlock(DOM_BLUE);
 					break;
@@ -462,7 +462,7 @@ void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
 		{
 			for (int i = SpotNumber - 1; i >= 0; --i)
 			{
-				if (!m_aDominationSpotsEnabled[i] || m_apDominationSpots[i]->m_Team == DOM_BLUE)
+				if (!m_aDominationSpotsEnabled[i] || m_apDominationSpots[i]->GetTeam() == DOM_BLUE)
 					continue;
 				m_apDominationSpots[i]->Lock(DOM_BLUE);
 				break;
@@ -474,7 +474,7 @@ void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
 			{
 				if (!m_aDominationSpotsEnabled[i])
 					continue;
-				if (m_apDominationSpots[i]->m_Team != DOM_BLUE)
+				if (m_apDominationSpots[i]->GetTeam() != DOM_BLUE)
 				{
 					m_apDominationSpots[SpotNumber]->Lock(DOM_BLUE);
 					break;
@@ -488,7 +488,7 @@ void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
 		{
 			for (int i = SpotNumber + 1; i < DOM_MAXDSPOTS; ++i)
 			{
-				if (!m_aDominationSpotsEnabled[i] || m_apDominationSpots[i]->m_Team == DOM_RED)
+				if (!m_aDominationSpotsEnabled[i] || m_apDominationSpots[i]->GetTeam() == DOM_RED)
 					continue;
 				m_apDominationSpots[i]->Lock(DOM_RED);
 				break;
@@ -500,7 +500,7 @@ void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
 			{
 				if (!m_aDominationSpotsEnabled[i])
 					continue;
-				if (m_apDominationSpots[i]->m_Team != DOM_RED)
+				if (m_apDominationSpots[i]->GetTeam() != DOM_RED)
 				{
 					m_apDominationSpots[SpotNumber]->Lock(DOM_RED);
 					break;
@@ -512,7 +512,7 @@ void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
 
 int CGameControllerCONQ::OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon)
 {
-	if (!m_aTeamDominationSpots[pVictim->GetPlayer()->GetTeam()] && Weapon != WEAPON_GAME && m_NumOfDominationSpots > 1)
+	if (!m_aNumOfTeamDominationSpots[pVictim->GetPlayer()->GetTeam()] && Weapon != WEAPON_GAME && m_NumOfDominationSpots > 1)
 		CGameControllerDOM::SendChat(pVictim->GetPlayer()->GetCID(), "You can't respawn while your team does not control any spot.");
 	return CGameControllerDOM::OnCharacterDeath(pVictim, pKiller, Weapon);
 }
@@ -522,9 +522,9 @@ const char* CGameControllerCONQ::GetBroadcastPre(int SpotNumber) const
 	if (SpotNumber < 0 || SpotNumber >= DOM_MAXDSPOTS)
 		return "";
 
-	if (m_apDominationSpots[SpotNumber]->m_Team == DOM_NEUTRAL)
+	if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
 	{
-		if (m_apDominationSpots[SpotNumber]->m_IsGettingCaptured && m_apDominationSpots[SpotNumber]->m_CapTeam == DOM_BLUE)
+		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured() && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_BLUE)
 			return "[--";
 		else if (!m_apDominationSpots[SpotNumber]->IsLocked(DOM_RED))
 			return ":--";
@@ -533,7 +533,7 @@ const char* CGameControllerCONQ::GetBroadcastPre(int SpotNumber) const
 	}
 	else
 	{
-		if (m_apDominationSpots[SpotNumber]->m_Team == DOM_RED)
+		if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
 			return "{--";
 		else
 		{
@@ -550,9 +550,9 @@ const char* CGameControllerCONQ::GetBroadcastPost(int SpotNumber) const
 	if (SpotNumber < 0 || SpotNumber >= DOM_MAXDSPOTS)
 		return "";
 
-	if (m_apDominationSpots[SpotNumber]->m_Team == DOM_NEUTRAL)
+	if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
 	{
-		if (m_apDominationSpots[SpotNumber]->m_IsGettingCaptured && m_apDominationSpots[SpotNumber]->m_CapTeam == DOM_RED)
+		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured() && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED)
 			return "--}";
 		else if (!m_apDominationSpots[SpotNumber]->IsLocked(DOM_BLUE))
 			return "--:";
@@ -561,7 +561,7 @@ const char* CGameControllerCONQ::GetBroadcastPost(int SpotNumber) const
 	}
 	else
 	{
-		if (m_apDominationSpots[SpotNumber]->m_Team == DOM_RED)
+		if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
 		{
 			if (m_apDominationSpots[SpotNumber]->IsLocked(DOM_BLUE))
 				return "--}";
