@@ -10,7 +10,7 @@ private:
 	int m_Id;                    // Identification for this domination spot
 	float m_FlagY;               // Flag distance to normal stand position (vertically)
 	float m_FlagCounter;         // Moves the flag during capturing process
-	int m_aCapTimes[MAX_CLIENTS / 2 + 1]; // Dynamic capture timer, considering the team sizes (dyn_captimes[get_team_size])
+	int m_aCapTimes[MAX_PLAYERS / 2 + 1]; // Dynamic capture timer, considering the team sizes (dyn_captimes[get_team_size])
 
 	int m_CapTeam;               // Capturing Team
 	int m_Team;                  // Owner Team
@@ -21,7 +21,7 @@ private:
 	int m_Timer;                 // Timer for capturing process
 
 public:
-	CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id);
+	CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id, int CapTimes[MAX_PLAYERS / 2 + 1]);
 	virtual void Reset() override;
 	virtual void Snap(int SnappingClient) override;
 

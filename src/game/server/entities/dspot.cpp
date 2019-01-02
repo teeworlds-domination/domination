@@ -11,10 +11,13 @@
 #include "dspot.h"
 
 // DSPOT
-CDominationSpot::CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id) : CEntity(pGameWorld, CGameWorld::ENTTYPE_FLAG, Pos),
+CDominationSpot::CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id, int CapTimes[MAX_PLAYERS / 2 + 1]) : CEntity(pGameWorld, CGameWorld::ENTTYPE_FLAG, Pos),
 	m_Pos(Pos),
 	m_Id(Id)
 {
+	for (int i = 0; i < MAX_PLAYERS / DOM_NUMOFTEAMS + 1; ++i)
+		m_aCapTimes[i] = CapTimes[1];
+
 	Reset();
 };
 
@@ -27,14 +30,6 @@ void CDominationSpot::Reset()
 	m_IsGettingCaptured = false;
 	m_IsLocked[DOM_RED] = m_IsLocked[DOM_BLUE] = false;
 	m_FlagY = 0.0f;
-	sscanf(g_Config.m_SvDomCapTimes, "%d %d %d %d %d %d %d %d", m_aCapTimes + 1, m_aCapTimes + 2, m_aCapTimes + 3, m_aCapTimes + 4, m_aCapTimes + 5, m_aCapTimes + 6, m_aCapTimes + 7, m_aCapTimes +8);
-	m_aCapTimes[0] = 5;
-	for (int i = 1; i < MAX_PLAYERS / DOM_NUMOFTEAMS + 1; ++i)
-		if (m_aCapTimes[i] <= 0)
-			m_aCapTimes[i] = m_aCapTimes[i - 1];
-		else if (m_aCapTimes[i] > 60)
-			m_aCapTimes[i] = 60;
-	m_aCapTimes[0] = m_aCapTimes[1];
 }
 
 void CDominationSpot::Snap(int SnappingClient)

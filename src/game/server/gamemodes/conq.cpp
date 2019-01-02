@@ -20,6 +20,8 @@ CGameControllerCONQ::CGameControllerCONQ(CGameContext *pGameServer)
 
 	mem_zero(m_aaaSpotSpawnPoints, DOM_MAXDSPOTS * DOM_NUMOFTEAMS * 64);
 	mem_zero(m_aaNumSpotSpawnPoints, DOM_MAXDSPOTS * DOM_NUMOFTEAMS);
+
+	SetCapTimes(g_Config.m_SvConqCapTimes);
 }
 
 void CGameControllerCONQ::Init()

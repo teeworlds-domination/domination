@@ -28,7 +28,7 @@ CGameControllerDOM::CGameControllerDOM(CGameContext *pGameServer)
 
 	m_LastBroadcastTick = -1;
 
-	Init();
+	SetCapTimes(g_Config.m_SvDomCapTimes);
 }
 
 void CGameControllerDOM::Init()
@@ -84,11 +84,11 @@ bool CGameControllerDOM::OnEntity(int Index, vec2 Pos)
 	//	save domination spot flag positions
 	switch (Index + ENTITY_OFFSET)
 	{
-	case TILE_DOM_FLAG_A: if (!m_apDominationSpots[0]) GameServer()->m_World.InsertEntity(m_apDominationSpots[0] = new CDominationSpot(&GameServer()->m_World, Pos, 0)); break;
-	case TILE_DOM_FLAG_B: if (!m_apDominationSpots[1]) GameServer()->m_World.InsertEntity(m_apDominationSpots[1] = new CDominationSpot(&GameServer()->m_World, Pos, 1)); break;
-	case TILE_DOM_FLAG_C: if (!m_apDominationSpots[2]) GameServer()->m_World.InsertEntity(m_apDominationSpots[2] = new CDominationSpot(&GameServer()->m_World, Pos, 2)); break;
-	case TILE_DOM_FLAG_D: if (!m_apDominationSpots[3]) GameServer()->m_World.InsertEntity(m_apDominationSpots[3] = new CDominationSpot(&GameServer()->m_World, Pos, 3)); break;
- 	case TILE_DOM_FLAG_E: if (!m_apDominationSpots[4]) GameServer()->m_World.InsertEntity(m_apDominationSpots[4] = new CDominationSpot(&GameServer()->m_World, Pos, 4)); break;
+	case TILE_DOM_FLAG_A: if (!m_apDominationSpots[0]) GameServer()->m_World.InsertEntity(m_apDominationSpots[0] = new CDominationSpot(&GameServer()->m_World, Pos, 0, m_aCapTimes)); break;
+	case TILE_DOM_FLAG_B: if (!m_apDominationSpots[1]) GameServer()->m_World.InsertEntity(m_apDominationSpots[1] = new CDominationSpot(&GameServer()->m_World, Pos, 1, m_aCapTimes)); break;
+	case TILE_DOM_FLAG_C: if (!m_apDominationSpots[2]) GameServer()->m_World.InsertEntity(m_apDominationSpots[2] = new CDominationSpot(&GameServer()->m_World, Pos, 2, m_aCapTimes)); break;
+	case TILE_DOM_FLAG_D: if (!m_apDominationSpots[3]) GameServer()->m_World.InsertEntity(m_apDominationSpots[3] = new CDominationSpot(&GameServer()->m_World, Pos, 3, m_aCapTimes)); break;
+ 	case TILE_DOM_FLAG_E: if (!m_apDominationSpots[4]) GameServer()->m_World.InsertEntity(m_apDominationSpots[4] = new CDominationSpot(&GameServer()->m_World, Pos, 4, m_aCapTimes)); break;
 	default: return false;
 	}
 	
@@ -289,6 +289,19 @@ void CGameControllerDOM::UpdateBroadcast()
 	}
 }
 
+void CGameControllerDOM::UpdateScoring()
+{
+	// add captured score to the teamscores
+	for (int i = 0; i < DOM_NUMOFTEAMS; ++i)
+	{
+		if (!m_aNumOfTeamDominationSpots[i])
+			continue;
+		double AddScore;
+		m_aTeamscoreTick[i] = modf(m_aTeamscoreTick[i] + static_cast<float>(m_aNumOfTeamDominationSpots[i]) * m_DompointsCounter, &AddScore);
+		m_aTeamscore[i] += static_cast<int>(AddScore);
+	}
+}
+
 void CGameControllerDOM::SendBroadcast(int ClientID, const char *pText) const
 {
 	char aBuf[1024] = {0};
@@ -328,17 +341,16 @@ const char* CGameControllerDOM::GetBroadcastPost(int SpotNumber) const
 	}
 }
 
-void CGameControllerDOM::UpdateScoring()
+void CGameControllerDOM::SetCapTimes(const char *pCapTimes)
 {
-	// add captured score to the teamscores
-	for (int i = 0; i < DOM_NUMOFTEAMS; ++i)
-	{
-		if (!m_aNumOfTeamDominationSpots[i])
-			continue;
-		double AddScore;
-		m_aTeamscoreTick[i] = modf(m_aTeamscoreTick[i] + static_cast<float>(m_aNumOfTeamDominationSpots[i]) * m_DompointsCounter, &AddScore);
-		m_aTeamscore[i] += static_cast<int>(AddScore);
-	}
+	sscanf(pCapTimes, "%d %d %d %d %d %d %d %d", m_aCapTimes + 1, m_aCapTimes + 2, m_aCapTimes + 3, m_aCapTimes + 4, m_aCapTimes + 5, m_aCapTimes + 6, m_aCapTimes + 7, m_aCapTimes +8);
+	m_aCapTimes[0] = 5;
+	for (int i = 1; i < MAX_PLAYERS / DOM_NUMOFTEAMS + 1; ++i)
+		if (m_aCapTimes[i] <= 0)
+			m_aCapTimes[i] = m_aCapTimes[i - 1];
+		else if (m_aCapTimes[i] > 60)
+			m_aCapTimes[i] = 60;
+	m_aCapTimes[0] = m_aCapTimes[1];
 }
 
 const char* CGameControllerDOM::GetTeamName(const int Team) const

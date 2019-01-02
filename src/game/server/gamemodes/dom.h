@@ -3,6 +3,8 @@
 #ifndef GAME_SERVER_GAMEMODES_DOM_H
 #define GAME_SERVER_GAMEMODES_DOM_H
 
+#include <engine/shared/protocol.h>
+
 #include <game/server/gamecontroller.h>
 
 enum
@@ -31,6 +33,7 @@ protected:
 	bool m_UpdateBroadcast;										//	reports if the capturing braoadcast message should be changed
 	int m_LastBroadcastTick;									//	tick of last capturing broadcast
 	int m_NumOfDominationSpots;									//	number of domination spots
+	int m_aCapTimes[MAX_PLAYERS / 2 + 1]; // Dynamic capture timer, considering the team sizes (dyn_captimes[get_team_size])
 	
 	virtual bool EvaluateSpawnPos2(CSpawnEval *pEval, vec2 Pos) const;
 	virtual void EvaluateSpawnType(CSpawnEval *pEval, int Type) const override;
@@ -46,6 +49,8 @@ protected:
 
 	virtual const char* GetBroadcastPre(int SpotNumber) const;
 	virtual const char* GetBroadcastPost(int SpotNumber) const;
+
+	virtual void SetCapTimes(const char* pCapTimes);
 
 public:
 	CGameControllerDOM(class CGameContext *pGameServer);
