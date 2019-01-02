@@ -437,7 +437,7 @@ void CPlayer::SetTeam(int Team, bool DoChatMsg)
 	m_DeadSpecMode = false;
 
 	// we got to wait 0.5 secs before respawning
-	m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
+	// m_RespawnTick = Server()->Tick()+Server()->TickSpeed()/2;
 
 	if(Team == TEAM_SPECTATORS)
 	{
