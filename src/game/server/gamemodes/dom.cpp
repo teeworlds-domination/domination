@@ -317,7 +317,22 @@ void CGameControllerDOM::UpdateBroadcast()
 			SendBroadcast(-1, aBuf);
 		}
 		else
-			SendBroadcast(-1, "");
+		{
+			for (int cid = 0; cid < MAX_CLIENTS; ++cid)
+			{
+				if (GameServer()->m_apPlayers[cid])
+				{
+					if (GetRespawnDelay(false) > 3.0f && GameServer()->m_apPlayers[cid]->GetTeam() != TEAM_SPECTATORS
+							&& !GameServer()->m_apPlayers[cid]->GetCharacter() && GameServer()->m_apPlayers[cid]->m_RespawnTick > Server()->Tick()+Server()->TickSpeed())
+					{
+						str_format(aBuf, sizeof(aBuf), "Respawn in %i seconds", (GameServer()->m_apPlayers[cid]->m_RespawnTick - Server()->Tick()) / Server()->TickSpeed());
+						SendBroadcast(cid, aBuf);
+					}
+					else
+						SendBroadcast(cid, "");
+				}
+			}
+		}
 		m_LastBroadcastTick = Server()->Tick();
 	}
 }
