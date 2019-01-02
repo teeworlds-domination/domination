@@ -109,6 +109,8 @@ void CGameControllerCONQ::DoWincheckMatch()
 			if (g_Config.m_SvConqWintime && m_WinTick == -1)
 				m_WinTick = Server()->Tick();
 		}
+		else if (m_aTeamDominationSpots[i ^ 1] && m_WinTick != -1)
+			m_WinTick = -1; // both teams have spots -> reset WinTick
 	}
 
 	// Check timelimit
