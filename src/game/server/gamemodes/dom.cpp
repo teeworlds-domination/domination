@@ -190,8 +190,10 @@ bool CGameControllerDOM::CanSpawn(int Team, vec2 *pOutPos)
 void CGameControllerDOM::UpdateCaptureProcess()
 {
 	int aaPlayerStats[DOM_MAXDSPOTS][DOM_NUMOFTEAMS];	//	number of players per team per capturing area
+	int aaPlayerStrength[DOM_MAXDSPOTS][DOM_NUMOFTEAMS];	//	capture strength of players per team per capturing area
 	CCharacter* aaapCapPlayers[DOM_NUMOFTEAMS][DOM_MAXDSPOTS][MAX_CLIENTS];	//	capturing players in a capturing area
 	mem_zero(aaPlayerStats, DOM_MAXDSPOTS * DOM_NUMOFTEAMS * sizeof(int));
+	mem_zero(aaPlayerStrength, DOM_MAXDSPOTS * DOM_NUMOFTEAMS * sizeof(int));
 	mem_zero(aaapCapPlayers, DOM_MAXDSPOTS * MAX_CLIENTS * sizeof(CCharacter*));
 	CPlayer* pPlayer;
 	int DomCaparea;
@@ -205,7 +207,10 @@ void CGameControllerDOM::UpdateCaptureProcess()
 		DomCaparea = min(GameServer()->Collision()->GetCollisionAt(static_cast<int>(pPlayer->GetCharacter()->GetPos().x),
 			static_cast<int>(pPlayer->GetCharacter()->GetPos().y)) >> 3, 5) - 1;
 		if (DomCaparea != -1 && m_aDominationSpotsEnabled[DomCaparea])
+		{
 			aaapCapPlayers[pPlayer->GetTeam()][DomCaparea][aaPlayerStats[DomCaparea][pPlayer->GetTeam()]++] = pPlayer->GetCharacter();
+			aaPlayerStrength[DomCaparea][pPlayer->GetTeam()] += pPlayer->GetCharacter()->IsNinja()? 2 : 1; // ninja doubles the players strength
+		}
 	}
 
 
@@ -226,19 +231,19 @@ void CGameControllerDOM::UpdateCaptureProcess()
 		
 		if (m_apDominationSpots[i]->m_IsGettingCaptured)
 		{
-			if (m_apDominationSpots[i]->UpdateCapturing(aaPlayerStats[i][m_apDominationSpots[i]->m_CapTeam], aaPlayerStats[i][m_apDominationSpots[i]->m_CapTeam ^ 1]))
+			if (m_apDominationSpots[i]->UpdateCapturing(aaPlayerStrength[i][m_apDominationSpots[i]->m_CapTeam], aaPlayerStrength[i][m_apDominationSpots[i]->m_CapTeam ^ 1]))
 			{
 				if (m_apDominationSpots[i]->m_Team == DOM_NEUTRAL)
 				{
 					Neutralize(i);
-					StartCapturing(i, aaPlayerStats[i][DOM_RED], aaPlayerStats[i][DOM_BLUE], true);
+					StartCapturing(i, aaPlayerStrength[i][DOM_RED], aaPlayerStrength[i][DOM_BLUE], true);
 				}
 				else
 					Capture(i);
 			}
 		}
 		else
-			StartCapturing(i, aaPlayerStats[i][DOM_RED], aaPlayerStats[i][DOM_BLUE], false);
+			StartCapturing(i, aaPlayerStrength[i][DOM_RED], aaPlayerStrength[i][DOM_BLUE], false);
 	}
 }
 
