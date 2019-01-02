@@ -13,8 +13,8 @@ private:
 	void CalculateSpotSpawns(int Spot, int Team);
 
 protected:
-	vec2 m_aaSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS][64];
-	int m_aNumSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS];
+	vec2 m_aaaSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS][64];
+	int m_aaNumSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS];
 
 	virtual float EvaluateSpawnPos3(vec2 Pos, int LastOwnSpot, int LastEnemySpot, int PreviousOwnSpot, bool &IsStartpointAfterPreviousSpot) const;
 	virtual void EvaluateSpawnType(CSpawnEval *pEval, int Team) const override;
