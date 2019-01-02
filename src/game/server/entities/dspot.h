@@ -21,9 +21,6 @@ private:
 	int m_Timer;                 // Timer for capturing process
 
 public:
-	CCharacter* m_pCapCharacter; // This character gets the capturing points
-
-public:
 	CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id);
 	virtual void Reset() override;
 	virtual void Snap(int SnappingClient) override;

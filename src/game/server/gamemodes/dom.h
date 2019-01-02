@@ -54,7 +54,6 @@ public:
 
 	virtual float GetRespawnDelay(bool Self) override;
 
-	virtual int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 	virtual bool OnEntity(int Index, vec2 Pos) override;
 	virtual void OnPlayerConnect(class CPlayer *pPlayer) override;
 	virtual void OnReset() override;
