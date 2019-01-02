@@ -110,36 +110,3 @@ void CDominationSpot::StopCapturing()
 	m_IsGettingCaptured = false;
 	m_FlagY = 0.0f;
 }
-
-const char* CDominationSpot::GetTeamName(const int Team) const
-{
-	switch(Team)
-	{
-	case 0: return "Red Team"; break;
-	case 1: return "Blue Team"; break;
-	default: return "Neutral"; break;
-	}
-}
-
-const char* CDominationSpot::GetSpotName() const
-{
-	switch (m_Id)
-	{
-	case 0: return "A";
-	case 1: return "B";
-	case 2: return "C";
-	case 3: return "D";
-	case 4: return "E";
-	default: return "Area 51";	//	should never occur
-	}
-}
-
-const char* CDominationSpot::GetTeamBroadcastColor() const
-{
-	switch(m_Team)
-	{
-	case DOM_RED:  return "^900";
-	case DOM_BLUE: return "^009";
-	default:       return "^999";
-	}
-}

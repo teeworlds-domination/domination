@@ -67,6 +67,10 @@ public:
 	virtual void SendChatCommand(int ClientID, const char *pCommand);
 	virtual void SendChatInfo(int ClientID);
 	virtual void SendChatStats(int ClientID);
+
+	const char *GetSpotName(const int SpotID) const;
+	const char *GetTeamBroadcastColor(const int Team) const;
+	const char *GetTeamName(const int Team) const;
 };
 
 #endif

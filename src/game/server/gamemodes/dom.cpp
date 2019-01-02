@@ -271,8 +271,8 @@ void CGameControllerDOM::Capture(int SpotNumber)
 	{
 		char aBuf[256];
 		str_format(aBuf, sizeof(aBuf), "%s captured spot %s for the %s. (%s: %i/%i, %s: %i/%i)",
-			Server()->ClientName(m_apDominationSpots[SpotNumber]->m_pCapCharacter->GetPlayer()->GetCID()), m_apDominationSpots[SpotNumber]->GetSpotName(), m_apDominationSpots[SpotNumber]->GetTeamName(m_apDominationSpots[SpotNumber]->m_Team),
-			m_apDominationSpots[SpotNumber]->GetTeamName(DOM_RED), m_aTeamDominationSpots[DOM_RED], m_NumOfDominationSpots, m_apDominationSpots[SpotNumber]->GetTeamName(DOM_BLUE), m_aTeamDominationSpots[DOM_BLUE], m_NumOfDominationSpots);
+			Server()->ClientName(m_apDominationSpots[SpotNumber]->m_pCapCharacter->GetPlayer()->GetCID()), GetSpotName(SpotNumber), GetTeamName(m_apDominationSpots[SpotNumber]->m_Team),
+			GetTeamName(DOM_RED), m_aTeamDominationSpots[DOM_RED], m_NumOfDominationSpots, GetTeamName(DOM_BLUE), m_aTeamDominationSpots[DOM_BLUE], m_NumOfDominationSpots);
 
 		GameServer()->SendChat(-1, CHAT_ALL, -1, aBuf);
 	}
@@ -291,8 +291,8 @@ void CGameControllerDOM::Neutralize(int SpotNumber)
 	{
 		char aBuf[256];
 		str_format(aBuf, sizeof(aBuf), "%s took spot %s away from the %s. (%s: %i/%i, %s: %i/%i)",
-			Server()->ClientName(m_apDominationSpots[SpotNumber]->m_pCapCharacter->GetPlayer()->GetCID()), m_apDominationSpots[SpotNumber]->GetSpotName(), m_apDominationSpots[SpotNumber]->GetTeamName(m_apDominationSpots[SpotNumber]->m_CapTeam ^ 1),
-			m_apDominationSpots[SpotNumber]->GetTeamName(DOM_RED), m_aTeamDominationSpots[DOM_RED], m_NumOfDominationSpots, m_apDominationSpots[SpotNumber]->GetTeamName(DOM_BLUE), m_aTeamDominationSpots[DOM_BLUE], m_NumOfDominationSpots);
+			Server()->ClientName(m_apDominationSpots[SpotNumber]->m_pCapCharacter->GetPlayer()->GetCID()), GetSpotName(SpotNumber), GetTeamName(m_apDominationSpots[SpotNumber]->m_CapTeam ^ 1),
+			GetTeamName(DOM_RED), m_aTeamDominationSpots[DOM_RED], m_NumOfDominationSpots, GetTeamName(DOM_BLUE), m_aTeamDominationSpots[DOM_BLUE], m_NumOfDominationSpots);
 
 		GameServer()->SendChat(-1, CHAT_ALL, -1, aBuf);
 	}
@@ -308,8 +308,8 @@ void CGameControllerDOM::UpdateBroadcast()
 		{
 			if (m_aDominationSpotsEnabled[i] && m_apDominationSpots[i]->m_IsGettingCaptured)
 				TextLen += m_apDominationSpots[i]->m_Team == DOM_NEUTRAL ?
-					sprintf(aBuf + TextLen, "%c: %s %2i,", m_apDominationSpots[i]->GetSpotName()[0], m_apDominationSpots[i]->m_CapTeam == DOM_RED ? "Red" : "Blue", (m_apDominationSpots[i]->m_Timer - 1) / Server()->TickSpeed() + 1) :
-					sprintf(aBuf + TextLen, "%c: %s %2i,", m_apDominationSpots[i]->GetSpotName()[0], m_apDominationSpots[i]->m_Team == DOM_RED ? "No Red" : "No Blue", (m_apDominationSpots[i]->m_Timer - 1) / Server()->TickSpeed() + 1);
+					sprintf(aBuf + TextLen, "%c: %s %2i,", GetSpotName(i)[0], m_apDominationSpots[i]->m_CapTeam == DOM_RED ? "Red" : "Blue", (m_apDominationSpots[i]->m_Timer - 1) / Server()->TickSpeed() + 1) :
+					sprintf(aBuf + TextLen, "%c: %s %2i,", GetSpotName(i)[0], m_apDominationSpots[i]->m_Team == DOM_RED ? "No Red" : "No Blue", (m_apDominationSpots[i]->m_Timer - 1) / Server()->TickSpeed() + 1);
 		}
 		if (TextLen)
 		{
@@ -346,8 +346,8 @@ void CGameControllerDOM::SendBroadcast(int ClientID, const char *pText) const
 	for (int i = 0; i < DOM_MAXDSPOTS; ++i)
 	{
 		if (m_aDominationSpotsEnabled[i])
-			TextLen += snprintf(aBuf + TextLen, sizeof(aBuf), "%s%s%c%s ", m_apDominationSpots[i]->GetTeamBroadcastColor()
-					,  GetBroadcastPre(i), m_apDominationSpots[i]->GetSpotName()[0], GetBroadcastPost(i));
+			TextLen += snprintf(aBuf + TextLen, sizeof(aBuf), "%s%s%c%s ", GetTeamBroadcastColor(m_apDominationSpots[i]->m_Team)
+					,  GetBroadcastPre(i), GetSpotName(i)[0], GetBroadcastPost(i));
 	}
 	if (TextLen)
 	{
@@ -386,6 +386,39 @@ void CGameControllerDOM::UpdateScoring()
 		double AddScore;
 		m_aTeamscoreTick[i] = modf(m_aTeamscoreTick[i] + static_cast<float>(m_aTeamDominationSpots[i]) * m_DompointsCounter, &AddScore);
 		m_aTeamscore[i] += static_cast<int>(AddScore);
+	}
+}
+
+const char* CGameControllerDOM::GetTeamName(const int Team) const
+{
+	switch(Team)
+	{
+	case 0: return "Red Team"; break;
+	case 1: return "Blue Team"; break;
+	default: return "Neutral"; break;
+	}
+}
+
+const char* CGameControllerDOM::GetSpotName(const int SpotID) const
+{
+	switch (SpotID)
+	{
+	case 0: return "A";
+	case 1: return "B";
+	case 2: return "C";
+	case 3: return "D";
+	case 4: return "E";
+	default: return "Area 51";	//	should never occur
+	}
+}
+
+const char* CGameControllerDOM::GetTeamBroadcastColor(const int Team) const
+{
+	switch(Team)
+	{
+	case DOM_RED:  return "^900";
+	case DOM_BLUE: return "^009";
+	default:       return "^999";
 	}
 }
 
@@ -445,7 +478,7 @@ void CGameControllerDOM::SendChatStats(int ClientID)
 		for (int i = 0; i < DOM_MAXDSPOTS; ++i)
 			if (m_aDominationSpotsEnabled[i])
 			{
-				str_format(aBuf, sizeof(aBuf), "%s: %s", m_apDominationSpots[i]->GetSpotName(), m_apDominationSpots[i]->GetTeamName());
+				str_format(aBuf, sizeof(aBuf), "%s: %s", GetSpotName(i), GetTeamName(m_apDominationSpots[i]->m_Team));
 				SendChat(ClientID, aBuf);
 			}
 	}

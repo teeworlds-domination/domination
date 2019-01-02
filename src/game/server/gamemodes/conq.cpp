@@ -371,7 +371,7 @@ void CGameControllerCONQ::UpdateBroadcast()
 	else if (!((Server()->Tick() - m_WinTick) % Server()->TickSpeed()))
 	{
 		char aBuf[128];
-		str_format(aBuf, sizeof(aBuf), "%s will win in %2i seconds.", m_apDominationSpots[0]->GetTeamName(!m_aTeamscore[TEAM_RED] ? DOM_BLUE : DOM_RED)
+		str_format(aBuf, sizeof(aBuf), "%s will win in %2i seconds.", GetTeamName(!m_aTeamscore[TEAM_RED] ? DOM_BLUE : DOM_RED)
 				, g_Config.m_SvConqWintime - (Server()->Tick() - m_WinTick) / Server()->TickSpeed());
 		CGameControllerDOM::SendBroadcast(-1, aBuf);
 	}
@@ -597,7 +597,7 @@ void CGameControllerCONQ::SendChatCommand(int ClientID, const char *pCommand)
 			{
 				if (!m_aDominationSpotsEnabled[i])
 					continue;
-				str_format(aBuf, sizeof(aBuf), "%c: %i | %i", m_apDominationSpots[i]->GetSpotName()[0], m_apDominationSpots[i]->IsLocked(DOM_RED), m_apDominationSpots[i]->IsLocked(DOM_BLUE));
+				str_format(aBuf, sizeof(aBuf), "%c: %i | %i", GetSpotName(i)[0], m_apDominationSpots[i]->IsLocked(DOM_RED), m_apDominationSpots[i]->IsLocked(DOM_BLUE));
 				CGameControllerDOM::SendChat(ClientID, aBuf);
 			}
 		}

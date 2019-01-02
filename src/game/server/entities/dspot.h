@@ -33,11 +33,6 @@ public:
 	bool IsLocked(int Team) const { return m_IsLocked[Team]; }
 	void Lock(int Team) { m_IsLocked[Team] = true; }
 	void Unlock(int Team) { m_IsLocked[Team] = false; }
-
-	const char *GetSpotName() const;
-	const char *GetTeamBroadcastColor() const;
-	const char *GetTeamName(const int Team) const;
-	const char *GetTeamName() const { return GetTeamName(m_Team); }
 };
 
 #endif
