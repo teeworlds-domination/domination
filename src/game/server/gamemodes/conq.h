@@ -16,8 +16,8 @@ protected:
 	vec2 m_aaaSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS][64];
 	int m_aaNumSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS];
 
-	virtual float EvaluateSpawnPos3(vec2 Pos, int LastOwnSpot, int LastEnemySpot, int PreviousOwnSpot, bool &IsStartpointAfterPreviousSpot) const;
-	virtual void EvaluateSpawnType(CSpawnEval *pEval, int Team) const override;
+	virtual float EvaluateSpawnPosConq(vec2 Pos, int LastOwnSpot, int LastEnemySpot, int PreviousOwnSpot, bool &IsStartpointAfterPreviousSpot) const;
+	virtual void EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) const;
 
 	virtual void Init() override;
 

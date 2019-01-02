@@ -129,12 +129,10 @@ float CGameControllerCONQ::GetRespawnDelay(bool Self)
 	return max(IGameController::GetRespawnDelay(Self), Self ? g_Config.m_SvConqRespawnDelay + 3.0f : g_Config.m_SvConqRespawnDelay);
 }
 
-void CGameControllerCONQ::EvaluateSpawnType(CSpawnEval *pEval, int Team) const
+void CGameControllerCONQ::EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) const
 {
 	if (!m_aNumSpawnPoints[Team + 1])
 		return;
-	if (!m_NumOfDominationSpots)
-		return CGameControllerDOM::EvaluateSpawnType(pEval, Team + 1);
 	
 	int SpawnSpot = -1;
 
@@ -180,14 +178,14 @@ bool CGameControllerCONQ::CanSpawn(int Team, vec2 *pOutPos)
 	if(Team == TEAM_SPECTATORS || GameServer()->m_World.m_Paused || GameServer()->m_World.m_ResetRequested)
 		return false;
 
-	CSpawnEval Eval;
-	Eval.m_FriendlyTeam = Team;
-
 	if (m_NumOfDominationSpots <= 1)
 		return CGameControllerDOM::CanSpawn(Team, pOutPos);
 
+	CSpawnEval Eval;
+	Eval.m_FriendlyTeam = Team;
+
 	// try first try own team spawn
-	EvaluateSpawnType(&Eval, Team);
+	EvaluateSpawnTypeConq(&Eval, Team);
 
 	*pOutPos = Eval.m_Pos;
 	return Eval.m_Got;
@@ -277,7 +275,7 @@ void CGameControllerCONQ::CalculateSpotSpawns(int Spot, int Team)
 
 	for (int i = 0; i < m_aNumSpawnPoints[Team + 1]; ++i)
 	{
-		CurrentDistance = EvaluateSpawnPos3(m_aaSpawnPoints[Team + 1][i], Spot, NextSpot, PreviousSpot, IsStartpointAfterPreviousSpot);
+		CurrentDistance = EvaluateSpawnPosConq(m_aaSpawnPoints[Team + 1][i], Spot, NextSpot, PreviousSpot, IsStartpointAfterPreviousSpot);
 		if (CurrentDistance < FLT_MAX)
 		{
 			pStartpoint[NumStartpoints] = i;
@@ -338,7 +336,7 @@ void CGameControllerCONQ::CalculateSpotSpawns(int Spot, int Team)
 	pIsStartpointAfterPreviousSpot = 0;
 }
 
-float CGameControllerCONQ::EvaluateSpawnPos3(vec2 Pos, int LastOwnSpot, int LastEnemySpot, int PreviousOwnSpot, bool &IsStartpointAfterPreviousSpot) const
+float CGameControllerCONQ::EvaluateSpawnPosConq(vec2 Pos, int LastOwnSpot, int LastEnemySpot, int PreviousOwnSpot, bool &IsStartpointAfterPreviousSpot) const
 {
 	float DistanceOwnSpot = min(FLT_MAX, distance(Pos, m_apDominationSpots[LastOwnSpot]->GetPos()));
 	float DistanceEnemySpot = FLT_MAX;

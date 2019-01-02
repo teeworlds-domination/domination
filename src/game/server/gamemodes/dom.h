@@ -35,8 +35,8 @@ protected:
 	int m_NumOfDominationSpots;									//	number of domination spots
 	int m_aCapTimes[MAX_PLAYERS / 2 + 1]; // Dynamic capture timer, considering the team sizes (dyn_captimes[get_team_size])
 	
-	virtual bool EvaluateSpawnPos2(CSpawnEval *pEval, vec2 Pos) const;
-	virtual void EvaluateSpawnType(CSpawnEval *pEval, int Type) const override;
+	virtual bool EvaluateSpawnPosDom(CSpawnEval *pEval, vec2 Pos) const;
+	virtual void EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type) const;
 	virtual void Init();
 
 	virtual void StartCapturing(int SpotNumber, int RedTeamSize, int BlueTeamSize, bool Consecutive);

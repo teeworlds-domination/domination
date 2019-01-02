@@ -28,7 +28,7 @@ CGameControllerDOM::CGameControllerDOM(CGameContext *pGameServer)
 
 	m_LastBroadcastTick = -1;
 
-	SetCapTimes(g_Config.m_SvDomCapTimes);
+	Init();
 }
 
 void CGameControllerDOM::Init()
@@ -49,6 +49,8 @@ void CGameControllerDOM::Init()
 	else if (Temp[m_NumOfDominationSpots] > 10.0f)
 		Temp[m_NumOfDominationSpots] = 10.0f;
 	m_DompointsCounter = Temp[m_NumOfDominationSpots] / Server()->TickSpeed();
+
+	SetCapTimes(g_Config.m_SvDomCapTimes);
 }
 
 void CGameControllerDOM::OnReset()
@@ -107,7 +109,7 @@ float CGameControllerDOM::GetRespawnDelay(bool Self)
 	return max(IGameController::GetRespawnDelay(Self), Self ? g_Config.m_SvDomRespawnDelay + 3.0f : g_Config.m_SvDomRespawnDelay);
 }
 
-bool CGameControllerDOM::EvaluateSpawnPos2(CSpawnEval *pEval, vec2 Pos) const
+bool CGameControllerDOM::EvaluateSpawnPosDom(CSpawnEval *pEval, vec2 Pos) const
 {
 	float BadDistance = FLT_MAX;
 	float GoodDistance = FLT_MAX;
@@ -124,7 +126,7 @@ bool CGameControllerDOM::EvaluateSpawnPos2(CSpawnEval *pEval, vec2 Pos) const
 }
 
 //	choose a random spawn point near an own domination spot, else a random one
-void CGameControllerDOM::EvaluateSpawnType(CSpawnEval *pEval, int Type) const
+void CGameControllerDOM::EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type) const
 {
 	if (!m_aNumSpawnPoints[Type])
 		return;
@@ -132,7 +134,7 @@ void CGameControllerDOM::EvaluateSpawnType(CSpawnEval *pEval, int Type) const
 	int NumStartpoints = 0;
 	int *pStartpoint = new int[m_aNumSpawnPoints[Type]];
 	for(int i  = 0; i < m_aNumSpawnPoints[Type]; i++)
-		if (EvaluateSpawnPos2(pEval, m_aaSpawnPoints[Type][i]))
+		if (EvaluateSpawnPosDom(pEval, m_aaSpawnPoints[Type][i]))
 			pStartpoint[NumStartpoints++] = i;
 	pEval->m_Got = true;
 	pEval->m_Pos = NumStartpoints ? m_aaSpawnPoints[Type][pStartpoint[Server()->Tick() % NumStartpoints]] :
@@ -147,17 +149,19 @@ bool CGameControllerDOM::CanSpawn(int Team, vec2 *pOutPos)
 	if(Team == TEAM_SPECTATORS || GameServer()->m_World.m_Paused || GameServer()->m_World.m_ResetRequested)
 		return false;
 
-	CSpawnEval Eval;
+	if (!m_NumOfDominationSpots)
+		return IGameController::CanSpawn(Team, pOutPos);
 
+	CSpawnEval Eval;
 	Eval.m_FriendlyTeam = Team;
 
 	// try first try own team spawn, then normal spawn
-	EvaluateSpawnType(&Eval, 1+(Team&1));
+	EvaluateSpawnTypeDom(&Eval, 1+(Team&1));
 	if(!Eval.m_Got)
 	{
-		EvaluateSpawnType(&Eval, 0);
+		EvaluateSpawnTypeDom(&Eval, 0);
 		if(!Eval.m_Got)
-			EvaluateSpawnType(&Eval, 1+((Team+1)&1));
+			EvaluateSpawnTypeDom(&Eval, 1+((Team+1)&1));
 	}
 
 	*pOutPos = Eval.m_Pos;
