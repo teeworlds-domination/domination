@@ -37,11 +37,11 @@ void CGameControllerDOM::Init()
 	float Temp[6] = {0};
 	m_NumOfDominationSpots = 0;
 	sscanf(g_Config.m_SvDomScorings, "%f %f %f %f %f", Temp + 1 , Temp + 2, Temp + 3, Temp + 4, Temp + 5);
-	for (int i = 0; i < DOM_MAXDSPOTS; ++i)
+	for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
 	{
-		if (!m_apDominationSpots[i])
-			m_aDominationSpotsEnabled[i] = false;
-		if (m_aDominationSpotsEnabled[i])
+		if (!m_apDominationSpots[Spot])
+			m_aDominationSpotsEnabled[Spot] = false;
+		if (m_aDominationSpotsEnabled[Spot])
 			++m_NumOfDominationSpots;
 	}
 	if (Temp[m_NumOfDominationSpots] <= 0.0f)
@@ -64,8 +64,8 @@ void CGameControllerDOM::OnReset()
 	m_LastBroadcastTick = -1;
 
 	mem_zero(m_aaBufBroadcastSpotOverview, DOM_MAXDSPOTS * 48 * sizeof(char));
-	for (int SpotID = 0; SpotID < DOM_MAXDSPOTS; ++SpotID)
-		m_aLastBroadcastState[SpotID] = -2; // force update
+	for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
+		m_aLastBroadcastState[Spot] = -2; // force update
 
 	Init();
 }
@@ -117,14 +117,14 @@ bool CGameControllerDOM::EvaluateSpawnPosDom(CSpawnEval *pEval, vec2 Pos) const
 {
 	float BadDistance = FLT_MAX;
 	float GoodDistance = FLT_MAX;
-	for(int i = 0; i < DOM_MAXDSPOTS; i++)
+	for(int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
 	{
-		if (!m_aDominationSpotsEnabled[i])
+		if (!m_aDominationSpotsEnabled[Spot])
 			continue;
-		if (m_apDominationSpots[i]->GetTeam() == pEval->m_FriendlyTeam) // own dspot
-			GoodDistance = min(GoodDistance, distance(Pos, m_apDominationSpots[i]->GetPos()));
+		if (m_apDominationSpots[Spot]->GetTeam() == pEval->m_FriendlyTeam) // own dspot
+			GoodDistance = min(GoodDistance, distance(Pos, m_apDominationSpots[Spot]->GetPos()));
 		else	// neutral or enemy dspot
-			BadDistance = min(BadDistance, distance(Pos, m_apDominationSpots[i]->GetPos()));
+			BadDistance = min(BadDistance, distance(Pos, m_apDominationSpots[Spot]->GetPos()));
 	}
 	return GoodDistance <= BadDistance;
 }
@@ -137,7 +137,7 @@ void CGameControllerDOM::EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type) const
 	// get spawn point
 	int NumStartpoints = 0;
 	int *pStartpoint = new int[m_aNumSpawnPoints[Type]];
-	for(int i  = 0; i < m_aNumSpawnPoints[Type]; i++)
+	for(int i = 0; i < m_aNumSpawnPoints[Type]; i++)
 		if (EvaluateSpawnPosDom(pEval, m_aaSpawnPoints[Type][i]))
 			pStartpoint[NumStartpoints++] = i;
 	pEval->m_Got = true;
@@ -184,9 +184,9 @@ void CGameControllerDOM::UpdateCaptureProcess()
 	int DomCaparea;
 
 	// check all players for being in a capture area
-	for (int i = 0; i < MAX_CLIENTS; ++i)
+	for (int cid = 0; cid < MAX_CLIENTS; ++cid)
 	{
-		pPlayer = GameServer()->m_apPlayers[i];
+		pPlayer = GameServer()->m_apPlayers[cid];
 		if (!pPlayer || pPlayer->GetTeam() == TEAM_SPECTATORS || !pPlayer->GetCharacter() || !pPlayer->GetCharacter()->IsAlive())
 			continue;
 		DomCaparea = min(GameServer()->Collision()->GetCollisionAt(static_cast<int>(pPlayer->GetCharacter()->GetPos().x),
@@ -199,63 +199,63 @@ void CGameControllerDOM::UpdateCaptureProcess()
 	}
 
 	//	capturing process for all dspots
-	for (int i = 0; i < DOM_MAXDSPOTS; ++i)
+	for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
 	{
-		if (!m_aDominationSpotsEnabled[i])
+		if (!m_aDominationSpotsEnabled[Spot])
 			continue;
 		
-		if (m_apDominationSpots[i]->IsGettingCaptured())
+		if (m_apDominationSpots[Spot]->IsGettingCaptured())
 		{
-			if (m_apDominationSpots[i]->UpdateCapturing(aaPlayerStrength[i][m_apDominationSpots[i]->GetCapTeam()], aaPlayerStrength[i][m_apDominationSpots[i]->GetCapTeam() ^ 1]))
+			if (m_apDominationSpots[Spot]->UpdateCapturing(aaPlayerStrength[Spot][m_apDominationSpots[Spot]->GetCapTeam()], aaPlayerStrength[Spot][m_apDominationSpots[Spot]->GetCapTeam() ^ 1]))
 			{
-				if (m_apDominationSpots[i]->GetTeam() == DOM_NEUTRAL)
+				if (m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)
 				{
-					Neutralize(i);
-					StartCapturing(i, aaPlayerStrength[i][DOM_RED], aaPlayerStrength[i][DOM_BLUE], true);
+					Neutralize(Spot);
+					StartCapturing(Spot, aaPlayerStrength[Spot][DOM_RED], aaPlayerStrength[Spot][DOM_BLUE], true);
 				}
 				else
-					Capture(i);
+					Capture(Spot);
 			}
 		}
 		else
-			StartCapturing(i, aaPlayerStrength[i][DOM_RED], aaPlayerStrength[i][DOM_BLUE], false);
+			StartCapturing(Spot, aaPlayerStrength[Spot][DOM_RED], aaPlayerStrength[Spot][DOM_BLUE], false);
 	}
 }
 
-void CGameControllerDOM::StartCapturing(int SpotNumber, int NumOfRedCapPlayers, int NumOfBlueCapPlayers, bool Consecutive)
+void CGameControllerDOM::StartCapturing(int Spot, int NumOfRedCapPlayers, int NumOfBlueCapPlayers, bool Consecutive)
 {
-	if (SpotNumber < 0 || SpotNumber > DOM_MAXDSPOTS - 1)
+	if (Spot < 0 || Spot > DOM_MAXDSPOTS - 1)
 		return;
 
-	if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
+	if (m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)
 	{
 		if (NumOfRedCapPlayers < NumOfBlueCapPlayers)
-			m_apDominationSpots[SpotNumber]->StartCapturing(DOM_BLUE, GetTeamSize(TEAM_BLUE), GetTeamSize(TEAM_RED), Consecutive);
+			m_apDominationSpots[Spot]->StartCapturing(DOM_BLUE, GetTeamSize(TEAM_BLUE), GetTeamSize(TEAM_RED), Consecutive);
 		if (NumOfRedCapPlayers > NumOfBlueCapPlayers)
-			m_apDominationSpots[SpotNumber]->StartCapturing(DOM_RED, GetTeamSize(TEAM_RED), GetTeamSize(TEAM_BLUE), Consecutive);
+			m_apDominationSpots[Spot]->StartCapturing(DOM_RED, GetTeamSize(TEAM_RED), GetTeamSize(TEAM_BLUE), Consecutive);
 	}
 	else
-		if ((m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED && NumOfBlueCapPlayers) || (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_BLUE && NumOfRedCapPlayers))
-			m_apDominationSpots[SpotNumber]->StartCapturing(m_apDominationSpots[SpotNumber]->GetTeam() ^ 1, GetTeamSize(m_apDominationSpots[SpotNumber]->GetTeam() ^ 1), GetTeamSize(m_apDominationSpots[SpotNumber]->GetTeam()), Consecutive);
+		if ((m_apDominationSpots[Spot]->GetTeam() == DOM_RED && NumOfBlueCapPlayers) || (m_apDominationSpots[Spot]->GetTeam() == DOM_BLUE && NumOfRedCapPlayers))
+			m_apDominationSpots[Spot]->StartCapturing(m_apDominationSpots[Spot]->GetTeam() ^ 1, GetTeamSize(m_apDominationSpots[Spot]->GetTeam() ^ 1), GetTeamSize(m_apDominationSpots[Spot]->GetTeam()), Consecutive);
 }
 
-void CGameControllerDOM::Capture(int SpotNumber)
+void CGameControllerDOM::Capture(int Spot)
 {
-	if (SpotNumber < 0 || SpotNumber > DOM_MAXDSPOTS - 1)
+	if (Spot < 0 || Spot > DOM_MAXDSPOTS - 1)
 		return;
 
-	++m_aNumOfTeamDominationSpots[m_apDominationSpots[SpotNumber]->GetTeam()];
-	OnCapture(SpotNumber, m_apDominationSpots[SpotNumber]->GetTeam());
+	++m_aNumOfTeamDominationSpots[m_apDominationSpots[Spot]->GetTeam()];
+	OnCapture(Spot, m_apDominationSpots[Spot]->GetTeam());
 }
 
-void CGameControllerDOM::Neutralize(int SpotNumber)
+void CGameControllerDOM::Neutralize(int Spot)
 {
-	if (SpotNumber < 0 || SpotNumber > DOM_MAXDSPOTS - 1)
+	if (Spot < 0 || Spot > DOM_MAXDSPOTS - 1)
 		return;
 
-	--m_aNumOfTeamDominationSpots[m_apDominationSpots[SpotNumber]->GetCapTeam() ^ 1];
+	--m_aNumOfTeamDominationSpots[m_apDominationSpots[Spot]->GetCapTeam() ^ 1];
 
-	OnNeutralize(SpotNumber, m_apDominationSpots[SpotNumber]->GetCapTeam());
+	OnNeutralize(Spot, m_apDominationSpots[Spot]->GetCapTeam());
 }
 
 void CGameControllerDOM::UpdateBroadcast()
@@ -300,13 +300,13 @@ void CGameControllerDOM::UpdateBroadcastOverview()
 void CGameControllerDOM::UpdateScoring()
 {
 	// add captured score to the teamscores
-	for (int i = 0; i < DOM_NUMOFTEAMS; ++i)
+	for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
 	{
-		if (!m_aNumOfTeamDominationSpots[i])
+		if (!m_aNumOfTeamDominationSpots[Team])
 			continue;
 		double AddScore;
-		m_aTeamscoreTick[i] = modf(m_aTeamscoreTick[i] + static_cast<float>(m_aNumOfTeamDominationSpots[i]) * m_DompointsCounter, &AddScore);
-		m_aTeamscore[i] += static_cast<int>(AddScore);
+		m_aTeamscoreTick[Team] = modf(m_aTeamscoreTick[Team] + static_cast<float>(m_aNumOfTeamDominationSpots[Team]) * m_DompointsCounter, &AddScore);
+		m_aTeamscore[Team] += static_cast<int>(AddScore);
 	}
 }
 
@@ -322,40 +322,40 @@ void CGameControllerDOM::SendBroadcast(int ClientID, const char *pText) const
 		GameServer()->SendBroadcast(m_aBufBroadcastOverview, ClientID);
 }
 
-const char* CGameControllerDOM::GetDominationSpotBroadcastOverview(int SpotNumber, char *pBuf)
+const char* CGameControllerDOM::GetDominationSpotBroadcastOverview(int Spot, char *pBuf)
 {
-	if (!m_aDominationSpotsEnabled[SpotNumber])
+	if (!m_aDominationSpotsEnabled[Spot])
 		return "";
 
 	int MarkerPos;
 
-	if (m_apDominationSpots[SpotNumber]->IsGettingCaptured())
+	if (m_apDominationSpots[Spot]->IsGettingCaptured())
 	{
-		float MarkerStepWidth = m_apDominationSpots[SpotNumber]->GetCapTime() / 5.0f; // 5 marker pos
-		MarkerPos = ceil(m_apDominationSpots[SpotNumber]->GetTimer() / Server()->TickSpeed() / MarkerStepWidth) ;
-		if (MarkerPos >= 0 && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED)
+		float MarkerStepWidth = m_apDominationSpots[Spot]->GetCapTime() / 5.0f; // 5 marker pos
+		MarkerPos = ceil(m_apDominationSpots[Spot]->GetTimer() / Server()->TickSpeed() / MarkerStepWidth) ;
+		if (MarkerPos >= 0 && m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED)
 			MarkerPos = 5 - MarkerPos; // the other way around
-		if (m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_BLUE && MarkerPos == 0)
+		if (m_apDominationSpots[Spot]->GetCapTeam() == DOM_BLUE && MarkerPos == 0)
 			++MarkerPos; // TODO display as captured
-		else if (m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED && MarkerPos == 5)
+		else if (m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED && MarkerPos == 5)
 			--MarkerPos;
 	}
 	else
 		MarkerPos = -1;
 
-	if (MarkerPos != m_aLastBroadcastState[SpotNumber])
+	if (MarkerPos != m_aLastBroadcastState[Spot])
 	{
-		m_aLastBroadcastState[SpotNumber] = MarkerPos;
+		m_aLastBroadcastState[Spot] = MarkerPos;
 		m_UpdateBroadcast = true;
 
 		int CurrPos = 0;
-		AddColorizedOpenParenthesis (SpotNumber, pBuf, CurrPos, MarkerPos);
-		AddColorizedLine            (SpotNumber, pBuf, CurrPos, MarkerPos, 1);
-		AddColorizedLine            (SpotNumber, pBuf, CurrPos, MarkerPos, 2);
-		AddColorizedSpot            (SpotNumber, pBuf, CurrPos);
-		AddColorizedLine            (SpotNumber, pBuf, CurrPos, MarkerPos, 3);
-		AddColorizedLine            (SpotNumber, pBuf, CurrPos, MarkerPos, 4);
-		AddColorizedCloseParenthesis(SpotNumber, pBuf, CurrPos, MarkerPos);
+		AddColorizedOpenParenthesis (Spot, pBuf, CurrPos, MarkerPos);
+		AddColorizedLine            (Spot, pBuf, CurrPos, MarkerPos, 1);
+		AddColorizedLine            (Spot, pBuf, CurrPos, MarkerPos, 2);
+		AddColorizedSpot            (Spot, pBuf, CurrPos);
+		AddColorizedLine            (Spot, pBuf, CurrPos, MarkerPos, 3);
+		AddColorizedLine            (Spot, pBuf, CurrPos, MarkerPos, 4);
+		AddColorizedCloseParenthesis(Spot, pBuf, CurrPos, MarkerPos);
 		pBuf[CurrPos++] = ' ';
 		pBuf[CurrPos] = 0;
 	}
@@ -363,50 +363,50 @@ const char* CGameControllerDOM::GetDominationSpotBroadcastOverview(int SpotNumbe
 	return pBuf;
 }
 
-void CGameControllerDOM::AddColorizedOpenParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const
+void CGameControllerDOM::AddColorizedOpenParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const
 {
 	if (MarkerPos == 0)
 	{
-		AddColorizedMarker(SpotNumber, pBuf, rCurrPos);
+		AddColorizedMarker(Spot, pBuf, rCurrPos);
 		return;
 	}
 
-	if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
+	if (m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)
 	{
-		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured() && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED)
+		if (m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED)
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, '{');
 		else
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, '(');
 	}
-	else if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
+	else if (m_apDominationSpots[Spot]->GetTeam() == DOM_RED)
 		AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, '{');
 	else
 	{
-		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured())
+		if (m_apDominationSpots[Spot]->IsGettingCaptured())
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, '(');
 		else
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, '[');
 	}
 }
 
-void CGameControllerDOM::AddColorizedCloseParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const
+void CGameControllerDOM::AddColorizedCloseParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const
 {
 	if (MarkerPos == 5)
 	{
-		AddColorizedMarker(SpotNumber, pBuf, rCurrPos);
+		AddColorizedMarker(Spot, pBuf, rCurrPos);
 		return;
 	}
 
-	if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
+	if (m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)
 	{
-		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured() && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_BLUE)
+		if (m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetCapTeam() == DOM_BLUE)
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, ']');
 		else
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, ')');
 	}
-	else if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
+	else if (m_apDominationSpots[Spot]->GetTeam() == DOM_RED)
 	{
-		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured())
+		if (m_apDominationSpots[Spot]->IsGettingCaptured())
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, ')');
 		else
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, '}');
@@ -415,22 +415,22 @@ void CGameControllerDOM::AddColorizedCloseParenthesis(int SpotNumber, char *pBuf
 		AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, ']');
 }
 
-void CGameControllerDOM::AddColorizedLine(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos, int LineNum) const
+void CGameControllerDOM::AddColorizedLine(int Spot, char *pBuf, int &rCurrPos, int MarkerPos, int LineNum) const
 {
 	if (MarkerPos == LineNum)
 	{
-		AddColorizedMarker(SpotNumber, pBuf, rCurrPos);
+		AddColorizedMarker(Spot, pBuf, rCurrPos);
 		return;
 	}
 
 	// static const char* CHAR_LINE = "—"; // TODO hackish
 	static const char CHAR_LINE_0 = '\342';
 
-	if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
+	if (m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)
 	{
-		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured())
+		if (m_apDominationSpots[Spot]->IsGettingCaptured())
 		{
-			if (m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED)
+			if (m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED)
 			{
 				if (MarkerPos < LineNum) // line is right of marker
 					AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE_0);
@@ -448,16 +448,16 @@ void CGameControllerDOM::AddColorizedLine(int SpotNumber, char *pBuf, int &rCurr
 		else
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE_0);
 	}
-	else if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
+	else if (m_apDominationSpots[Spot]->GetTeam() == DOM_RED)
 	{
-		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured() && MarkerPos < LineNum)
+		if (m_apDominationSpots[Spot]->IsGettingCaptured() && MarkerPos < LineNum)
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE_0);
 		else
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, CHAR_LINE_0);
 	}
 	else
 	{
-		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured() && LineNum < MarkerPos)
+		if (m_apDominationSpots[Spot]->IsGettingCaptured() && LineNum < MarkerPos)
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE_0);
 		else
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, CHAR_LINE_0);
@@ -467,25 +467,25 @@ void CGameControllerDOM::AddColorizedLine(int SpotNumber, char *pBuf, int &rCurr
 	pBuf[rCurrPos++] = '\224';
 }
 
-void CGameControllerDOM::AddColorizedSpot(int SpotNumber, char *pBuf, int &rCurrPos) const
+void CGameControllerDOM::AddColorizedSpot(int Spot, char *pBuf, int &rCurrPos) const
 {
-	AddColorizedSymbol(pBuf, rCurrPos, m_apDominationSpots[SpotNumber]->GetTeam(), GetSpotName(SpotNumber)[0]);
+	AddColorizedSymbol(pBuf, rCurrPos, m_apDominationSpots[Spot]->GetTeam(), GetSpotName(Spot));
 }
 
-void CGameControllerDOM::AddColorizedMarker(int SpotNumber, char *pBuf, int &rCurrPos) const
+void CGameControllerDOM::AddColorizedMarker(int Spot, char *pBuf, int &rCurrPos) const
 {
-	if (!m_apDominationSpots[SpotNumber]->IsGettingCaptured())
+	if (!m_apDominationSpots[Spot]->IsGettingCaptured())
 		return; // should not occur
 
-	if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
+	if (m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)
 	{
-		if (m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED)
+		if (m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED)
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, '>');
 		else // DOM_BLUE
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, '<');
 	}
 	else
-		AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED? '>' : '<');
+		AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED? '>' : '<');
 }
 
 void CGameControllerDOM::AddColorizedSymbol(char *pBuf, int &rCurrPos, int ColorCode, const char Symbol) const
@@ -510,7 +510,7 @@ void CGameControllerDOM::SetCapTimes(const char *pCapTimes)
 	m_aCapTimes[0] = m_aCapTimes[1];
 }
 
-const char* CGameControllerDOM::GetTeamName(const int Team) const
+const char* CGameControllerDOM::GetTeamName(int Team) const
 {
 	switch(Team)
 	{
@@ -520,20 +520,19 @@ const char* CGameControllerDOM::GetTeamName(const int Team) const
 	}
 }
 
-const char* CGameControllerDOM::GetSpotName(const int SpotID) const
+const char CGameControllerDOM::GetSpotName(int Spot) const
 {
-	switch (SpotID)
+	switch (Spot)
 	{
-	case 0: return "A";
-	case 1: return "B";
-	case 2: return "C";
-	case 3: return "D";
-	case 4: return "E";
-	default: return "Area 51";	//	should never occur
+	case 0: return 'A';
+	case 1: return 'B';
+	case 2: return 'C';
+	case 3: return 'D';
+	default: return 'E';
 	}
 }
 
-const char* CGameControllerDOM::GetTeamBroadcastColor(const int Team) const
+const char* CGameControllerDOM::GetTeamBroadcastColor(int Team) const
 {
 	switch(Team)
 	{
@@ -596,10 +595,10 @@ void CGameControllerDOM::SendChatStats(int ClientID)
 	else
 	{
 		char aBuf[32];
-		for (int i = 0; i < DOM_MAXDSPOTS; ++i)
-			if (m_aDominationSpotsEnabled[i])
+		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
+			if (m_aDominationSpotsEnabled[Spot])
 			{
-				str_format(aBuf, sizeof(aBuf), "%s: %s", GetSpotName(i), GetTeamName(m_apDominationSpots[i]->GetTeam()));
+				str_format(aBuf, sizeof(aBuf), "%c: %s", GetSpotName(Spot), GetTeamName(m_apDominationSpots[Spot]->GetTeam()));
 				SendChat(ClientID, aBuf);
 			}
 	}

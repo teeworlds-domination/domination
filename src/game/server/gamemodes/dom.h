@@ -26,7 +26,7 @@ private:
 	char m_aaBufBroadcastSpotOverview[DOM_MAXDSPOTS][48];
 
 	void UpdateBroadcastOverview();
-	const char* GetDominationSpotBroadcastOverview(int SpotNumber, char *pBuf);
+	const char* GetDominationSpotBroadcastOverview(int Spot, char *pBuf);
 
 	void SendChatInfoWithHeader(int ClientID);
 
@@ -41,15 +41,15 @@ protected:
 	int   m_NumOfDominationSpots;								//	number of domination spots
 	int   m_aCapTimes[MAX_PLAYERS / 2 + 1];						// Dynamic capture timer, considering the team sizes (dyn_captimes[get_team_size])
 
-	int  m_aLastBroadcastState[DOM_MAXDSPOTS];
+	int   m_aLastBroadcastState[DOM_MAXDSPOTS];
 	
 	virtual bool EvaluateSpawnPosDom(CSpawnEval *pEval, vec2 Pos) const;
 	virtual void EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type) const;
 	virtual void Init();
 
-	virtual void StartCapturing(int SpotNumber, int RedTeamSize, int BlueTeamSize, bool Consecutive);
-	virtual void Capture(int SpotNumber);
-	virtual void Neutralize(int SpotNumber);
+	virtual void StartCapturing(int Spot, int RedTeamSize, int BlueTeamSize, bool Consecutive);
+	virtual void Capture(int Spot);
+	virtual void Neutralize(int Spot);
 
 	virtual void UpdateCaptureProcess();
 	virtual void UpdateBroadcast();
@@ -58,11 +58,11 @@ protected:
 	virtual void SetCapTimes(const char* pCapTimes);
 
 protected:
-	virtual void AddColorizedOpenParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const;
-	virtual void AddColorizedCloseParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const;
-	virtual void AddColorizedLine(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos, int LineNum) const;
-	virtual void AddColorizedSpot(int SpotNumber, char *pBuf, int &rCurrPos) const;
-	virtual void AddColorizedMarker(int SpotNumber, char *pBuf, int &rCurrPos) const;
+	virtual void AddColorizedOpenParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const;
+	virtual void AddColorizedCloseParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const;
+	virtual void AddColorizedLine(int Spot, char *pBuf, int &rCurrPos, int MarkerPos, int LineNum) const;
+	virtual void AddColorizedSpot(int Spot, char *pBuf, int &rCurrPos) const;
+	virtual void AddColorizedMarker(int Spot, char *pBuf, int &rCurrPos) const;
 
 	void AddColorizedSymbol(char *pBuf, int &rCurrPos, int ColorCode, const char Symbol) const;
 
@@ -77,8 +77,8 @@ public:
 	virtual void OnPlayerConnect(class CPlayer *pPlayer) override;
 	virtual void OnReset() override;
 
-	virtual void OnCapture(int SpotNumber, int Team) {};
-	virtual void OnNeutralize(int SpotNumber, int Team) {};
+	virtual void OnCapture(int Spot, int Team) {};
+	virtual void OnNeutralize(int Spot, int Team) {};
 
 	virtual void SendBroadcast(int ClientID, const char *pText) const;
 	void SendChat(int ClientID, const char *pText) const;
@@ -86,9 +86,9 @@ public:
 	virtual void SendChatInfo(int ClientID);
 	virtual void SendChatStats(int ClientID);
 
-	const char *GetSpotName(const int SpotID) const;
-	const char *GetTeamBroadcastColor(const int Team) const;
-	const char *GetTeamName(const int Team) const;
+	const char GetSpotName(int Spot) const;
+	const char *GetTeamBroadcastColor(int Team) const;
+	const char *GetTeamName(int Team) const;
 };
 
 #endif

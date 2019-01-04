@@ -33,25 +33,25 @@ void CGameControllerCONQ::Init()
 	if (m_NumOfDominationSpots > 1)
 	{
 		int SpotRed, SpotBlue;
-		for (int i = 0; i < DOM_MAXDSPOTS; ++i)
+		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
 		{
-			if (!m_aDominationSpotsEnabled[i])
+			if (!m_aDominationSpotsEnabled[Spot])
 				continue;
-			LockSpot(i, DOM_RED);
-			LockSpot(i, DOM_BLUE);
+			LockSpot(Spot, DOM_RED);
+			LockSpot(Spot, DOM_BLUE);
 		}
-		for (int i = 0; i < DOM_MAXDSPOTS; ++i)
+		for (int Spot = 0; Spot< DOM_MAXDSPOTS; ++Spot)
 		{
-			if (!m_aDominationSpotsEnabled[i])
+			if (!m_aDominationSpotsEnabled[Spot])
 				continue;
-			SpotRed = i;
+			SpotRed = Spot;
 			break;
 		}
-		for (int i = DOM_MAXDSPOTS - 1; i >= 0; --i)
+		for (int Spot = DOM_MAXDSPOTS - 1; Spot >= 0; --Spot)
 		{
-			if (!m_aDominationSpotsEnabled[i])
+			if (!m_aDominationSpotsEnabled[Spot])
 				continue;
-			SpotBlue = i;
+			SpotBlue = Spot;
 			break;
 		}
 
@@ -91,16 +91,16 @@ void CGameControllerCONQ::DoWincheckMatch()
 		return;
 
 	//	check if teams have players alive
-	for (int i = 0; i < DOM_NUMOFTEAMS; ++i)
+	for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
 	{
-		if (m_NumOfDominationSpots == m_aNumOfTeamDominationSpots[i ^ 1])
+		if (m_NumOfDominationSpots == m_aNumOfTeamDominationSpots[Team ^ 1])
 			EndMatch(); // Opponent owns all spots -> game over
-		else if (!m_aNumOfTeamDominationSpots[i])
+		else if (!m_aNumOfTeamDominationSpots[Team])
 		{
 			bool PlayerAlive = false;
-			for (int j = 0; j < MAX_CLIENTS; ++j)
-				if (GameServer()->m_apPlayers[j] && GameServer()->m_apPlayers[j]->GetTeam() == i
-						&& GameServer()->m_apPlayers[j]->GetCharacter() && GameServer()->m_apPlayers[j]->GetCharacter()->IsAlive())
+			for (int cid = 0; cid < MAX_CLIENTS; ++cid)
+				if (GameServer()->m_apPlayers[cid] && GameServer()->m_apPlayers[cid]->GetTeam() == Team
+						&& GameServer()->m_apPlayers[cid]->GetCharacter() && GameServer()->m_apPlayers[cid]->GetCharacter()->IsAlive())
 					PlayerAlive = true;
 			if (!PlayerAlive)
 			{
@@ -111,7 +111,7 @@ void CGameControllerCONQ::DoWincheckMatch()
 			if (g_Config.m_SvConqWintime && m_WinTick == -1)
 				m_WinTick = Server()->Tick();
 		}
-		else if (m_aNumOfTeamDominationSpots[i ^ 1] && m_WinTick != -1)
+		else if (m_aNumOfTeamDominationSpots[Team ^ 1] && m_WinTick != -1)
 			m_WinTick = -1; // both teams have spots -> reset WinTick
 	}
 
@@ -138,24 +138,24 @@ void CGameControllerCONQ::EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) con
 
 	if (pEval->m_FriendlyTeam == DOM_RED)
 	{
-		for (int i = 0; i < DOM_MAXDSPOTS; ++i)
+		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
 		{
-			if (!m_aDominationSpotsEnabled[i])
+			if (!m_aDominationSpotsEnabled[Spot])
 				continue;
-			if (m_apDominationSpots[i]->GetTeam() == pEval->m_FriendlyTeam) // own dspot
-				SpawnSpot = i;
+			if (m_apDominationSpots[Spot]->GetTeam() == pEval->m_FriendlyTeam) // own dspot
+				SpawnSpot = Spot;
 			else if (SpawnSpot != -1)
 				break;
 		}
 	}
 	else if (pEval->m_FriendlyTeam == DOM_BLUE)
 	{
-		for (int i = DOM_MAXDSPOTS - 1; i >= 0; --i)
+		for (int Spot = DOM_MAXDSPOTS - 1; Spot >= 0; --Spot)
 		{
-			if (!m_aDominationSpotsEnabled[i])
+			if (!m_aDominationSpotsEnabled[Spot])
 				continue;
-			if (m_apDominationSpots[i]->GetTeam() == pEval->m_FriendlyTeam) // own dspot
-				SpawnSpot = i;
+			if (m_apDominationSpots[Spot]->GetTeam() == pEval->m_FriendlyTeam) // own dspot
+				SpawnSpot = Spot;
 			else if (SpawnSpot != -1)
 				break;
 		}
@@ -336,32 +336,32 @@ void CGameControllerCONQ::CalculateSpotSpawns(int Spot, int Team)
 	pIsStartpointAfterPreviousSpot = 0;
 }
 
-float CGameControllerCONQ::EvaluateSpawnPosConq(vec2 Pos, int LastOwnSpot, int LastEnemySpot, int PreviousOwnSpot, bool &IsStartpointAfterPreviousSpot) const
+float CGameControllerCONQ::EvaluateSpawnPosConq(vec2 Pos, int SpawnSpot, int NextSpot, int PreviousSpot, bool &IsStartpointAfterPreviousSpot) const
 {
-	float DistanceOwnSpot = min(FLT_MAX, distance(Pos, m_apDominationSpots[LastOwnSpot]->GetPos()));
-	float DistanceEnemySpot = FLT_MAX;
+	float DistanceSpawnSpot = min(FLT_MAX, distance(Pos, m_apDominationSpots[SpawnSpot]->GetPos()));
+	float DistanceNextSpot = FLT_MAX;
 
-	if (LastEnemySpot >= 0)
+	if (NextSpot >= 0)
 	{
-		DistanceEnemySpot = min(FLT_MAX, distance(Pos, m_apDominationSpots[LastEnemySpot]->GetPos()));
-		float DistanceOwnToEnemySpot = min(FLT_MAX, distance(m_apDominationSpots[LastOwnSpot]->GetPos(), m_apDominationSpots[LastEnemySpot]->GetPos()));
+		DistanceNextSpot = min(FLT_MAX, distance(Pos, m_apDominationSpots[NextSpot]->GetPos()));
+		float DistanceSpawnToNextSpot = min(FLT_MAX, distance(m_apDominationSpots[SpawnSpot]->GetPos(), m_apDominationSpots[NextSpot]->GetPos()));
 
-		if (DistanceOwnSpot > DistanceEnemySpot || DistanceEnemySpot < (DistanceOwnToEnemySpot - (DistanceOwnSpot*0.3f)))
+		if (DistanceSpawnSpot > DistanceNextSpot || DistanceNextSpot < (DistanceSpawnToNextSpot - (DistanceSpawnSpot * 0.3f)))
 			return FLT_MAX;
 	}
 
-	if (PreviousOwnSpot == -1)
+	if (PreviousSpot == -1)
 		IsStartpointAfterPreviousSpot = true;
 	else
 	{
-		float DistancePreviousToOwnSpot = min(FLT_MAX, distance(m_apDominationSpots[PreviousOwnSpot]->GetPos(), m_apDominationSpots[LastOwnSpot]->GetPos()));
-		if (DistanceOwnSpot < DistancePreviousToOwnSpot || (LastEnemySpot >= 0 && DistanceEnemySpot < min(FLT_MAX, distance(m_apDominationSpots[PreviousOwnSpot]->GetPos(), m_apDominationSpots[LastEnemySpot]->GetPos()))))
+		float DistancePreviousToSpawnSpot = min(FLT_MAX, distance(m_apDominationSpots[PreviousSpot]->GetPos(), m_apDominationSpots[SpawnSpot]->GetPos()));
+		if (DistanceSpawnSpot < DistancePreviousToSpawnSpot || (NextSpot >= 0 && DistanceNextSpot < min(FLT_MAX, distance(m_apDominationSpots[PreviousSpot]->GetPos(), m_apDominationSpots[NextSpot]->GetPos()))))
 			IsStartpointAfterPreviousSpot = true;
 		else
 			IsStartpointAfterPreviousSpot = false;
 	}
 
-	return DistanceOwnSpot;
+	return DistanceSpawnSpot;
 }
 
 void CGameControllerCONQ::UpdateBroadcast()
@@ -377,21 +377,23 @@ void CGameControllerCONQ::UpdateBroadcast()
 	}
 }
 
-void CGameControllerCONQ::OnCapture(int SpotNumber, int Team)
+void CGameControllerCONQ::OnCapture(int Spot, int Team)
 {
-	CGameControllerDOM::OnCapture(SpotNumber, Team);
+	CGameControllerDOM::OnCapture(Spot, Team);
 
 	++m_aTeamscore[Team];
-	UnlockSpot(SpotNumber, Team);
+	UnlockSpot(Spot, Team);
 
 	bool HasAllPreviousSpots = true;
+
+	// TODO Refactor GetNextSpot / GetPreviousSpot
 
 	// do un-/locking
 	if (Team == DOM_RED)
 	{
-		if (SpotNumber > 0)
+		if (Spot > 0)
 		{
-			for (int i = SpotNumber - 1; i >= 0; --i)
+			for (int i = Spot - 1; i >= 0; --i)
 			{
 				if (!m_aDominationSpotsEnabled[i])
 					continue;
@@ -402,9 +404,9 @@ void CGameControllerCONQ::OnCapture(int SpotNumber, int Team)
 				}
 			}
 		}
-		if (HasAllPreviousSpots && SpotNumber < DOM_MAXDSPOTS - 1)
+		if (HasAllPreviousSpots && Spot < DOM_MAXDSPOTS - 1)
 		{
-			for (int i = SpotNumber + 1; i < DOM_MAXDSPOTS; ++i)
+			for (int i = Spot + 1; i < DOM_MAXDSPOTS; ++i)
 			{
 				if (!m_aDominationSpotsEnabled[i])
 					continue;
@@ -418,9 +420,9 @@ void CGameControllerCONQ::OnCapture(int SpotNumber, int Team)
 	}
 	else
 	{
-		if (SpotNumber < DOM_MAXDSPOTS - 1)
+		if (Spot < DOM_MAXDSPOTS - 1)
 		{
-			for (int i = SpotNumber + 1; i < DOM_MAXDSPOTS; ++i)
+			for (int i = Spot + 1; i < DOM_MAXDSPOTS; ++i)
 			{
 				if (!m_aDominationSpotsEnabled[i])
 					continue;
@@ -431,9 +433,9 @@ void CGameControllerCONQ::OnCapture(int SpotNumber, int Team)
 				}
 			}
 		}
-		if (HasAllPreviousSpots && SpotNumber > 0)
+		if (HasAllPreviousSpots && Spot > 0)
 		{
-			for (int i = SpotNumber - 1; i >= 0; --i)
+			for (int i = Spot - 1; i >= 0; --i)
 			{
 				if (!m_aDominationSpotsEnabled[i])
 					continue;
@@ -447,9 +449,9 @@ void CGameControllerCONQ::OnCapture(int SpotNumber, int Team)
 	}
 }
 
-void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
+void CGameControllerCONQ::OnNeutralize(int Spot, int Team)
 {
-	CGameControllerDOM::OnNeutralize(SpotNumber, Team);
+	CGameControllerDOM::OnNeutralize(Spot, Team);
 
 	m_WinTick = -1;
 
@@ -458,9 +460,9 @@ void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
 	// do un-/locking
 	if (Team == DOM_RED)
 	{
-		if (SpotNumber > 0)
+		if (Spot > 0)
 		{
-			for (int i = SpotNumber - 1; i >= 0; --i)
+			for (int i = Spot - 1; i >= 0; --i)
 			{
 				if (!m_aDominationSpotsEnabled[i] || m_apDominationSpots[i]->GetTeam() == DOM_BLUE)
 					continue;
@@ -468,15 +470,15 @@ void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
 				break;
 			}
 		}
-		if (SpotNumber < DOM_MAXDSPOTS - 1)
+		if (Spot < DOM_MAXDSPOTS - 1)
 		{
-			for (int i = SpotNumber + 1; i < DOM_MAXDSPOTS; ++i)
+			for (int i = Spot + 1; i < DOM_MAXDSPOTS; ++i)
 			{
 				if (!m_aDominationSpotsEnabled[i])
 					continue;
 				if (m_apDominationSpots[i]->GetTeam() != DOM_BLUE)
 				{
-					LockSpot(SpotNumber, DOM_BLUE);
+					LockSpot(Spot, DOM_BLUE);
 					break;
 				}
 			}
@@ -484,9 +486,9 @@ void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
 	}
 	else
 	{
-		if (SpotNumber < DOM_MAXDSPOTS - 1)
+		if (Spot < DOM_MAXDSPOTS - 1)
 		{
-			for (int i = SpotNumber + 1; i < DOM_MAXDSPOTS; ++i)
+			for (int i = Spot + 1; i < DOM_MAXDSPOTS; ++i)
 			{
 				if (!m_aDominationSpotsEnabled[i] || m_apDominationSpots[i]->GetTeam() == DOM_RED)
 					continue;
@@ -494,15 +496,15 @@ void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
 				break;
 			}
 		}
-		if (SpotNumber > 0)
+		if (Spot > 0)
 		{
-			for (int i = SpotNumber - 1; i >= 0; --i)
+			for (int i = Spot - 1; i >= 0; --i)
 			{
 				if (!m_aDominationSpotsEnabled[i])
 					continue;
 				if (m_apDominationSpots[i]->GetTeam() != DOM_RED)
 				{
-					LockSpot(SpotNumber, DOM_RED);
+					LockSpot(Spot, DOM_RED);
 					break;
 				}
 			}
@@ -529,53 +531,53 @@ void CGameControllerCONQ::LockSpot(int Spot, int Team)
 	m_aLastBroadcastState[Spot] = -2; // force update
 }
 
-void CGameControllerCONQ::AddColorizedOpenParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const
+void CGameControllerCONQ::AddColorizedOpenParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const
 {
 	if (MarkerPos == 0)
 	{
-		AddColorizedMarker(SpotNumber, pBuf, rCurrPos);
+		AddColorizedMarker(Spot, pBuf, rCurrPos);
 		return;
 	}
 
-	if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
+	if (m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)
 	{
-		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured() && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED)
+		if (m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED)
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, '{');
 		else
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, m_apDominationSpots[SpotNumber]->IsLocked(DOM_RED) || m_apDominationSpots[SpotNumber]->IsGettingCaptured()? '(' : ':');
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, m_apDominationSpots[Spot]->IsLocked(DOM_RED) || m_apDominationSpots[Spot]->IsGettingCaptured()? '(' : ':');
 	}
-	else if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
+	else if (m_apDominationSpots[Spot]->GetTeam() == DOM_RED)
 		AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, '{');
 	else
 	{
-		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured())
+		if (m_apDominationSpots[Spot]->IsGettingCaptured())
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, '(');
 		else
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, m_apDominationSpots[SpotNumber]->IsLocked(DOM_RED)? '[' : ':');
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, m_apDominationSpots[Spot]->IsLocked(DOM_RED)? '[' : ':');
 	}
 }
 
-void CGameControllerCONQ::AddColorizedCloseParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const
+void CGameControllerCONQ::AddColorizedCloseParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const
 {
 	if (MarkerPos == 5)
 	{
-		AddColorizedMarker(SpotNumber, pBuf, rCurrPos);
+		AddColorizedMarker(Spot, pBuf, rCurrPos);
 		return;
 	}
 
-	if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
+	if (m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)
 	{
-		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured() && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_BLUE)
+		if (m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetCapTeam() == DOM_BLUE)
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, ']');
 		else
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, m_apDominationSpots[SpotNumber]->IsLocked(DOM_BLUE) || m_apDominationSpots[SpotNumber]->IsGettingCaptured()? ')' : ':');
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, m_apDominationSpots[Spot]->IsLocked(DOM_BLUE) || m_apDominationSpots[Spot]->IsGettingCaptured()? ')' : ':');
 	}
-	else if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
+	else if (m_apDominationSpots[Spot]->GetTeam() == DOM_RED)
 	{
-		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured())
+		if (m_apDominationSpots[Spot]->IsGettingCaptured())
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, ')');
 		else
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, m_apDominationSpots[SpotNumber]->IsLocked(DOM_BLUE)? '}' : ':');
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, m_apDominationSpots[Spot]->IsLocked(DOM_BLUE)? '}' : ':');
 	}
 	else // DOM_BLUE
 		AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, ']');
@@ -601,11 +603,11 @@ void CGameControllerCONQ::SendChatCommand(int ClientID, const char *pCommand)
 			CGameControllerDOM::SendChat(ClientID, aBuf);
 
 			SendChat(ClientID, "——————————————————————————————");
-			for (int i = 0; i < DOM_MAXDSPOTS; ++i)
+			for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
 			{
-				if (!m_aDominationSpotsEnabled[i])
+				if (!m_aDominationSpotsEnabled[Spot])
 					continue;
-				str_format(aBuf, sizeof(aBuf), "%c: %i | %i", GetSpotName(i)[0], m_apDominationSpots[i]->IsLocked(DOM_RED), m_apDominationSpots[i]->IsLocked(DOM_BLUE));
+				str_format(aBuf, sizeof(aBuf), "%c: %i | %i", GetSpotName(Spot), m_apDominationSpots[Spot]->IsLocked(DOM_RED), m_apDominationSpots[Spot]->IsLocked(DOM_BLUE));
 				CGameControllerDOM::SendChat(ClientID, aBuf);
 			}
 		}
