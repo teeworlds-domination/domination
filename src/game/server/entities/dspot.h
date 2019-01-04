@@ -32,13 +32,14 @@ public:
 	bool IsGettingCaptured() const { return m_IsGettingCaptured; }
 
 	bool IsLocked(int Team) const { return m_IsLocked[Team]; }
-	void Lock(int Team) { m_IsLocked[Team] = true; }
-	void Unlock(int Team) { m_IsLocked[Team] = false; }
+	void Lock(int Team)    { m_IsLocked[Team] = true; }
+	void Unlock(int Team)  { m_IsLocked[Team] = false; }
 
 	int GetCapTeam() const { return m_CapTeam; }
-	int GetTeam() const { return m_Team; }
-	vec2 GetPos() const { return m_Pos; }
-	int GetTimer() const { return m_Timer; }
+	int GetTeam() const    { return m_Team; }
+	vec2 GetPos() const    { return m_Pos; }
+	int GetCapTime() const { return m_CapTime; }
+	int GetTimer() const   { return m_Timer; }
 
 	void SetTeam(int Team) { m_Team = Team; }
 };

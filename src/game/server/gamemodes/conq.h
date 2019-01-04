@@ -27,8 +27,7 @@ protected:
 
 	void DoWincheckMatch();
 
-	virtual const char* GetBroadcastPre(int SpotNumber) const override;
-	virtual const char* GetBroadcastPost(int SpotNumber) const override;
+	// virtual const char* GetBroadcastOpen(int SpotNumber, int &rMarkerPos) const override;
 
 public:
 	CGameControllerCONQ(class CGameContext *pGameServer);

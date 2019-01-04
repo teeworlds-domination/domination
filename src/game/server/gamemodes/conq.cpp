@@ -517,6 +517,7 @@ int CGameControllerCONQ::OnCharacterDeath(class CCharacter *pVictim, class CPlay
 	return CGameControllerDOM::OnCharacterDeath(pVictim, pKiller, Weapon);
 }
 
+/*
 const char* CGameControllerCONQ::GetBroadcastPre(int SpotNumber) const
 {
 	if (SpotNumber < 0 || SpotNumber >= DOM_MAXDSPOTS)
@@ -572,6 +573,41 @@ const char* CGameControllerCONQ::GetBroadcastPost(int SpotNumber) const
 			return "--]";
 	}
 }
+*/
+/*
+const char CGameControllerCONQ::GetBroadcastOpen(int SpotNumber, int &rMarkerPos) const
+{
+	char c;
+	if (rMarkerPos == 0)
+		c = GetBroadcastMarker(SpotNumber);
+	else
+	{
+		if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
+		{
+			if (m_apDominationSpots[SpotNumber]->IsGettingCaptured() && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_BLUE)
+				c = '[';
+			else if (!m_apDominationSpots[SpotNumber]->IsLocked(DOM_RED))
+				c = ':';
+			else
+				c = '(';
+		}
+		else
+		{
+			if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
+				c = '{';
+			else
+			{
+				if (m_apDominationSpots[SpotNumber]->IsLocked(DOM_RED))
+					c = '[';
+				else
+					c = ':';
+			}
+		}
+	}
+
+	--rMarkerPos;
+	return c;
+} */
 
 void CGameControllerCONQ::SendChatInfo(int ClientID)
 {

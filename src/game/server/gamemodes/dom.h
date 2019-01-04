@@ -47,8 +47,10 @@ protected:
 	virtual void UpdateBroadcast();
 	virtual void UpdateScoring();
 
-	virtual const char* GetBroadcastPre(int SpotNumber) const;
-	virtual const char* GetBroadcastPost(int SpotNumber) const;
+	virtual const char* GetBroadcastOpen(int SpotNumber, int &rMarkerPos) const;
+	virtual const char* GetBroadcastLine(int SpotNumber, int &rMarkerPos) const;
+	virtual const char* GetBroadcastClose(int SpotNumber, int &rMarkerPos) const;
+	virtual const char* GetBroadcastMarker(int SpotNumber) const;
 
 	virtual void SetCapTimes(const char* pCapTimes);
 
