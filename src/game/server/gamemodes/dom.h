@@ -22,6 +22,18 @@ class CDominationSpot;
 class CGameControllerDOM : public IGameController
 {
 private:
+	char m_aBufBroadcastOverview[256];
+
+private:
+	void UpdateBroadcastOverview();
+
+	void AddColorizedOpenParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const;
+	void AddColorizedCloseParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const;
+	void AddColorizedLine(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos, int LineNum) const;
+	void AddColorizedSpot(int SpotNumber, char *pBuf, int &rCurrPos) const;
+	void AddColorizedMarker(int SpotNumber, char *pBuf, int &rCurrPos) const;
+	void AddColorizedSymbol(char *pBuf, int &rCurrPos, int ColorCode, const char Symbol) const;
+
 	void SendChatInfoWithHeader(int ClientID);
 
 protected:
@@ -47,10 +59,7 @@ protected:
 	virtual void UpdateBroadcast();
 	virtual void UpdateScoring();
 
-	virtual const char* GetBroadcastOpen(int SpotNumber, int &rMarkerPos) const;
-	virtual const char* GetBroadcastLine(int SpotNumber, int &rMarkerPos) const;
-	virtual const char* GetBroadcastClose(int SpotNumber, int &rMarkerPos) const;
-	virtual const char* GetBroadcastMarker(int SpotNumber) const;
+	virtual const char* GetDominationSpotBroadcastOverview(int SpotNumber, char *pBuf) const;
 
 	virtual void SetCapTimes(const char* pCapTimes);
 
