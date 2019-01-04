@@ -29,6 +29,7 @@ private:
 private:
 	void UpdateBroadcastOverview();
 
+	const char* GetDominationSpotBroadcastOverview(int SpotNumber, char *pBuf);
 	void AddColorizedOpenParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const;
 	void AddColorizedCloseParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const;
 	void AddColorizedLine(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos, int LineNum) const;
@@ -41,13 +42,13 @@ private:
 protected:
 	class CDominationSpot *m_apDominationSpots[DOM_MAXDSPOTS];	//	domination spots
 	float m_aTeamscoreTick[DOM_NUMOFTEAMS];						//	number of ticks a team captured the dspots (updated)
-	int m_aNumOfTeamDominationSpots[DOM_NUMOFTEAMS];					//	number of owned dspots per team
+	int   m_aNumOfTeamDominationSpots[DOM_NUMOFTEAMS];			//	number of owned dspots per team
 	float m_DompointsCounter;									//	points a domination point generates in a second
-	int m_aDominationSpotsEnabled[DOM_MAXDSPOTS];				//	enable/disables the usage for every domination spot
-	bool m_UpdateBroadcast;										//	reports if the capturing braoadcast message should be changed
-	int m_LastBroadcastTick;									//	tick of last capturing broadcast
-	int m_NumOfDominationSpots;									//	number of domination spots
-	int m_aCapTimes[MAX_PLAYERS / 2 + 1]; // Dynamic capture timer, considering the team sizes (dyn_captimes[get_team_size])
+	int   m_aDominationSpotsEnabled[DOM_MAXDSPOTS];				//	enable/disables the usage for every domination spot
+	bool  m_UpdateBroadcast;									//	reports if the capturing braoadcast message should be changed
+	int   m_LastBroadcastTick;									//	tick of last capturing broadcast
+	int   m_NumOfDominationSpots;								//	number of domination spots
+	int   m_aCapTimes[MAX_PLAYERS / 2 + 1];						// Dynamic capture timer, considering the team sizes (dyn_captimes[get_team_size])
 	
 	virtual bool EvaluateSpawnPosDom(CSpawnEval *pEval, vec2 Pos) const;
 	virtual void EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type) const;
@@ -60,8 +61,6 @@ protected:
 	virtual void UpdateCaptureProcess();
 	virtual void UpdateBroadcast();
 	virtual void UpdateScoring();
-
-	virtual const char* GetDominationSpotBroadcastOverview(int SpotNumber, char *pBuf);
 
 	virtual void SetCapTimes(const char* pCapTimes);
 

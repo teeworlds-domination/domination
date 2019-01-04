@@ -327,16 +327,12 @@ const char* CGameControllerDOM::GetDominationSpotBroadcastOverview(int SpotNumbe
 	if (!m_aDominationSpotsEnabled[SpotNumber])
 		return "";
 
-	float MarkerStepWidth;
-	int   MarkerPos;
+	int MarkerPos;
 
 	if (m_apDominationSpots[SpotNumber]->IsGettingCaptured())
 	{
-		MarkerStepWidth = m_apDominationSpots[SpotNumber]->GetCapTime() / 5.0f; // 5 marker pos
-		MarkerPos =
-			m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED?
-				ceil(m_apDominationSpots[SpotNumber]->GetTimer() / Server()->TickSpeed() / MarkerStepWidth)
-				: ceil(m_apDominationSpots[SpotNumber]->GetTimer() / Server()->TickSpeed() / MarkerStepWidth) ;
+		float MarkerStepWidth = m_apDominationSpots[SpotNumber]->GetCapTime() / 5.0f; // 5 marker pos
+		MarkerPos = ceil(m_apDominationSpots[SpotNumber]->GetTimer() / Server()->TickSpeed() / MarkerStepWidth) ;
 		if (MarkerPos >= 0 && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED)
 			MarkerPos = 5 - MarkerPos; // the other way around
 		if (m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_BLUE && MarkerPos == 0)
