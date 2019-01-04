@@ -23,6 +23,8 @@ class CGameControllerDOM : public IGameController
 {
 private:
 	char m_aBufBroadcastOverview[256];
+	char m_aaBufBroadcastSpotOverview[DOM_MAXDSPOTS][48];
+	int  m_aLastBroadcastState[DOM_MAXDSPOTS];
 
 private:
 	void UpdateBroadcastOverview();
@@ -59,7 +61,7 @@ protected:
 	virtual void UpdateBroadcast();
 	virtual void UpdateScoring();
 
-	virtual const char* GetDominationSpotBroadcastOverview(int SpotNumber, char *pBuf) const;
+	virtual const char* GetDominationSpotBroadcastOverview(int SpotNumber, char *pBuf);
 
 	virtual void SetCapTimes(const char* pCapTimes);
 

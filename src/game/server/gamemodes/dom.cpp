@@ -63,6 +63,10 @@ void CGameControllerDOM::OnReset()
 	m_aNumOfTeamDominationSpots[1] = 0;
 	m_LastBroadcastTick = -1;
 
+	mem_zero(m_aaBufBroadcastSpotOverview, DOM_MAXDSPOTS * 48 * sizeof(char));
+	for (int SpotID = 0; SpotID < DOM_MAXDSPOTS; ++SpotID)
+		m_aLastBroadcastState[SpotID] = -2; // force update
+
 	Init();
 }
 
@@ -257,12 +261,12 @@ void CGameControllerDOM::Neutralize(int SpotNumber)
 void CGameControllerDOM::UpdateBroadcast()
 {
 	if (m_LastBroadcastTick + Server()->TickSpeed() <= Server()->Tick())
+		UpdateBroadcastOverview();
+
+	if (m_UpdateBroadcast || m_LastBroadcastTick + Server()->TickSpeed()*8.0f <= Server()->Tick())
 	{
 		m_LastBroadcastTick = Server()->Tick();
-
-		// TODO only if changed or every 3 s
-
-		UpdateBroadcastOverview();
+		m_UpdateBroadcast = false;
 
 		char aBuf[256] = {0};
 		for (int cid = 0; cid < MAX_CLIENTS; ++cid)
@@ -284,16 +288,12 @@ void CGameControllerDOM::UpdateBroadcast()
 
 void CGameControllerDOM::UpdateBroadcastOverview()
 {
-	// TODO only if changed
-
-	char aaBuf[DOM_MAXDSPOTS][48];
-	mem_zero(aaBuf, DOM_MAXDSPOTS * 48 * sizeof(char));
 	str_format(m_aBufBroadcastOverview, sizeof(m_aBufBroadcastOverview), "%s%s%s%s%s"
-			, GetDominationSpotBroadcastOverview(0, aaBuf[0])
-			, GetDominationSpotBroadcastOverview(1, aaBuf[1])
-			, GetDominationSpotBroadcastOverview(2, aaBuf[2])
-			, GetDominationSpotBroadcastOverview(3, aaBuf[3])
-			, GetDominationSpotBroadcastOverview(4, aaBuf[4]) );
+			, GetDominationSpotBroadcastOverview(0, m_aaBufBroadcastSpotOverview[0])
+			, GetDominationSpotBroadcastOverview(1, m_aaBufBroadcastSpotOverview[1])
+			, GetDominationSpotBroadcastOverview(2, m_aaBufBroadcastSpotOverview[2])
+			, GetDominationSpotBroadcastOverview(3, m_aaBufBroadcastSpotOverview[3])
+			, GetDominationSpotBroadcastOverview(4, m_aaBufBroadcastSpotOverview[4]) );
 }
 
 
@@ -322,7 +322,7 @@ void CGameControllerDOM::SendBroadcast(int ClientID, const char *pText) const
 		GameServer()->SendBroadcast(m_aBufBroadcastOverview, ClientID);
 }
 
-const char* CGameControllerDOM::GetDominationSpotBroadcastOverview(int SpotNumber, char *pBuf) const
+const char* CGameControllerDOM::GetDominationSpotBroadcastOverview(int SpotNumber, char *pBuf)
 {
 	if (!m_aDominationSpotsEnabled[SpotNumber])
 		return "";
@@ -333,23 +333,36 @@ const char* CGameControllerDOM::GetDominationSpotBroadcastOverview(int SpotNumbe
 	if (m_apDominationSpots[SpotNumber]->IsGettingCaptured())
 	{
 		MarkerStepWidth = m_apDominationSpots[SpotNumber]->GetCapTime() / 5.0f; // 5 marker pos
-		MarkerPos = static_cast<int>(m_apDominationSpots[SpotNumber]->GetTimer() / Server()->TickSpeed() / MarkerStepWidth) + 1;
-		if (MarkerPos >= 0
-				&& ((m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED)
-				|| (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_BLUE && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED)))
+		MarkerPos =
+			m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED?
+				ceil(m_apDominationSpots[SpotNumber]->GetTimer() / Server()->TickSpeed() / MarkerStepWidth)
+				: ceil(m_apDominationSpots[SpotNumber]->GetTimer() / Server()->TickSpeed() / MarkerStepWidth) ;
+		if (MarkerPos >= 0 && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED)
 			MarkerPos = 5 - MarkerPos; // the other way around
+		if (m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_BLUE && MarkerPos == 0)
+			++MarkerPos; // TODO display as captured
+		else if (m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED && MarkerPos == 5)
+			--MarkerPos;
 	}
 	else
 		MarkerPos = -1;
 
-	int CurrPos = 0;
-	AddColorizedOpenParenthesis (SpotNumber, pBuf, CurrPos, MarkerPos);
-	AddColorizedLine            (SpotNumber, pBuf, CurrPos, MarkerPos, 1);
-	AddColorizedLine            (SpotNumber, pBuf, CurrPos, MarkerPos, 2);
-	AddColorizedSpot            (SpotNumber, pBuf, CurrPos);
-	AddColorizedLine            (SpotNumber, pBuf, CurrPos, MarkerPos, 3);
-	AddColorizedLine            (SpotNumber, pBuf, CurrPos, MarkerPos, 4);
-	AddColorizedCloseParenthesis(SpotNumber, pBuf, CurrPos, MarkerPos);
+	if (MarkerPos != m_aLastBroadcastState[SpotNumber])
+	{
+		m_aLastBroadcastState[SpotNumber] = MarkerPos;
+		m_UpdateBroadcast = true;
+
+		int CurrPos = 0;
+		AddColorizedOpenParenthesis (SpotNumber, pBuf, CurrPos, MarkerPos);
+		AddColorizedLine            (SpotNumber, pBuf, CurrPos, MarkerPos, 1);
+		AddColorizedLine            (SpotNumber, pBuf, CurrPos, MarkerPos, 2);
+		AddColorizedSpot            (SpotNumber, pBuf, CurrPos);
+		AddColorizedLine            (SpotNumber, pBuf, CurrPos, MarkerPos, 3);
+		AddColorizedLine            (SpotNumber, pBuf, CurrPos, MarkerPos, 4);
+		AddColorizedCloseParenthesis(SpotNumber, pBuf, CurrPos, MarkerPos);
+		pBuf[CurrPos++] = ' ';
+		pBuf[CurrPos] = 0;
+	}
 
 	return pBuf;
 }
