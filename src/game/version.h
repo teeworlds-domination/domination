@@ -8,6 +8,6 @@
 #define CLIENT_VERSION 0x0702
 static const char GAME_RELEASE_VERSION[8] = "0.7.2";
 
-#define GAME_MODVERSION "1.0 a1"
+#define GAME_MODVERSION "1.0 b1"
 
 #endif
