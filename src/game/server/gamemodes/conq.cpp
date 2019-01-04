@@ -36,9 +36,9 @@ void CGameControllerCONQ::Init()
 		for (int i = 0; i < DOM_MAXDSPOTS; ++i)
 		{
 			if (!m_aDominationSpotsEnabled[i])
-				continue;	
-			m_apDominationSpots[i]->Lock(DOM_RED);
-			m_apDominationSpots[i]->Lock(DOM_BLUE);
+				continue;
+			LockSpot(i, DOM_RED);
+			LockSpot(i, DOM_BLUE);
 		}
 		for (int i = 0; i < DOM_MAXDSPOTS; ++i)
 		{
@@ -382,7 +382,7 @@ void CGameControllerCONQ::OnCapture(int SpotNumber, int Team)
 	CGameControllerDOM::OnCapture(SpotNumber, Team);
 
 	++m_aTeamscore[Team];
-	m_apDominationSpots[SpotNumber]->Unlock(Team);
+	UnlockSpot(SpotNumber, Team);
 
 	bool HasAllPreviousSpots = true;
 
@@ -410,7 +410,7 @@ void CGameControllerCONQ::OnCapture(int SpotNumber, int Team)
 					continue;
 				if (m_apDominationSpots[i]->GetTeam() != DOM_RED)
 				{
-					m_apDominationSpots[i]->Unlock(DOM_RED);
+					UnlockSpot(i, DOM_RED);
 					break;
 				}
 			}
@@ -439,7 +439,7 @@ void CGameControllerCONQ::OnCapture(int SpotNumber, int Team)
 					continue;
 				if (m_apDominationSpots[i]->GetTeam() != DOM_BLUE)
 				{
-					m_apDominationSpots[i]->Unlock(DOM_BLUE);
+					UnlockSpot(i, DOM_BLUE);
 					break;
 				}
 			}
@@ -464,7 +464,7 @@ void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
 			{
 				if (!m_aDominationSpotsEnabled[i] || m_apDominationSpots[i]->GetTeam() == DOM_BLUE)
 					continue;
-				m_apDominationSpots[i]->Lock(DOM_BLUE);
+				LockSpot(i, DOM_BLUE);
 				break;
 			}
 		}
@@ -476,7 +476,7 @@ void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
 					continue;
 				if (m_apDominationSpots[i]->GetTeam() != DOM_BLUE)
 				{
-					m_apDominationSpots[SpotNumber]->Lock(DOM_BLUE);
+					LockSpot(SpotNumber, DOM_BLUE);
 					break;
 				}
 			}
@@ -490,7 +490,7 @@ void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
 			{
 				if (!m_aDominationSpotsEnabled[i] || m_apDominationSpots[i]->GetTeam() == DOM_RED)
 					continue;
-				m_apDominationSpots[i]->Lock(DOM_RED);
+				LockSpot(i, DOM_RED);
 				break;
 			}
 		}
@@ -502,7 +502,7 @@ void CGameControllerCONQ::OnNeutralize(int SpotNumber, int Team)
 					continue;
 				if (m_apDominationSpots[i]->GetTeam() != DOM_RED)
 				{
-					m_apDominationSpots[SpotNumber]->Lock(DOM_RED);
+					LockSpot(SpotNumber, DOM_RED);
 					break;
 				}
 			}
@@ -517,97 +517,69 @@ int CGameControllerCONQ::OnCharacterDeath(class CCharacter *pVictim, class CPlay
 	return CGameControllerDOM::OnCharacterDeath(pVictim, pKiller, Weapon);
 }
 
-/*
-const char* CGameControllerCONQ::GetBroadcastPre(int SpotNumber) const
+void CGameControllerCONQ::UnlockSpot(int Spot, int Team)
 {
-	if (SpotNumber < 0 || SpotNumber >= DOM_MAXDSPOTS)
-		return "";
-
-	if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
-	{
-		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured() && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_BLUE)
-			return "[--";
-		else if (!m_apDominationSpots[SpotNumber]->IsLocked(DOM_RED))
-			return ":--";
-		else
-			return "(--";
-	}
-	else
-	{
-		if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
-			return "{--";
-		else
-		{
-			if (m_apDominationSpots[SpotNumber]->IsLocked(DOM_RED))
-				return "[--";
-			else
-				return ":--";
-		}
-	}
+	m_apDominationSpots[Spot]->Unlock(Team);
+	m_aLastBroadcastState[Spot] = -2; // force update
 }
 
-const char* CGameControllerCONQ::GetBroadcastPost(int SpotNumber) const
+void CGameControllerCONQ::LockSpot(int Spot, int Team)
 {
-	if (SpotNumber < 0 || SpotNumber >= DOM_MAXDSPOTS)
-		return "";
+	m_apDominationSpots[Spot]->Lock(Team);
+	m_aLastBroadcastState[Spot] = -2; // force update
+}
+
+void CGameControllerCONQ::AddColorizedOpenParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const
+{
+	if (MarkerPos == 0)
+	{
+		AddColorizedMarker(SpotNumber, pBuf, rCurrPos);
+		return;
+	}
 
 	if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
 	{
 		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured() && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_RED)
-			return "--}";
-		else if (!m_apDominationSpots[SpotNumber]->IsLocked(DOM_BLUE))
-			return "--:";
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, '{');
 		else
-			return "--)";
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, m_apDominationSpots[SpotNumber]->IsLocked(DOM_RED) || m_apDominationSpots[SpotNumber]->IsGettingCaptured()? '(' : ':');
 	}
+	else if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
+		AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, '{');
 	else
 	{
-		if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
-		{
-			if (m_apDominationSpots[SpotNumber]->IsLocked(DOM_BLUE))
-				return "--}";
-			else
-				return "--:";
-		}
+		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured())
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, '(');
 		else
-			return "--]";
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, m_apDominationSpots[SpotNumber]->IsLocked(DOM_RED)? '[' : ':');
 	}
 }
-*/
-/*
-const char CGameControllerCONQ::GetBroadcastOpen(int SpotNumber, int &rMarkerPos) const
+
+void CGameControllerCONQ::AddColorizedCloseParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const
 {
-	char c;
-	if (rMarkerPos == 0)
-		c = GetBroadcastMarker(SpotNumber);
-	else
+	if (MarkerPos == 5)
 	{
-		if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
-		{
-			if (m_apDominationSpots[SpotNumber]->IsGettingCaptured() && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_BLUE)
-				c = '[';
-			else if (!m_apDominationSpots[SpotNumber]->IsLocked(DOM_RED))
-				c = ':';
-			else
-				c = '(';
-		}
-		else
-		{
-			if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
-				c = '{';
-			else
-			{
-				if (m_apDominationSpots[SpotNumber]->IsLocked(DOM_RED))
-					c = '[';
-				else
-					c = ':';
-			}
-		}
+		AddColorizedMarker(SpotNumber, pBuf, rCurrPos);
+		return;
 	}
 
-	--rMarkerPos;
-	return c;
-} */
+	if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_NEUTRAL)
+	{
+		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured() && m_apDominationSpots[SpotNumber]->GetCapTeam() == DOM_BLUE)
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, ']');
+		else
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, m_apDominationSpots[SpotNumber]->IsLocked(DOM_BLUE) || m_apDominationSpots[SpotNumber]->IsGettingCaptured()? ')' : ':');
+	}
+	else if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
+	{
+		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured())
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, ')');
+		else
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, m_apDominationSpots[SpotNumber]->IsLocked(DOM_BLUE)? '}' : ':');
+	}
+	else // DOM_BLUE
+		AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, ']');
+}
 
 void CGameControllerCONQ::SendChatInfo(int ClientID)
 {

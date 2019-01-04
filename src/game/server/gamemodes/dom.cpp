@@ -379,7 +379,7 @@ void CGameControllerDOM::AddColorizedOpenParenthesis(int SpotNumber, char *pBuf,
 			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, '(');
 	}
 	else if (m_apDominationSpots[SpotNumber]->GetTeam() == DOM_RED)
-		AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, '(');
+		AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, '{');
 	else
 	{
 		if (m_apDominationSpots[SpotNumber]->IsGettingCaptured())

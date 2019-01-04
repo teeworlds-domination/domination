@@ -12,12 +12,15 @@ private:
 	void CalculateSpawns();
 	void CalculateSpotSpawns(int Spot, int Team);
 
+	void UnlockSpot(int Spot, int Team);
+	void LockSpot(int Spot, int Team);
+
 protected:
 	vec2 m_aaaSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS][64];
-	int m_aaNumSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS];
+	int  m_aaNumSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS];
 
 	virtual float EvaluateSpawnPosConq(vec2 Pos, int LastOwnSpot, int LastEnemySpot, int PreviousOwnSpot, bool &IsStartpointAfterPreviousSpot) const;
-	virtual void EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) const;
+	virtual void  EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) const;
 
 	virtual void Init() override;
 
@@ -27,7 +30,9 @@ protected:
 
 	void DoWincheckMatch();
 
-	// virtual const char* GetBroadcastOpen(int SpotNumber, int &rMarkerPos) const override;
+protected:
+	virtual void AddColorizedOpenParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const;
+	virtual void AddColorizedCloseParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const;
 
 public:
 	CGameControllerCONQ(class CGameContext *pGameServer);
@@ -38,10 +43,9 @@ public:
 
 	virtual void OnCapture(int SpotNumber, int Team) override;
 	virtual void OnNeutralize(int SpotNumber, int Team) override;
-	virtual int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
+	virtual int  OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 
 	virtual void SendChatInfo(int ClientID) override;
-
 	virtual void SendChatCommand(int ClientID, const char *pCommand); // TODO DEBUG REMOVE THIS
 };
 #endif

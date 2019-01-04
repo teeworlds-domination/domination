@@ -24,18 +24,9 @@ class CGameControllerDOM : public IGameController
 private:
 	char m_aBufBroadcastOverview[256];
 	char m_aaBufBroadcastSpotOverview[DOM_MAXDSPOTS][48];
-	int  m_aLastBroadcastState[DOM_MAXDSPOTS];
 
-private:
 	void UpdateBroadcastOverview();
-
 	const char* GetDominationSpotBroadcastOverview(int SpotNumber, char *pBuf);
-	void AddColorizedOpenParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const;
-	void AddColorizedCloseParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const;
-	void AddColorizedLine(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos, int LineNum) const;
-	void AddColorizedSpot(int SpotNumber, char *pBuf, int &rCurrPos) const;
-	void AddColorizedMarker(int SpotNumber, char *pBuf, int &rCurrPos) const;
-	void AddColorizedSymbol(char *pBuf, int &rCurrPos, int ColorCode, const char Symbol) const;
 
 	void SendChatInfoWithHeader(int ClientID);
 
@@ -49,6 +40,8 @@ protected:
 	int   m_LastBroadcastTick;									//	tick of last capturing broadcast
 	int   m_NumOfDominationSpots;								//	number of domination spots
 	int   m_aCapTimes[MAX_PLAYERS / 2 + 1];						// Dynamic capture timer, considering the team sizes (dyn_captimes[get_team_size])
+
+	int  m_aLastBroadcastState[DOM_MAXDSPOTS];
 	
 	virtual bool EvaluateSpawnPosDom(CSpawnEval *pEval, vec2 Pos) const;
 	virtual void EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type) const;
@@ -63,6 +56,15 @@ protected:
 	virtual void UpdateScoring();
 
 	virtual void SetCapTimes(const char* pCapTimes);
+
+protected:
+	virtual void AddColorizedOpenParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const;
+	virtual void AddColorizedCloseParenthesis(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos) const;
+	virtual void AddColorizedLine(int SpotNumber, char *pBuf, int &rCurrPos, int MarkerPos, int LineNum) const;
+	virtual void AddColorizedSpot(int SpotNumber, char *pBuf, int &rCurrPos) const;
+	virtual void AddColorizedMarker(int SpotNumber, char *pBuf, int &rCurrPos) const;
+
+	void AddColorizedSymbol(char *pBuf, int &rCurrPos, int ColorCode, const char Symbol) const;
 
 public:
 	CGameControllerDOM(class CGameContext *pGameServer);
