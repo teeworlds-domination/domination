@@ -75,7 +75,7 @@ public:
 	virtual void Tick() override;
 	virtual bool CanSpawn(int Team, vec2 *pOutPos) override;
 
-	virtual float GetRespawnDelay(bool Self) override;
+	virtual float GetRespawnDelay(bool Self) const override;
 
 	virtual bool OnEntity(int Index, vec2 Pos) override;
 	virtual void OnPlayerConnect(class CPlayer *pPlayer) override;
@@ -84,7 +84,8 @@ public:
 	virtual void OnCapture(int Spot, int Team) {};
 	virtual void OnNeutralize(int Spot, int Team) {};
 
-	virtual void SendBroadcast(int ClientID, const char *pText) const;
+	virtual bool SendPersonalizedBroadcast(int ClientID) const;
+	void SendBroadcast(int ClientID, const char *pText) const;
 	void SendChat(int ClientID, const char *pText) const;
 	virtual void SendChatCommand(int ClientID, const char *pCommand);
 	virtual void SendChatInfo(int ClientID);

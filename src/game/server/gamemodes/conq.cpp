@@ -114,7 +114,7 @@ void CGameControllerCONQ::DoWincheckMatch()
 	}
 }
 
-float CGameControllerCONQ::GetRespawnDelay(bool Self)
+float CGameControllerCONQ::GetRespawnDelay(bool Self) const
 {
 	return max(IGameController::GetRespawnDelay(Self), Self ? g_Config.m_SvConqRespawnDelay + 3.0f : g_Config.m_SvConqRespawnDelay);
 }
@@ -296,19 +296,17 @@ float CGameControllerCONQ::EvaluateSpawnPosConq(vec2 Pos, int SpawnSpot, int Nex
 	return DistanceSpawnSpot;
 }
 
-void CGameControllerCONQ::UpdateBroadcast()
+bool CGameControllerCONQ::SendPersonalizedBroadcast(int ClientID) const
 {
-	// TODO This will stop the broadcast overview animation
-
-	if (m_WinTick == -1)
-		CGameControllerDOM::UpdateBroadcast();
-	else if (!((Server()->Tick() - m_WinTick) % Server()->TickSpeed()))
+	if (m_WinTick != -1)
 	{
 		char aBuf[128];
 		str_format(aBuf, sizeof(aBuf), "%s will win in %2i seconds.", GetTeamName(!m_aTeamscore[TEAM_RED] ? DOM_BLUE : DOM_RED)
 				, g_Config.m_SvConqWintime - (Server()->Tick() - m_WinTick) / Server()->TickSpeed());
 		CGameControllerDOM::SendBroadcast(-1, aBuf);
+		return true;
 	}
+	return CGameControllerDOM::SendPersonalizedBroadcast(ClientID);
 }
 
 void CGameControllerCONQ::OnCapture(int Spot, int Team)

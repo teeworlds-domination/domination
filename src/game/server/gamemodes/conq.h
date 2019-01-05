@@ -26,7 +26,8 @@ protected:
 
 	void EndMatch();
 	virtual void UpdateScoring() override {};
-	virtual void UpdateBroadcast() override;
+
+	virtual bool SendPersonalizedBroadcast(int ClientID) const;
 
 	void DoWincheckMatch();
 
@@ -44,7 +45,7 @@ public:
 	virtual void Tick() override;
 	virtual bool CanSpawn(int Team, vec2 *pOutPos) override;
 
-	virtual float GetRespawnDelay(bool Self) override;
+	virtual float GetRespawnDelay(bool Self) const override;
 
 	virtual void OnCapture(int Spot, int Team) override;
 	virtual void OnNeutralize(int Spot, int Team) override;

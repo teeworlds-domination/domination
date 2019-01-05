@@ -220,7 +220,7 @@ public:
 	int GetRealPlayerNum() const { return m_aTeamSize[TEAM_RED]+m_aTeamSize[TEAM_BLUE]; }
 	int GetStartTeam();
 
-	virtual float GetRespawnDelay(bool Self);
+	virtual float GetRespawnDelay(bool Self) const;
 };
 
 #endif

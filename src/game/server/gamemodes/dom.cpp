@@ -110,7 +110,7 @@ void CGameControllerDOM::OnPlayerConnect(CPlayer *pPlayer)
 	SendChatInfoWithHeader(pPlayer->GetCID());
 }
 
-float CGameControllerDOM::GetRespawnDelay(bool Self)
+float CGameControllerDOM::GetRespawnDelay(bool Self) const
 {
 	return max(IGameController::GetRespawnDelay(Self), Self ? g_Config.m_SvDomRespawnDelay + 3.0f : g_Config.m_SvDomRespawnDelay);
 }
@@ -273,22 +273,10 @@ void CGameControllerDOM::UpdateBroadcast()
 		m_UpdateBroadcast = false;
 	}
 
-	char aBuf[256] = {0};
 	for (int cid = 0; cid < MAX_CLIENTS; ++cid)
 	{
-		if (GameServer()->m_apPlayers[cid])
-		{
-			if (GetRespawnDelay(false) > 3.0f && GameServer()->m_apPlayers[cid]->GetTeam() != TEAM_SPECTATORS
-					&& !GameServer()->m_apPlayers[cid]->GetCharacter() && GameServer()->m_apPlayers[cid]->m_RespawnTick > Server()->Tick()+Server()->TickSpeed())
-			{
-				str_format(aBuf, sizeof(aBuf), "Respawn in %i seconds", (GameServer()->m_apPlayers[cid]->m_RespawnTick - Server()->Tick()) / Server()->TickSpeed());
-				SendBroadcast(cid, aBuf);
-			}
-			else if (DoUpdate)
-			{
-				SendBroadcast(cid, "");
-			}
-		}
+		if (GameServer()->m_apPlayers[cid] && !SendPersonalizedBroadcast(cid) && DoUpdate)
+			SendBroadcast(cid, "");
 	}
 }
 
@@ -314,6 +302,19 @@ void CGameControllerDOM::UpdateScoring()
 		m_aTeamscoreTick[Team] = modf(m_aTeamscoreTick[Team] + static_cast<float>(m_aNumOfTeamDominationSpots[Team]) * m_DompointsCounter, &AddScore);
 		m_aTeamscore[Team] += static_cast<int>(AddScore);
 	}
+}
+
+bool CGameControllerDOM::SendPersonalizedBroadcast(int ClientID) const
+{
+	if (GetRespawnDelay(false) > 3.0f && GameServer()->m_apPlayers[ClientID]->GetTeam() != TEAM_SPECTATORS
+			&& !GameServer()->m_apPlayers[ClientID]->GetCharacter() && GameServer()->m_apPlayers[ClientID]->m_RespawnTick > Server()->Tick()+Server()->TickSpeed())
+	{
+		char aBuf[32] = {0};
+		str_format(aBuf, sizeof(aBuf), "Respawn in %i seconds", (GameServer()->m_apPlayers[ClientID]->m_RespawnTick - Server()->Tick()) / Server()->TickSpeed());
+		SendBroadcast(ClientID, aBuf);
+		return true;
+	}
+	return false;
 }
 
 void CGameControllerDOM::SendBroadcast(int ClientID, const char *pText) const

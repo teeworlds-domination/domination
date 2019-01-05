@@ -243,7 +243,7 @@ int IGameController::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, int
 	return 0;
 }
 
-float IGameController::GetRespawnDelay(bool Self)
+float IGameController::GetRespawnDelay(bool Self) const
 {
 	return Self? 3.0f : 0.5f;
 }
