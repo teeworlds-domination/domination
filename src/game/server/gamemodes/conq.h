@@ -52,6 +52,5 @@ public:
 	virtual int  OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 
 	virtual void SendChatInfo(int ClientID) override;
-	virtual void SendChatCommand(int ClientID, const char *pCommand); // TODO DEBUG REMOVE THIS
 };
 #endif

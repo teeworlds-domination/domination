@@ -460,27 +460,3 @@ void CGameControllerCONQ::SendChatInfo(int ClientID)
 	CGameControllerDOM::SendChat(ClientID, "Win the match by capturing all spots.");
 	CGameControllerDOM::SendChat(ClientID, "(This mod is enjoyed best with enabled broadcast color.)");
 }
-
-void CGameControllerCONQ::SendChatCommand(int ClientID, const char *pCommand)
-{
-	if (ClientID >= 0 && ClientID < MAX_CLIENTS)
-	{
-		if (str_comp_nocase(pCommand, "/locks") == 0)
-		{
-			char aBuf[64];
-			str_format(aBuf, sizeof(aBuf), "Locks:", GameServer()->ModVersion());
-			CGameControllerDOM::SendChat(ClientID, aBuf);
-
-			SendChat(ClientID, "——————————————————————————————");
-			for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
-			{
-				if (!m_aDominationSpotsEnabled[Spot])
-					continue;
-				str_format(aBuf, sizeof(aBuf), "%c: %i | %i", GetSpotName(Spot), m_apDominationSpots[Spot]->IsLocked(DOM_RED), m_apDominationSpots[Spot]->IsLocked(DOM_BLUE));
-				CGameControllerDOM::SendChat(ClientID, aBuf);
-			}
-		}
-		else
-			CGameControllerDOM::SendChatCommand(ClientID, pCommand);
-	}
-}
