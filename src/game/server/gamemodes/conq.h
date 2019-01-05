@@ -30,6 +30,11 @@ protected:
 
 	void DoWincheckMatch();
 
+	int GetNextSpot(int Spot) const override    { return CGameControllerDOM::GetNextSpot(Spot); }
+	int GetPreviousSpot(int Spot) const override { return CGameControllerDOM::GetPreviousSpot(Spot); }
+	int GetNextSpot(int Spot, int Team) const;
+	int GetPreviousSpot(int Spot, int Team) const;
+
 protected:
 	virtual void AddColorizedOpenParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const;
 	virtual void AddColorizedCloseParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const;

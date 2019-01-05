@@ -33,27 +33,17 @@ void CGameControllerCONQ::Init()
 	if (m_NumOfDominationSpots > 1)
 	{
 		int SpotRed, SpotBlue;
-		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
+		int Spot = -1;
+		while ((Spot = GetNextSpot(Spot)) > -1)
 		{
-			if (!m_aDominationSpotsEnabled[Spot])
-				continue;
 			LockSpot(Spot, DOM_RED);
 			LockSpot(Spot, DOM_BLUE);
 		}
-		for (int Spot = 0; Spot< DOM_MAXDSPOTS; ++Spot)
-		{
-			if (!m_aDominationSpotsEnabled[Spot])
-				continue;
+
+		if ((Spot = GetNextSpot(-1)) > -1)
 			SpotRed = Spot;
-			break;
-		}
-		for (int Spot = DOM_MAXDSPOTS - 1; Spot >= 0; --Spot)
-		{
-			if (!m_aDominationSpotsEnabled[Spot])
-				continue;
+		if ((Spot = GetPreviousSpot(DOM_MAXDSPOTS)) > -1)
 			SpotBlue = Spot;
-			break;
-		}
 
 		m_apDominationSpots[SpotRed]->SetTeam(DOM_RED);
 		m_apDominationSpots[SpotBlue]->SetTeam(DOM_BLUE);
@@ -136,29 +126,13 @@ void CGameControllerCONQ::EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) con
 	
 	int SpawnSpot = -1;
 
-	if (pEval->m_FriendlyTeam == DOM_RED)
+	int Spot = -1;
+	while ((Spot = GetNextSpot(Spot, pEval->m_FriendlyTeam)) > -1)
 	{
-		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
-		{
-			if (!m_aDominationSpotsEnabled[Spot])
-				continue;
-			if (m_apDominationSpots[Spot]->GetTeam() == pEval->m_FriendlyTeam) // own dspot
-				SpawnSpot = Spot;
-			else if (SpawnSpot != -1)
-				break;
-		}
-	}
-	else if (pEval->m_FriendlyTeam == DOM_BLUE)
-	{
-		for (int Spot = DOM_MAXDSPOTS - 1; Spot >= 0; --Spot)
-		{
-			if (!m_aDominationSpotsEnabled[Spot])
-				continue;
-			if (m_apDominationSpots[Spot]->GetTeam() == pEval->m_FriendlyTeam) // own dspot
-				SpawnSpot = Spot;
-			else if (SpawnSpot != -1)
-				break;
-		}
+		if (m_apDominationSpots[Spot]->GetTeam() == pEval->m_FriendlyTeam) // own dspot
+			SpawnSpot = Spot;
+		else if (SpawnSpot != -1) // first non-own spot
+			break;
 	}
 
 	if (SpawnSpot == -1 || !m_aaNumSpotSpawnPoints[SpawnSpot][Team])
@@ -193,17 +167,16 @@ bool CGameControllerCONQ::CanSpawn(int Team, vec2 *pOutPos)
 
 void CGameControllerCONQ::CalculateSpawns()
 {
-	for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
-		for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
+	for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
+		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
 			m_aaNumSpotSpawnPoints[Spot][Team] = 0;
 
+	int Spot;
 	for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
 	{
-		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
-		{
-			if (m_aDominationSpotsEnabled[Spot])
-				CalculateSpotSpawns(Spot, Team);
-		}
+		Spot = -1;
+		while ((Spot = GetNextSpot(Spot)) > -1)
+			CalculateSpotSpawns(Spot, Team);
 	}
 }
 
@@ -220,49 +193,8 @@ void CGameControllerCONQ::CalculateSpotSpawns(int Spot, int Team)
 	}
 
 	// get last spots for distance calculation
-	int PreviousSpot = -1;
-	int NextSpot = -1;
-
-	if (Team == DOM_RED)
-	{
-		if (Spot > 0)
-		{
-			for (int i = Spot - 1; i >= 0; --i)
-			{
-				if (!m_aDominationSpotsEnabled[i])
-					continue;
-				PreviousSpot = i;
-				break;
-			}
-		}
-		for (int i = Spot + 1; i < DOM_MAXDSPOTS; ++i)
-		{
-			if (!m_aDominationSpotsEnabled[i])
-				continue;
-			NextSpot = i;
-			break;
-		}
-	}
-	else if (Team == DOM_BLUE)
-	{
-		if (Spot < DOM_MAXDSPOTS - 1)
-		{
-			for (int i = Spot + 1; i < DOM_MAXDSPOTS; ++i)
-			{
-				if (!m_aDominationSpotsEnabled[i])
-					continue;
-				PreviousSpot = i;
-				break;
-			}
-		}
-		for (int i = Spot - 1; i >= 0; --i)
-		{
-			if (!m_aDominationSpotsEnabled[i])
-				continue;
-			NextSpot = i;
-			break;
-		}
-	}
+	int PreviousSpot = GetPreviousSpot(Spot, Team);
+	int NextSpot     = GetNextSpot(Spot, Team);
 
 	// get spawn point
 	int NumStartpoints = 0;
@@ -341,7 +273,7 @@ float CGameControllerCONQ::EvaluateSpawnPosConq(vec2 Pos, int SpawnSpot, int Nex
 	float DistanceSpawnSpot = min(FLT_MAX, distance(Pos, m_apDominationSpots[SpawnSpot]->GetPos()));
 	float DistanceNextSpot = FLT_MAX;
 
-	if (NextSpot >= 0)
+	if (NextSpot > -1)
 	{
 		DistanceNextSpot = min(FLT_MAX, distance(Pos, m_apDominationSpots[NextSpot]->GetPos()));
 		float DistanceSpawnToNextSpot = min(FLT_MAX, distance(m_apDominationSpots[SpawnSpot]->GetPos(), m_apDominationSpots[NextSpot]->GetPos()));
@@ -366,6 +298,8 @@ float CGameControllerCONQ::EvaluateSpawnPosConq(vec2 Pos, int SpawnSpot, int Nex
 
 void CGameControllerCONQ::UpdateBroadcast()
 {
+	// TODO This will stop the broadcast overview animation
+
 	if (m_WinTick == -1)
 		CGameControllerDOM::UpdateBroadcast();
 	else if (!((Server()->Tick() - m_WinTick) % Server()->TickSpeed()))
@@ -386,64 +320,25 @@ void CGameControllerCONQ::OnCapture(int Spot, int Team)
 
 	bool HasAllPreviousSpots = true;
 
-	// TODO Refactor GetNextSpot / GetPreviousSpot
-
 	// do un-/locking
-	if (Team == DOM_RED)
+	int PreviousSpot = Spot;
+	while ((PreviousSpot = GetPreviousSpot(PreviousSpot, Team)) > -1)
 	{
-		if (Spot > 0)
+		if (m_apDominationSpots[PreviousSpot]->GetTeam() != Team)
 		{
-			for (int i = Spot - 1; i >= 0; --i)
-			{
-				if (!m_aDominationSpotsEnabled[i])
-					continue;
-				if (m_apDominationSpots[i]->GetTeam() != DOM_RED)
-				{
-					HasAllPreviousSpots = false;
-					break;
-				}
-			}
-		}
-		if (HasAllPreviousSpots && Spot < DOM_MAXDSPOTS - 1)
-		{
-			for (int i = Spot + 1; i < DOM_MAXDSPOTS; ++i)
-			{
-				if (!m_aDominationSpotsEnabled[i])
-					continue;
-				if (m_apDominationSpots[i]->GetTeam() != DOM_RED)
-				{
-					UnlockSpot(i, DOM_RED);
-					break;
-				}
-			}
+			HasAllPreviousSpots = false;
+			break;
 		}
 	}
-	else
+	if (HasAllPreviousSpots)
 	{
-		if (Spot < DOM_MAXDSPOTS - 1)
+		int NextSpot = Spot;
+		while ((NextSpot = GetNextSpot(NextSpot, Team)) > -1)
 		{
-			for (int i = Spot + 1; i < DOM_MAXDSPOTS; ++i)
+			if (m_apDominationSpots[NextSpot]->GetTeam() != Team)
 			{
-				if (!m_aDominationSpotsEnabled[i])
-					continue;
-				if (m_apDominationSpots[i]->GetTeam() != DOM_BLUE)
-				{
-					HasAllPreviousSpots = false;
-					break;
-				}
-			}
-		}
-		if (HasAllPreviousSpots && Spot > 0)
-		{
-			for (int i = Spot - 1; i >= 0; --i)
-			{
-				if (!m_aDominationSpotsEnabled[i])
-					continue;
-				if (m_apDominationSpots[i]->GetTeam() != DOM_BLUE)
-				{
-					UnlockSpot(i, DOM_BLUE);
-					break;
-				}
+				UnlockSpot(NextSpot, Team);
+				break;
 			}
 		}
 	}
@@ -454,60 +349,26 @@ void CGameControllerCONQ::OnNeutralize(int Spot, int Team)
 	CGameControllerDOM::OnNeutralize(Spot, Team);
 
 	m_WinTick = -1;
-
 	--m_aTeamscore[Team ^ 1];
 
 	// do un-/locking
-	if (Team == DOM_RED)
+	int PreviousSpot = Spot;
+	while ((PreviousSpot = GetPreviousSpot(PreviousSpot, Team)) > -1)
 	{
-		if (Spot > 0)
-		{
-			for (int i = Spot - 1; i >= 0; --i)
-			{
-				if (!m_aDominationSpotsEnabled[i] || m_apDominationSpots[i]->GetTeam() == DOM_BLUE)
-					continue;
-				LockSpot(i, DOM_BLUE);
-				break;
-			}
-		}
-		if (Spot < DOM_MAXDSPOTS - 1)
-		{
-			for (int i = Spot + 1; i < DOM_MAXDSPOTS; ++i)
-			{
-				if (!m_aDominationSpotsEnabled[i])
-					continue;
-				if (m_apDominationSpots[i]->GetTeam() != DOM_BLUE)
-				{
-					LockSpot(Spot, DOM_BLUE);
-					break;
-				}
-			}
-		}
+		// lock all previous spots that the opponent team does not already own
+		if (m_apDominationSpots[PreviousSpot]->GetTeam() == (Team ^ 1))
+			continue;
+		LockSpot(PreviousSpot, Team ^ 1);
+		break;
 	}
-	else
+	int NextSpot = Spot;
+	while ((NextSpot = GetNextSpot(NextSpot, Team)) > -1)
 	{
-		if (Spot < DOM_MAXDSPOTS - 1)
+		// lock this neutralized spot if the opponent team does not have any next spot
+		if (m_apDominationSpots[NextSpot]->GetTeam() != (Team ^ 1))
 		{
-			for (int i = Spot + 1; i < DOM_MAXDSPOTS; ++i)
-			{
-				if (!m_aDominationSpotsEnabled[i] || m_apDominationSpots[i]->GetTeam() == DOM_RED)
-					continue;
-				LockSpot(i, DOM_RED);
-				break;
-			}
-		}
-		if (Spot > 0)
-		{
-			for (int i = Spot - 1; i >= 0; --i)
-			{
-				if (!m_aDominationSpotsEnabled[i])
-					continue;
-				if (m_apDominationSpots[i]->GetTeam() != DOM_RED)
-				{
-					LockSpot(Spot, DOM_RED);
-					break;
-				}
-			}
+			LockSpot(Spot, Team ^ 1);
+			break;
 		}
 	}
 }
@@ -529,6 +390,16 @@ void CGameControllerCONQ::LockSpot(int Spot, int Team)
 {
 	m_apDominationSpots[Spot]->Lock(Team);
 	m_aLastBroadcastState[Spot] = -2; // force update
+}
+
+int CGameControllerCONQ::GetNextSpot(int Spot, int Team) const
+{
+	return Team == DOM_BLUE? GetPreviousSpot(Spot == -1? DOM_MAXDSPOTS : Spot) : GetNextSpot(Spot);
+}
+
+int CGameControllerCONQ::GetPreviousSpot(int Spot, int Team) const
+{
+	return Team == DOM_BLUE? GetNextSpot(Spot == DOM_MAXDSPOTS? -1 : Spot) : GetPreviousSpot(Spot);
 }
 
 void CGameControllerCONQ::AddColorizedOpenParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const

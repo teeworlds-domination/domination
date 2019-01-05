@@ -31,7 +31,7 @@ private:
 	void SendChatInfoWithHeader(int ClientID);
 
 protected:
-	class CDominationSpot *m_apDominationSpots[DOM_MAXDSPOTS];	//	domination spots
+	CDominationSpot *m_apDominationSpots[DOM_MAXDSPOTS];	//	domination spots
 	float m_aTeamscoreTick[DOM_NUMOFTEAMS];						//	number of ticks a team captured the dspots (updated)
 	int   m_aNumOfTeamDominationSpots[DOM_NUMOFTEAMS];			//	number of owned dspots per team
 	float m_DompointsCounter;									//	points a domination point generates in a second
@@ -54,6 +54,9 @@ protected:
 	virtual void UpdateCaptureProcess();
 	virtual void UpdateBroadcast();
 	virtual void UpdateScoring();
+
+	virtual int GetNextSpot(int Spot) const;
+	virtual int GetPreviousSpot(int Spot) const;
 
 	virtual void SetCapTimes(const char* pCapTimes);
 

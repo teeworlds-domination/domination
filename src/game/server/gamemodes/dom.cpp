@@ -117,10 +117,10 @@ bool CGameControllerDOM::EvaluateSpawnPosDom(CSpawnEval *pEval, vec2 Pos) const
 {
 	float BadDistance = FLT_MAX;
 	float GoodDistance = FLT_MAX;
-	for(int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
+
+	int Spot = -1;
+	while ((Spot = GetNextSpot(Spot)) > -1)
 	{
-		if (!m_aDominationSpotsEnabled[Spot])
-			continue;
 		if (m_apDominationSpots[Spot]->GetTeam() == pEval->m_FriendlyTeam) // own dspot
 			GoodDistance = min(GoodDistance, distance(Pos, m_apDominationSpots[Spot]->GetPos()));
 		else	// neutral or enemy dspot
@@ -199,11 +199,9 @@ void CGameControllerDOM::UpdateCaptureProcess()
 	}
 
 	//	capturing process for all dspots
-	for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
+	int Spot = -1;
+	while ((Spot = GetNextSpot(Spot)) > -1)
 	{
-		if (!m_aDominationSpotsEnabled[Spot])
-			continue;
-		
 		if (m_apDominationSpots[Spot]->IsGettingCaptured())
 		{
 			if (m_apDominationSpots[Spot]->UpdateCapturing(aaPlayerStrength[Spot][m_apDominationSpots[Spot]->GetCapTeam()], aaPlayerStrength[Spot][m_apDominationSpots[Spot]->GetCapTeam() ^ 1]))
@@ -276,6 +274,7 @@ void CGameControllerDOM::UpdateBroadcast()
 				if (GetRespawnDelay(false) > 3.0f && GameServer()->m_apPlayers[cid]->GetTeam() != TEAM_SPECTATORS
 						&& !GameServer()->m_apPlayers[cid]->GetCharacter() && GameServer()->m_apPlayers[cid]->m_RespawnTick > Server()->Tick()+Server()->TickSpeed())
 				{
+					// TODO This should be updated each second independent of the overview animation
 					str_format(aBuf, sizeof(aBuf), "Respawn in %i seconds", (GameServer()->m_apPlayers[cid]->m_RespawnTick - Server()->Tick()) / Server()->TickSpeed());
 					SendBroadcast(cid, aBuf);
 				}
@@ -498,16 +497,26 @@ void CGameControllerDOM::AddColorizedSymbol(char *pBuf, int &rCurrPos, int Color
 	pBuf[rCurrPos++] = Symbol;
 }
 
-void CGameControllerDOM::SetCapTimes(const char *pCapTimes)
+int CGameControllerDOM::GetNextSpot(int Spot) const
 {
-	sscanf(pCapTimes, "%d %d %d %d %d %d %d %d", m_aCapTimes + 1, m_aCapTimes + 2, m_aCapTimes + 3, m_aCapTimes + 4, m_aCapTimes + 5, m_aCapTimes + 6, m_aCapTimes + 7, m_aCapTimes +8);
-	m_aCapTimes[0] = 5;
-	for (int i = 1; i < MAX_PLAYERS / DOM_NUMOFTEAMS + 1; ++i)
-		if (m_aCapTimes[i] <= 0)
-			m_aCapTimes[i] = m_aCapTimes[i - 1];
-		else if (m_aCapTimes[i] > 60)
-			m_aCapTimes[i] = 60;
-	m_aCapTimes[0] = m_aCapTimes[1];
+	for (int NextSpot = Spot + 1; NextSpot < DOM_MAXDSPOTS; ++NextSpot)
+	{
+		if (!m_aDominationSpotsEnabled[NextSpot])
+			continue;
+		return NextSpot;
+	}
+	return -1;
+}
+
+int CGameControllerDOM::GetPreviousSpot(int Spot) const
+{
+	for (int PreviousSpot = Spot - 1; PreviousSpot >= 0; --PreviousSpot)
+	{
+		if (!m_aDominationSpotsEnabled[PreviousSpot])
+			continue;
+		return PreviousSpot;
+	}
+	return -1;
 }
 
 const char* CGameControllerDOM::GetTeamName(int Team) const
@@ -540,6 +549,18 @@ const char* CGameControllerDOM::GetTeamBroadcastColor(int Team) const
 	case DOM_BLUE: return "^009";
 	default:       return "^999";
 	}
+}
+
+void CGameControllerDOM::SetCapTimes(const char *pCapTimes)
+{
+	sscanf(pCapTimes, "%d %d %d %d %d %d %d %d", m_aCapTimes + 1, m_aCapTimes + 2, m_aCapTimes + 3, m_aCapTimes + 4, m_aCapTimes + 5, m_aCapTimes + 6, m_aCapTimes + 7, m_aCapTimes +8);
+	m_aCapTimes[0] = 5;
+	for (int i = 1; i < MAX_PLAYERS / DOM_NUMOFTEAMS + 1; ++i)
+		if (m_aCapTimes[i] <= 0)
+			m_aCapTimes[i] = m_aCapTimes[i - 1];
+		else if (m_aCapTimes[i] > 60)
+			m_aCapTimes[i] = 60;
+	m_aCapTimes[0] = m_aCapTimes[1];
 }
 
 void CGameControllerDOM::SendChat(int ClientID, const char *pText) const
@@ -595,11 +616,11 @@ void CGameControllerDOM::SendChatStats(int ClientID)
 	else
 	{
 		char aBuf[32];
-		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
-			if (m_aDominationSpotsEnabled[Spot])
-			{
-				str_format(aBuf, sizeof(aBuf), "%c: %s", GetSpotName(Spot), GetTeamName(m_apDominationSpots[Spot]->GetTeam()));
-				SendChat(ClientID, aBuf);
-			}
+		int Spot = -1;
+		while ((Spot = GetNextSpot(Spot)) > -1)
+		{
+			str_format(aBuf, sizeof(aBuf), "%c: %s", GetSpotName(Spot), GetTeamName(m_apDominationSpots[Spot]->GetTeam()));
+			SendChat(ClientID, aBuf);
+		}
 	}
 }
