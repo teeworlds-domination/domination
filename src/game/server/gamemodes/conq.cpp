@@ -299,7 +299,7 @@ float CGameControllerCONQ::EvaluateSpawnPosConq(vec2 Pos, int SpawnSpot, int Nex
 	else
 	{
 		float DistancePreviousToSpawnSpot = min(FLT_MAX, distance(m_apDominationSpots[PreviousSpot]->GetPos(), m_apDominationSpots[SpawnSpot]->GetPos()));
-		if (DistanceSpawnSpot < DistancePreviousToSpawnSpot || (NextSpot >= 0 && DistanceNextSpot < min(FLT_MAX, distance(m_apDominationSpots[PreviousSpot]->GetPos(), m_apDominationSpots[NextSpot]->GetPos()))))
+			if (DistanceSpawnSpot < DistancePreviousToSpawnSpot || (NextSpot >= 0 && DistanceNextSpot < min(FLT_MAX, distance(Pos, m_apDominationSpots[PreviousSpot]->GetPos()))))
 			IsStartpointAfterPreviousSpot = true;
 		else
 			IsStartpointAfterPreviousSpot = false;
