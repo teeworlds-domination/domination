@@ -175,7 +175,7 @@ void CGameControllerCONQ::CalculateSpawns()
 	for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
 	{
 		Spot = -1;
-		while ((Spot = GetNextSpot(Spot)) > -1)
+		while ((Spot = GetNextSpot(Spot, Team)) > -1)
 			CalculateSpotSpawns(Spot, Team);
 	}
 }
@@ -238,18 +238,29 @@ void CGameControllerCONQ::CalculateSpotSpawns(int Spot, int Team)
 		}
 		else
 		{
-			// choose nearest spawn behind last own spot
-			int ClosestStartpoint = 0;
-			CurrentDistance = pStartpointDistance[0];
-			for (int i = 1; i < NumStartpoints; ++i)
+			if (PreviousSpot > -1)
 			{
-				if (pStartpointDistance[i] < CurrentDistance)
+				// pick all of previous spot
+				for (int i = 0; i < m_aaNumSpotSpawnPoints[PreviousSpot][Team]; ++i)
 				{
-					ClosestStartpoint = i;
-					CurrentDistance = pStartpointDistance[i];
+					m_aaaSpotSpawnPoints[Spot][Team][m_aaNumSpotSpawnPoints[Spot][Team]++] = m_aaaSpotSpawnPoints[PreviousSpot][Team][i];
 				}
 			}
-			m_aaaSpotSpawnPoints[Spot][Team][m_aaNumSpotSpawnPoints[Spot][Team]++] = m_aaSpawnPoints[Team + 1][pStartpoint[ClosestStartpoint]];
+			if (!m_aaNumSpotSpawnPoints[Spot][Team])
+			{
+				// choose nearest spawn behind last own spot
+				int ClosestStartpoint = 0;
+				CurrentDistance = pStartpointDistance[0];
+				for (int i = 1; i < NumStartpoints; ++i)
+				{
+					if (pStartpointDistance[i] < CurrentDistance)
+					{
+						ClosestStartpoint = i;
+						CurrentDistance = pStartpointDistance[i];
+					}
+				}
+				m_aaaSpotSpawnPoints[Spot][Team][m_aaNumSpotSpawnPoints[Spot][Team]++] = m_aaSpawnPoints[Team + 1][pStartpoint[ClosestStartpoint]];
+			}
 		}
 	}
 	else
