@@ -632,3 +632,8 @@ void CGameControllerDOM::SendChatStats(int ClientID)
 		}
 	}
 }
+
+void CGameControllerDOM::ShowSpawns(int Spot) const
+{
+	// TODO
+}

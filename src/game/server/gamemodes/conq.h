@@ -52,5 +52,7 @@ public:
 	virtual int  OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 
 	virtual void SendChatInfo(int ClientID) override;
+
+	virtual void ShowSpawns(int Spot) const override;
 };
 #endif

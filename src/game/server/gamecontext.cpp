@@ -1407,6 +1407,15 @@ void CGameContext::ConchainGameinfoUpdate(IConsole::IResult *pResult, void *pUse
 	}
 }
 
+void CGameContext::ConDomShowSpawns(IConsole::IResult *pResult, void *pUserData)
+{
+	CGameContext *pSelf = (CGameContext *)pUserData;
+	int Spot = clamp(pResult->GetInteger(0), 0, 4);
+
+	if (pSelf->m_pController)
+		((CGameControllerDOM*)pSelf->m_pController)->ShowSpawns(Spot);
+}
+
 void CGameContext::OnConsoleInit()
 {
 	m_pServer = Kernel()->RequestInterface<IServer>();
@@ -1432,6 +1441,8 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("remove_vote", "s", CFGFLAG_SERVER, ConRemoveVote, this, "remove a voting option");
 	Console()->Register("clear_votes", "", CFGFLAG_SERVER, ConClearVotes, this, "Clears the voting options");
 	Console()->Register("vote", "r", CFGFLAG_SERVER, ConVote, this, "Force a vote to yes/no");
+
+	Console()->Register("conq_spawns", "i", CFGFLAG_SERVER, ConDomShowSpawns, this, "Shows all spawns for spot i");
 }
 
 void CGameContext::OnInit()

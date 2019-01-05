@@ -10,6 +10,7 @@
 
 #include <game/server/entities/character.h>
 #include <game/server/entities/dspot.h>
+#include <game/server/entities/pickup.h>
 
 #include "conq.h"
 
@@ -470,4 +471,11 @@ void CGameControllerCONQ::SendChatInfo(int ClientID)
 	CGameControllerDOM::SendChat(ClientID, "Tip: Capture together to reduce the required time.");
 	CGameControllerDOM::SendChat(ClientID, "Win the match by capturing all spots.");
 	CGameControllerDOM::SendChat(ClientID, "(This mod is enjoyed best with enabled broadcast color.)");
+}
+
+void CGameControllerCONQ::ShowSpawns(int Spot) const
+{
+	for (int Team = 0; Team  < DOM_NUMOFTEAMS; ++Team)
+		for (int Spawn = 0; Spawn < m_aaNumSpotSpawnPoints[Spot][Team]; ++Spawn)
+			new CPickup(&GameServer()->m_World, Team, m_aaaSpotSpawnPoints[Spot][Team][Spawn]);
 }

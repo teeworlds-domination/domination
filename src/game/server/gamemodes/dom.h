@@ -94,6 +94,8 @@ public:
 	const char GetSpotName(int Spot) const;
 	const char *GetTeamBroadcastColor(int Team) const;
 	const char *GetTeamName(int Team) const;
+
+	virtual void ShowSpawns(int Spot) const;
 };
 
 #endif
