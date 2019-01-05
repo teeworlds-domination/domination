@@ -24,6 +24,7 @@ class CGameControllerDOM : public IGameController
 private:
 	char m_aBufBroadcastOverview[256];
 	char m_aaBufBroadcastSpotOverview[DOM_MAXDSPOTS][48];
+	int  m_LastBroadcastCalcTick;
 
 	void UpdateBroadcastOverview();
 	const char* GetDominationSpotBroadcastOverview(int Spot, char *pBuf);

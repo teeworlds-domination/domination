@@ -26,6 +26,7 @@ CGameControllerDOM::CGameControllerDOM(CGameContext *pGameServer)
 	m_aNumOfTeamDominationSpots[0] = 0;
 	m_aNumOfTeamDominationSpots[1] = 0;
 
+	m_LastBroadcastCalcTick = -1;
 	m_LastBroadcastTick = -1;
 
 	Init();
@@ -61,6 +62,7 @@ void CGameControllerDOM::OnReset()
 	m_aTeamscoreTick[1] = 0;
 	m_aNumOfTeamDominationSpots[0] = 0;
 	m_aNumOfTeamDominationSpots[1] = 0;
+	m_LastBroadcastCalcTick = -1;
 	m_LastBroadcastTick = -1;
 
 	mem_zero(m_aaBufBroadcastSpotOverview, DOM_MAXDSPOTS * 48 * sizeof(char));
@@ -258,28 +260,33 @@ void CGameControllerDOM::Neutralize(int Spot)
 
 void CGameControllerDOM::UpdateBroadcast()
 {
-	if (m_LastBroadcastTick + Server()->TickSpeed() <= Server()->Tick())
-		UpdateBroadcastOverview();
+	if (m_LastBroadcastCalcTick + Server()->TickSpeed() > Server()->Tick())
+		return;
 
-	if (m_UpdateBroadcast || m_LastBroadcastTick + Server()->TickSpeed()*8.0f <= Server()->Tick())
+	m_LastBroadcastCalcTick = Server()->Tick();
+	UpdateBroadcastOverview();
+
+	bool DoUpdate = m_UpdateBroadcast || m_LastBroadcastTick + Server()->TickSpeed()*8.0f <= Server()->Tick();
+	if (DoUpdate)
 	{
 		m_LastBroadcastTick = Server()->Tick();
 		m_UpdateBroadcast = false;
+	}
 
-		char aBuf[256] = {0};
-		for (int cid = 0; cid < MAX_CLIENTS; ++cid)
+	char aBuf[256] = {0};
+	for (int cid = 0; cid < MAX_CLIENTS; ++cid)
+	{
+		if (GameServer()->m_apPlayers[cid])
 		{
-			if (GameServer()->m_apPlayers[cid])
+			if (GetRespawnDelay(false) > 3.0f && GameServer()->m_apPlayers[cid]->GetTeam() != TEAM_SPECTATORS
+					&& !GameServer()->m_apPlayers[cid]->GetCharacter() && GameServer()->m_apPlayers[cid]->m_RespawnTick > Server()->Tick()+Server()->TickSpeed())
 			{
-				if (GetRespawnDelay(false) > 3.0f && GameServer()->m_apPlayers[cid]->GetTeam() != TEAM_SPECTATORS
-						&& !GameServer()->m_apPlayers[cid]->GetCharacter() && GameServer()->m_apPlayers[cid]->m_RespawnTick > Server()->Tick()+Server()->TickSpeed())
-				{
-					// TODO This should be updated each second independent of the overview animation
-					str_format(aBuf, sizeof(aBuf), "Respawn in %i seconds", (GameServer()->m_apPlayers[cid]->m_RespawnTick - Server()->Tick()) / Server()->TickSpeed());
-					SendBroadcast(cid, aBuf);
-				}
-				else
-					SendBroadcast(cid, "");
+				str_format(aBuf, sizeof(aBuf), "Respawn in %i seconds", (GameServer()->m_apPlayers[cid]->m_RespawnTick - Server()->Tick()) / Server()->TickSpeed());
+				SendBroadcast(cid, aBuf);
+			}
+			else if (DoUpdate)
+			{
+				SendBroadcast(cid, "");
 			}
 		}
 	}
