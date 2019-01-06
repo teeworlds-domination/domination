@@ -23,6 +23,8 @@ CGameControllerCONQ::CGameControllerCONQ(CGameContext *pGameServer)
 	mem_zero(m_aaNumSpotSpawnPoints, DOM_MAXDSPOTS * DOM_NUMOFTEAMS);
 
 	SetCapTimes(g_Config.m_SvConqCapTimes);
+
+	m_GameInfo.m_ScoreLimit = 5;
 }
 
 void CGameControllerCONQ::Init()
@@ -57,6 +59,13 @@ void CGameControllerCONQ::Init()
 	}
 	else
 		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "CONQ", "Initialization failed, not enough spots.");
+}
+
+void CGameControllerCONQ::OnReset()
+{
+	CGameControllerDOM::OnReset();
+
+	m_GameInfo.m_ScoreLimit = m_NumOfDominationSpots;
 }
 
 void CGameControllerCONQ::Tick()

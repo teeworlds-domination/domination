@@ -47,6 +47,8 @@ public:
 
 	virtual float GetRespawnDelay(bool Self) const override;
 
+	virtual void OnReset() override;
+
 	virtual void OnCapture(int Spot, int Team) override;
 	virtual void OnNeutralize(int Spot, int Team) override;
 	virtual int  OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
