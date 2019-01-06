@@ -33,7 +33,6 @@ void CGameControllerCONQ::Init()
 
 	if (m_NumOfDominationSpots > 1)
 	{
-		int SpotRed, SpotBlue;
 		int Spot = -1;
 		while ((Spot = GetNextSpot(Spot)) > -1)
 		{
@@ -42,15 +41,15 @@ void CGameControllerCONQ::Init()
 		}
 
 		if ((Spot = GetNextSpot(-1)) > -1)
-			SpotRed = Spot;
+		{
+			m_apDominationSpots[Spot]->SetTeam(DOM_RED);
+			OnCapture(Spot, DOM_RED);
+		}
 		if ((Spot = GetPreviousSpot(DOM_MAXDSPOTS)) > -1)
-			SpotBlue = Spot;
-
-		m_apDominationSpots[SpotRed]->SetTeam(DOM_RED);
-		m_apDominationSpots[SpotBlue]->SetTeam(DOM_BLUE);
-
-		OnCapture(SpotRed, DOM_RED);
-		OnCapture(SpotBlue, DOM_BLUE);
+		{
+			m_apDominationSpots[Spot]->SetTeam(DOM_BLUE);
+			OnCapture(Spot, DOM_BLUE);
+		}
 
 		m_aNumOfTeamDominationSpots[DOM_RED] = m_aNumOfTeamDominationSpots[DOM_BLUE] = 1;
 
