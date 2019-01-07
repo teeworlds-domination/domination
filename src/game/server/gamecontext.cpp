@@ -1410,10 +1410,10 @@ void CGameContext::ConchainGameinfoUpdate(IConsole::IResult *pResult, void *pUse
 void CGameContext::ConDomShowSpawns(IConsole::IResult *pResult, void *pUserData)
 {
 	CGameContext *pSelf = (CGameContext *)pUserData;
-	int Spot = clamp(pResult->GetInteger(0), 0, 4);
+	int Spot = clamp(pResult->GetInteger(0), 1, 5);
 
 	if (pSelf->m_pController)
-		((CGameControllerDOM*)pSelf->m_pController)->ShowSpawns(Spot);
+		((CGameControllerDOM*)pSelf->m_pController)->ShowSpawns(Spot - 1);
 }
 
 void CGameContext::OnConsoleInit()
