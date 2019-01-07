@@ -115,7 +115,7 @@ float CGameControllerDOM::GetRespawnDelay(bool Self) const
 	return max(IGameController::GetRespawnDelay(Self), Self ? g_Config.m_SvDomRespawnDelay + 3.0f : g_Config.m_SvDomRespawnDelay);
 }
 
-bool CGameControllerDOM::EvaluateSpawnPosDom(CSpawnEval *pEval, vec2 Pos) const
+bool CGameControllerDOM::EvaluateSpawnPosDom(CSpawnEval *pEval, int Type, vec2 Pos) const
 {
 	float BadDistance = FLT_MAX;
 	float GoodDistance = FLT_MAX;
@@ -123,7 +123,8 @@ bool CGameControllerDOM::EvaluateSpawnPosDom(CSpawnEval *pEval, vec2 Pos) const
 	int Spot = -1;
 	while ((Spot = GetNextSpot(Spot)) > -1)
 	{
-		if (m_apDominationSpots[Spot]->GetTeam() == pEval->m_FriendlyTeam) // own dspot
+		if ((m_apDominationSpots[Spot]->GetTeam() == pEval->m_FriendlyTeam)
+				|| (Type == 0 && m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)) // own dspot
 			GoodDistance = min(GoodDistance, distance(Pos, m_apDominationSpots[Spot]->GetPos()));
 		else	// neutral or enemy dspot
 			BadDistance = min(BadDistance, distance(Pos, m_apDominationSpots[Spot]->GetPos()));
@@ -132,19 +133,66 @@ bool CGameControllerDOM::EvaluateSpawnPosDom(CSpawnEval *pEval, vec2 Pos) const
 }
 
 //	choose a random spawn point near an own domination spot, else a random one
-void CGameControllerDOM::EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type) const
+void CGameControllerDOM::EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type, bool IgnoreSpotOwner) const
 {
 	if (!m_aNumSpawnPoints[Type])
 		return;
+
+	if (Type && !m_aNumOfTeamDominationSpots[Type - 1])
+		return; // team does not own any spot
+
 	// get spawn point
 	int NumStartpoints = 0;
 	int *pStartpoint = new int[m_aNumSpawnPoints[Type]];
 	for(int i = 0; i < m_aNumSpawnPoints[Type]; i++)
-		if (EvaluateSpawnPosDom(pEval, m_aaSpawnPoints[Type][i]))
+		if (IgnoreSpotOwner || EvaluateSpawnPosDom(pEval, Type, m_aaSpawnPoints[Type][i]))
+		{
+			// check if the position is occupado
+			CCharacter *aEnts[MAX_CLIENTS];
+			int Num = GameServer()->m_World.FindEntities(m_aaSpawnPoints[Type][i], 64, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+			vec2 Positions[5] = { vec2(0.0f, 0.0f), vec2(-32.0f, 0.0f), vec2(0.0f, -32.0f), vec2(32.0f, 0.0f), vec2(0.0f, 32.0f) };	// start, left, up, right, down
+			int Result = -1;
+			for(int Index = 0; Index < 5 && Result == -1; ++Index)
+			{
+				Result = Index;
+				for(int c = 0; c < Num; ++c)
+					if(GameServer()->Collision()->CheckPoint(m_aaSpawnPoints[Type][i]+Positions[Index]) ||
+						distance(aEnts[c]->GetPos(), m_aaSpawnPoints[Type][i]+Positions[Index]) <= aEnts[c]->GetProximityRadius())
+					{
+						Result = -1;
+						break;
+					}
+			}
+			if(Result == -1)
+				continue;	// try next spawn point
+
+			if (!Type) // for neutral spawns, check distance to other player
+			{
+				vec2 P = m_aaSpawnPoints[Type][i]+Positions[Result];
+				float S = IGameController::EvaluateSpawnPos(pEval, P);
+				if(!pEval->m_Got || pEval->m_Score >= S - (S * 0.3f))
+				{
+					if (NumStartpoints && pEval->m_Score > S + (S * 0.3f))
+					{
+						NumStartpoints = 0; // got a way better spawn point, drop the other
+						pEval->m_Score = S;
+					}
+
+					if (!pEval->m_Got)
+						pEval->m_Score = S;
+					pEval->m_Got = true;
+				}
+				else
+					continue;
+			}
 			pStartpoint[NumStartpoints++] = i;
-	pEval->m_Got = true;
-	pEval->m_Pos = NumStartpoints ? m_aaSpawnPoints[Type][pStartpoint[Server()->Tick() % NumStartpoints]] :
-		m_aaSpawnPoints[Type][Server()->Tick() % m_aNumSpawnPoints[Type]];
+		}
+
+	if (NumStartpoints)
+	{
+		pEval->m_Got = true;
+		pEval->m_Pos = m_aaSpawnPoints[Type][pStartpoint[Server()->Tick() % NumStartpoints]];
+	}
 	delete[] pStartpoint;
 	pStartpoint = 0;
 }
@@ -162,12 +210,12 @@ bool CGameControllerDOM::CanSpawn(int Team, vec2 *pOutPos)
 	Eval.m_FriendlyTeam = Team;
 
 	// try first try own team spawn, then normal spawn
-	EvaluateSpawnTypeDom(&Eval, 1+(Team&1));
+	EvaluateSpawnTypeDom(&Eval, 1+(Team&1), false);
 	if(!Eval.m_Got)
 	{
-		EvaluateSpawnTypeDom(&Eval, 0);
+		EvaluateSpawnTypeDom(&Eval, 0, false);
 		if(!Eval.m_Got)
-			EvaluateSpawnTypeDom(&Eval, 1+((Team+1)&1));
+			EvaluateSpawnTypeDom(&Eval, 0, true);
 	}
 
 	*pOutPos = Eval.m_Pos;

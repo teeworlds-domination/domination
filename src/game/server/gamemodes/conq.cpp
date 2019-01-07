@@ -150,9 +150,48 @@ void CGameControllerCONQ::EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) con
 		return;
 	}
 
-	// get spawn point
-	pEval->m_Got = true;
-	pEval->m_Pos = m_aaaSpotSpawnPoints[SpawnSpot][Team][Server()->Tick() % m_aaNumSpotSpawnPoints[SpawnSpot][Team]];
+	int NumStartpoints = 0;
+	int *pStartpoint = new int[m_aaNumSpotSpawnPoints[SpawnSpot][Team]];
+	for(int i = 0; i < m_aaNumSpotSpawnPoints[SpawnSpot][Team]; i++)
+	{
+		// check if the position is occupado
+		CCharacter *aEnts[MAX_CLIENTS];
+		int Num = GameServer()->m_World.FindEntities(m_aaaSpotSpawnPoints[SpawnSpot][Team][i], 64, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+		vec2 Positions[5] = { vec2(0.0f, 0.0f), vec2(-32.0f, 0.0f), vec2(0.0f, -32.0f), vec2(32.0f, 0.0f), vec2(0.0f, 32.0f) };	// start, left, up, right, down
+		int Result = -1;
+		for(int Index = 0; Index < 5 && Result == -1; ++Index)
+		{
+			Result = Index;
+			for(int c = 0; c < Num; ++c)
+				if(GameServer()->Collision()->CheckPoint(m_aaaSpotSpawnPoints[SpawnSpot][Team][i]+Positions[Index]) ||
+					distance(aEnts[c]->GetPos(), m_aaaSpotSpawnPoints[SpawnSpot][Team][i]+Positions[Index]) <= aEnts[c]->GetProximityRadius())
+				{
+					Result = -1;
+					break;
+				}
+		}
+		if(Result == -1)
+			continue;	// try next spawn point
+
+		// check distance to other player
+		vec2 P = m_aaaSpotSpawnPoints[SpawnSpot][Team][i]+Positions[Result];
+		float S = IGameController::EvaluateSpawnPos(pEval, P);
+		if(!pEval->m_Got || pEval->m_Score > S)
+		{
+			pEval->m_Got = true;
+			pEval->m_Score = S;
+			pEval->m_Pos = P;
+			pStartpoint[NumStartpoints++] = i;
+		}
+	}
+
+	if (NumStartpoints)
+	{
+		pEval->m_Got = true;
+		pEval->m_Pos = m_aaaSpotSpawnPoints[SpawnSpot][Team][pStartpoint[Server()->Tick() % NumStartpoints]];
+	}
+	delete[] pStartpoint;
+	pStartpoint = 0;
 }
 
 bool CGameControllerCONQ::CanSpawn(int Team, vec2 *pOutPos)
@@ -167,7 +206,7 @@ bool CGameControllerCONQ::CanSpawn(int Team, vec2 *pOutPos)
 	CSpawnEval Eval;
 	Eval.m_FriendlyTeam = Team;
 
-	// try first try own team spawn
+	// only try own team spawn
 	EvaluateSpawnTypeConq(&Eval, Team);
 
 	*pOutPos = Eval.m_Pos;
