@@ -4,5 +4,5 @@
 	branch = master
 [submodule "datasrc/maps"]
 	path = datasrc/maps
-	url = git://github.com/teeworlds/teeworlds-maps.git
+	url = git://github.com/teeworlds-domination/domination-maps.git
 	branch = master
