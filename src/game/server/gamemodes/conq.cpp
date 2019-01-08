@@ -523,7 +523,12 @@ void CGameControllerCONQ::SendChatInfo(int ClientID) const
 
 void CGameControllerCONQ::ShowSpawns(int Spot) const
 {
-	for (int Team = 0; Team  < DOM_NUMOFTEAMS; ++Team)
-		for (int Spawn = 0; Spawn < m_aaNumSpotSpawnPoints[Spot][Team]; ++Spawn)
-			new CPickup(&GameServer()->m_World, Team, m_aaaSpotSpawnPoints[Spot][Team][Spawn]);
+	if((m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_GAME_PAUSED) && !GameServer()->m_World.m_ResetRequested)
+	{
+		for (int Team = 0; Team  < DOM_NUMOFTEAMS; ++Team)
+			for (int Spawn = 0; Spawn < m_aaNumSpotSpawnPoints[Spot][Team]; ++Spawn)
+				new CPickup(&GameServer()->m_World, Team, m_aaaSpotSpawnPoints[Spot][Team][Spawn]);
+	}
+	else
+		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "conq", "This command can only be used in running games.");
 }

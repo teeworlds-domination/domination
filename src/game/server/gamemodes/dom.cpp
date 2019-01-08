@@ -306,8 +306,6 @@ void CGameControllerDOM::Capture(int Spot, int NumOfCapCharacters, CCharacter* a
 	{
 		if (apCapCharacters[i] && apCapCharacters[i]->GetPlayer())
 			apCapCharacters[i]->GetPlayer()->m_Score += g_Config.m_SvDomCapPoints;
-
-
 	}
 
 	OnCapture(Spot, m_apDominationSpots[Spot]->GetTeam());
