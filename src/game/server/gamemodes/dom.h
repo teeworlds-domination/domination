@@ -49,7 +49,7 @@ protected:
 	virtual void Init();
 
 	virtual void StartCapturing(int Spot, int RedTeamSize, int BlueTeamSize, bool Consecutive);
-	virtual void Capture(int Spot);
+	virtual void Capture(int Spot, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_CLIENTS]);
 	virtual void Neutralize(int Spot);
 
 	virtual void UpdateCaptureProcess();

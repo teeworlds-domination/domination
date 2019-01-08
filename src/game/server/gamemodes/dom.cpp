@@ -226,10 +226,10 @@ void CGameControllerDOM::UpdateCaptureProcess()
 {
 	int aaPlayerStats[DOM_MAXDSPOTS][DOM_NUMOFTEAMS];	//	number of players per team per capturing area
 	int aaPlayerStrength[DOM_MAXDSPOTS][DOM_NUMOFTEAMS];	//	capture strength of players per team per capturing area
-	CCharacter* aaapCapPlayers[DOM_NUMOFTEAMS][DOM_MAXDSPOTS][MAX_CLIENTS];	//	capturing players in a capturing area
+	CCharacter* aaapCapPlayers[DOM_MAXDSPOTS][DOM_NUMOFTEAMS][MAX_PLAYERS];	//	capturing players in a capturing area
 	mem_zero(aaPlayerStats, DOM_MAXDSPOTS * DOM_NUMOFTEAMS * sizeof(int));
 	mem_zero(aaPlayerStrength, DOM_MAXDSPOTS * DOM_NUMOFTEAMS * sizeof(int));
-	mem_zero(aaapCapPlayers, DOM_MAXDSPOTS * MAX_CLIENTS * sizeof(CCharacter*));
+	mem_zero(aaapCapPlayers, DOM_MAXDSPOTS * MAX_PLAYERS * sizeof(CCharacter*));
 	CPlayer* pPlayer;
 	int DomCaparea;
 
@@ -243,7 +243,7 @@ void CGameControllerDOM::UpdateCaptureProcess()
 			static_cast<int>(pPlayer->GetCharacter()->GetPos().y)) >> 3, 5) - 1;
 		if (DomCaparea != -1 && m_aDominationSpotsEnabled[DomCaparea])
 		{
-			aaapCapPlayers[pPlayer->GetTeam()][DomCaparea][aaPlayerStats[DomCaparea][pPlayer->GetTeam()]++] = pPlayer->GetCharacter();
+			aaapCapPlayers[DomCaparea][pPlayer->GetTeam()][aaPlayerStats[DomCaparea][pPlayer->GetTeam()]++] = pPlayer->GetCharacter();
 			aaPlayerStrength[DomCaparea][pPlayer->GetTeam()] += pPlayer->GetCharacter()->IsNinja()? 2 : 1; // ninja doubles the players strength
 		}
 	}
@@ -262,7 +262,7 @@ void CGameControllerDOM::UpdateCaptureProcess()
 					StartCapturing(Spot, aaPlayerStrength[Spot][DOM_RED], aaPlayerStrength[Spot][DOM_BLUE], true);
 				}
 				else
-					Capture(Spot);
+					Capture(Spot, aaPlayerStats[Spot][m_apDominationSpots[Spot]->GetCapTeam()], aaapCapPlayers[Spot][m_apDominationSpots[Spot]->GetCapTeam()]);
 			}
 		}
 		else
@@ -287,12 +287,21 @@ void CGameControllerDOM::StartCapturing(int Spot, int NumOfRedCapPlayers, int Nu
 			m_apDominationSpots[Spot]->StartCapturing(m_apDominationSpots[Spot]->GetTeam() ^ 1, GetTeamSize(m_apDominationSpots[Spot]->GetTeam() ^ 1), GetTeamSize(m_apDominationSpots[Spot]->GetTeam()), Consecutive);
 }
 
-void CGameControllerDOM::Capture(int Spot)
+void CGameControllerDOM::Capture(int Spot, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_CLIENTS])
 {
 	if (Spot < 0 || Spot > DOM_MAXDSPOTS - 1)
 		return;
 
 	++m_aNumOfTeamDominationSpots[m_apDominationSpots[Spot]->GetTeam()];
+
+	for (int i = 0; i < NumOfCapCharacters; ++i)
+	{
+		if (apCapCharacters[i] && apCapCharacters[i]->GetPlayer())
+			apCapCharacters[i]->GetPlayer()->m_Score += g_Config.m_SvDomCapPoints;
+
+
+	}
+
 	OnCapture(Spot, m_apDominationSpots[Spot]->GetTeam());
 }
 
