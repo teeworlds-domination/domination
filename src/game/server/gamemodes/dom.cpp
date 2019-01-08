@@ -516,7 +516,8 @@ void CGameControllerDOM::AddColorizedLine(int Spot, char *pBuf, int &rCurrPos, i
 	}
 
 	// static const char* CHAR_LINE = "—"; // TODO hackish
-	static const char CHAR_LINE_0 = '\342';
+	// static const char* CHAR_LINEx = "–";
+	static const char CHAR_LINE = '\342';
 
 	if (m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)
 	{
@@ -525,38 +526,39 @@ void CGameControllerDOM::AddColorizedLine(int Spot, char *pBuf, int &rCurrPos, i
 			if (m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED)
 			{
 				if (MarkerPos < LineNum) // line is right of marker
-					AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE_0);
+					AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE);
 				else
-					AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, CHAR_LINE_0);
+					AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, CHAR_LINE);
 			}
 			else
 			{
 				if (LineNum < MarkerPos) // line is left of marker
-					AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE_0);
+					AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE);
 				else
-					AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, CHAR_LINE_0);
+					AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, CHAR_LINE);
 			}
 		}
 		else
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE_0);
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE);
 	}
 	else if (m_apDominationSpots[Spot]->GetTeam() == DOM_RED)
 	{
 		if (m_apDominationSpots[Spot]->IsGettingCaptured() && MarkerPos < LineNum)
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE_0);
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE);
 		else
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, CHAR_LINE_0);
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, CHAR_LINE);
 	}
 	else
 	{
 		if (m_apDominationSpots[Spot]->IsGettingCaptured() && LineNum < MarkerPos)
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE_0);
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, CHAR_LINE);
 		else
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, CHAR_LINE_0);
+			AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, CHAR_LINE);
 	}
 
 	pBuf[rCurrPos++] = '\200';
-	pBuf[rCurrPos++] = '\224';
+	pBuf[rCurrPos++] = '\223'; // Halbgeviertstrich
+	// pBuf[rCurrPos++] = '\224'; // Geviertstrich
 }
 
 void CGameControllerDOM::AddColorizedSpot(int Spot, char *pBuf, int &rCurrPos) const
