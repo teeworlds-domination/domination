@@ -287,7 +287,7 @@ void CGameControllerDOM::StartCapturing(int Spot, int NumOfRedCapPlayers, int Nu
 			m_apDominationSpots[Spot]->StartCapturing(m_apDominationSpots[Spot]->GetTeam() ^ 1, GetTeamSize(m_apDominationSpots[Spot]->GetTeam() ^ 1), GetTeamSize(m_apDominationSpots[Spot]->GetTeam()), Consecutive);
 }
 
-void CGameControllerDOM::Capture(int Spot, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_CLIENTS])
+void CGameControllerDOM::Capture(int Spot, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS])
 {
 	if (Spot < 0 || Spot > DOM_MAXDSPOTS - 1)
 		return;
@@ -692,5 +692,5 @@ void CGameControllerDOM::SendChatStats(int ClientID)
 
 void CGameControllerDOM::ShowSpawns(int Spot) const
 {
-	// TODO
+	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dom", "This command is not supported for the current gametype.");
 }
