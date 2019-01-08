@@ -511,12 +511,13 @@ void CGameControllerCONQ::AddColorizedCloseParenthesis(int Spot, char *pBuf, int
 		AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, ']');
 }
 
-void CGameControllerCONQ::SendChatInfo(int ClientID)
+void CGameControllerCONQ::SendChatInfo(int ClientID) const
 {
 	CGameControllerDOM::SendChat(ClientID, "GAMETYPE: CONQUEST");
+	CGameControllerDOM::SendChat(ClientID, "——————————————————————————");
 	CGameControllerDOM::SendChat(ClientID, "Capture domination spots.");
-	CGameControllerDOM::SendChat(ClientID, "Tip: Capture together to reduce the required time.");
-	CGameControllerDOM::SendChat(ClientID, "Win the match by capturing all spots.");
+	CGameControllerDOM::SendChat(ClientID, "Tip: Capturing together speeds it up.");
+	CGameControllerDOM::SendChat(ClientID, "Own all spots to win the match.");
 	CGameControllerDOM::SendChat(ClientID, "(This mod is enjoyed best with enabled broadcast color.)");
 }
 

@@ -15,6 +15,6 @@ public:
 	virtual int OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 	virtual void OnCapture(int SpotNumber, int Team) override;
 
-	virtual void SendChatInfo(int ClientID) override;
+	virtual void SendChatInfo(int ClientID) const override;
 };
 #endif

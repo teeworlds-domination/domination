@@ -53,7 +53,7 @@ public:
 	virtual void OnNeutralize(int Spot, int Team) override;
 	virtual int  OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 
-	virtual void SendChatInfo(int ClientID) override;
+	virtual void SendChatInfo(int ClientID) const override;
 
 	virtual void ShowSpawns(int Spot) const override;
 };

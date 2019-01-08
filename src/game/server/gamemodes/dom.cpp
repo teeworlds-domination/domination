@@ -29,6 +29,10 @@ CGameControllerDOM::CGameControllerDOM(CGameContext *pGameServer)
 	m_LastBroadcastCalcTick = -1;
 	m_LastBroadcastTick = -1;
 
+	m_ConstructorTick = Server()->Tick();
+	for (int cid = 0; cid < MAX_CLIENTS; ++cid)
+		m_aPlayerIntroTick[cid] = -1;
+
 	Init();
 }
 
@@ -82,6 +86,8 @@ void CGameControllerDOM::Tick()
 		UpdateBroadcast();
 		UpdateScoring();
 	}
+
+	UpdateChat();
 }
 
 bool CGameControllerDOM::OnEntity(int Index, vec2 Pos)
@@ -106,8 +112,10 @@ bool CGameControllerDOM::OnEntity(int Index, vec2 Pos)
 void CGameControllerDOM::OnPlayerConnect(CPlayer *pPlayer)
 {
 	IGameController::OnPlayerConnect(pPlayer);
+	
+	if (m_ConstructorTick+Server()->TickSpeed()*3 < Server()->Tick())
+		m_aPlayerIntroTick[pPlayer->GetCID()] = Server()->Tick()+Server()->TickSpeed()*4;
 	pPlayer->m_RespawnTick = IsGameRunning()? Server()->Tick()+Server()->TickSpeed()*GetRespawnDelay(false) : Server()->Tick();
-	SendChatInfoWithHeader(pPlayer->GetCID());
 }
 
 float CGameControllerDOM::GetRespawnDelay(bool Self) const
@@ -358,6 +366,26 @@ void CGameControllerDOM::UpdateScoring()
 		double AddScore;
 		m_aTeamscoreTick[Team] = modf(m_aTeamscoreTick[Team] + static_cast<float>(m_aNumOfTeamDominationSpots[Team]) * m_DompointsCounter, &AddScore);
 		m_aTeamscore[Team] += static_cast<int>(AddScore);
+	}
+}
+
+void CGameControllerDOM::UpdateChat()
+{
+	for (int cid = 0; cid < MAX_CLIENTS; ++cid)
+	{
+		if (m_aPlayerIntroTick[cid] != -1)
+		{
+			if (!GameServer()->m_apPlayers[cid])
+			{
+				m_aPlayerIntroTick[cid] = -1;
+				continue;
+			}
+			if (m_aPlayerIntroTick[cid] <= Server()->Tick())
+			{
+				m_aPlayerIntroTick[cid] = -1;
+				SendChatIntro(cid);
+			}
+		}
 	}
 }
 
@@ -631,20 +659,32 @@ void CGameControllerDOM::SetCapTimes(const char *pCapTimes)
 void CGameControllerDOM::SendChat(int ClientID, const char *pText) const
 {
 	CNetMsg_Sv_Chat Msg;
-	Msg.m_Mode = CHAT_ALL;
+	Msg.m_Mode = CHAT_WHISPER;
 	Msg.m_ClientID = -1;
 	Msg.m_pMessage = pText;
-	Msg.m_TargetID = -1;
+	Msg.m_TargetID = ClientID;
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientID);
 }
 
-void CGameControllerDOM::SendChatCommand(int ClientID, const char *pCommand)
+void CGameControllerDOM::SendChatIntro(int ClientID) const
+{
+	char aBuf[64];
+	str_format(aBuf, sizeof(aBuf), "Hey, %s! New here?", Server()->ClientName(ClientID));
+	SendChat(ClientID, aBuf);
+
+	SendChat(ClientID, "Type '/info' and I will give you a quick introduction.");
+}
+
+void CGameControllerDOM::SendChatCommand(int ClientID, const char *pCommand) const
 {
 	if (ClientID >= 0 && ClientID < MAX_CLIENTS)
 	{
 		if (str_comp_nocase(pCommand, "/info") == 0 || str_comp_nocase(pCommand, "/help") == 0)
 		{
-			SendChatInfoWithHeader(ClientID);
+			char aBuf[64];
+			str_format(aBuf, sizeof(aBuf), "Domination Mod (%s) by Slayer and Fisico.", GameServer()->ModVersion());
+			SendChat(ClientID, aBuf);
+			SendChatInfo(ClientID);
 		}
 		else if (str_comp_nocase(pCommand, "/spots") == 0 || str_comp_nocase(pCommand, "/domspots") == 0)
 			SendChatStats(ClientID);
@@ -653,26 +693,29 @@ void CGameControllerDOM::SendChatCommand(int ClientID, const char *pCommand)
 	}
 }
 
-void CGameControllerDOM::SendChatInfoWithHeader(int ClientID)
+void CGameControllerDOM::SendChatInfoWithHeader(int ClientID) const
 {
+	SendChat(ClientID, ".");
 	char aBuf[64];
-	str_format(aBuf, sizeof(aBuf), "Domination Mod (%s) by Slayer, orig. by ziltoide and Oy.", GameServer()->ModVersion());
+	str_format(aBuf, sizeof(aBuf), "Domination Mod (%s) by Slayer and Fisico.", GameServer()->ModVersion());
 	SendChat(ClientID, aBuf);
-
-	SendChat(ClientID, "——————————————————————————————");
+	SendChat(ClientID, "GAMETYPE: DOMINATION");
+	SendChat(ClientID, "———————————————————————");
 	SendChatInfo(ClientID);
+	SendChat(ClientID, ".");
 }
 
-void CGameControllerDOM::SendChatInfo(int ClientID)
+void CGameControllerDOM::SendChatInfo(int ClientID) const
 {
 	SendChat(ClientID, "GAMETYPE: DOMINATION");
+	SendChat(ClientID, "——————————————————————————");
 	SendChat(ClientID, "Capture domination spots.");
-	SendChat(ClientID, "Tip: Capture together to reduce the required time.");
-	SendChat(ClientID, "For each captured spot, your teams score increases over time.");
-	SendChat(ClientID, "(This mod is enjoyed best with enabled broadcast color.)");
+	SendChat(ClientID, "Tip: Capturing together speeds it up.");
+	SendChat(ClientID, "Each team spot increases your teams score over time.");
+	SendChat(ClientID, "(Please enable broadcast color in your settings.)");
 }
 
-void CGameControllerDOM::SendChatStats(int ClientID)
+void CGameControllerDOM::SendChatStats(int ClientID) const
 {
 	SendChat(ClientID, "——— Domination Spots ———");
 

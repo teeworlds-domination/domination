@@ -38,12 +38,12 @@ void CGameControllerKDOM::OnCapture(int SpotNumber, int Team)
 	m_aTeamscore[Team] += g_Config.m_SvKdomCapTeamscoreMultiplier * (m_aNumOfTeamDominationSpots[Team] - 1);
 }
 
-void CGameControllerKDOM::SendChatInfo(int ClientID)
+void CGameControllerKDOM::SendChatInfo(int ClientID) const
 {
 	CGameControllerDOM::SendChat(ClientID, "GAMETYPE: KILL DOMINATION");
+	CGameControllerDOM::SendChat(ClientID, "——————————————————————————");
 	CGameControllerDOM::SendChat(ClientID, "Capture domination spots.");
-	CGameControllerDOM::SendChat(ClientID, "Tip: Capture together to reduce the required time.");
-	CGameControllerDOM::SendChat(ClientID, "Gain team scores by killing your enemies.");
-	CGameControllerDOM::SendChat(ClientID, "Each captured spot increases the amount of score you receive.");
+	CGameControllerDOM::SendChat(ClientID, "Tip: Capturing together speeds it up.");
+	CGameControllerDOM::SendChat(ClientID, "Each kill gives your team score (x team spots).");
 	CGameControllerDOM::SendChat(ClientID, "(This mod is enjoyed best with enabled broadcast color.)");
 }

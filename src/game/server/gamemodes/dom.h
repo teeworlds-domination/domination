@@ -26,10 +26,13 @@ private:
 	char m_aaBufBroadcastSpotOverview[DOM_MAXDSPOTS][48];
 	int  m_LastBroadcastCalcTick;
 
+	int m_ConstructorTick;
+	int m_aPlayerIntroTick[MAX_CLIENTS];
+
 	void UpdateBroadcastOverview();
 	const char* GetDominationSpotBroadcastOverview(int Spot, char *pBuf);
 
-	void SendChatInfoWithHeader(int ClientID);
+	void SendChatInfoWithHeader(int ClientID) const;
 
 protected:
 	CDominationSpot *m_apDominationSpots[DOM_MAXDSPOTS];	//	domination spots
@@ -54,6 +57,7 @@ protected:
 
 	virtual void UpdateCaptureProcess();
 	virtual void UpdateBroadcast();
+	virtual void UpdateChat();
 	virtual void UpdateScoring();
 
 	virtual int GetNextSpot(int Spot) const;
@@ -87,9 +91,10 @@ public:
 	virtual bool SendPersonalizedBroadcast(int ClientID) const;
 	void SendBroadcast(int ClientID, const char *pText) const;
 	void SendChat(int ClientID, const char *pText) const;
-	virtual void SendChatCommand(int ClientID, const char *pCommand);
-	virtual void SendChatInfo(int ClientID);
-	virtual void SendChatStats(int ClientID);
+	void SendChatIntro(int ClientID) const;
+	virtual void SendChatCommand(int ClientID, const char *pCommand) const;
+	virtual void SendChatInfo(int ClientID) const;
+	virtual void SendChatStats(int ClientID) const;
 
 	const char GetSpotName(int Spot) const;
 	const char *GetTeamBroadcastColor(int Team) const;
