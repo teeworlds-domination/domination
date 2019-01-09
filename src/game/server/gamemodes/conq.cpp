@@ -72,14 +72,20 @@ void CGameControllerCONQ::Tick()
 {
 	CGameControllerDOM::Tick();
 
-	if((m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_GAME_PAUSED) && !GameServer()->m_World.m_ResetRequested)
+	if(m_GameState == IGS_GAME_RUNNING && !GameServer()->m_World.m_ResetRequested)
 	{
 		DoWincheckMatch();
+	}
+	else if (m_GameState != IGS_GAME_RUNNING)
+	{
+		if (m_WinTick != -1)
+			++m_WinTick;
 	}
 }
 
 void CGameControllerCONQ::EndMatch()
 {
+	m_WinTick = -1;
 	CGameControllerDOM::SendBroadcast(-1, "");
 	IGameController::EndMatch();
 }
@@ -117,10 +123,7 @@ void CGameControllerCONQ::DoWincheckMatch()
 	// Check timelimit
 	if ( (m_GameInfo.m_TimeLimit > 0 && (Server()->Tick()-m_GameStartTick) >= m_GameInfo.m_TimeLimit*Server()->TickSpeed()*60)
 			|| (m_WinTick != -1 && (Server()->Tick()-m_WinTick >= g_Config.m_SvConqWintime*Server()->TickSpeed())) )
-	{
-	 	GameServer()->SendBroadcast("", -1);
 	 	EndMatch();
-	}
 }
 
 float CGameControllerCONQ::GetRespawnDelay(bool Self) const

@@ -80,12 +80,14 @@ void CGameControllerDOM::Tick()
 {
 	IGameController::Tick();
 
-	if((m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_GAME_PAUSED) && !GameServer()->m_World.m_ResetRequested)
+	if(m_GameState == IGS_GAME_RUNNING && !GameServer()->m_World.m_ResetRequested)
 	{
 		UpdateCaptureProcess();
 		UpdateBroadcast();
 		UpdateScoring();
 	}
+	else if(m_LastBroadcastTick != -1)
+		UpdateBroadcast();
 
 	UpdateChat();
 }
