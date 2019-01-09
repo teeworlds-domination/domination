@@ -471,7 +471,7 @@ void CGameControllerCONQ::AddColorizedOpenParenthesis(int Spot, char *pBuf, int 
 	}
 
 	CGameControllerDOM::AddColorizedOpenParenthesis(Spot, pBuf, rCurrPos, MarkerPos);
-	if (!m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetTeam() != DOM_RED && !m_apDominationSpots[Spot]->IsLocked(DOM_RED))
+	if (m_GameState != IGS_END_MATCH && !m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetTeam() != DOM_RED && !m_apDominationSpots[Spot]->IsLocked(DOM_RED))
 		pBuf[rCurrPos - 1] = ':';
 }
 
@@ -484,7 +484,7 @@ void CGameControllerCONQ::AddColorizedCloseParenthesis(int Spot, char *pBuf, int
 	}
 
 	CGameControllerDOM::AddColorizedCloseParenthesis(Spot, pBuf, rCurrPos, MarkerPos);
-	if (!m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetTeam() != DOM_BLUE && !m_apDominationSpots[Spot]->IsLocked(DOM_BLUE))
+	if (m_GameState != IGS_END_MATCH && !m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetTeam() != DOM_BLUE && !m_apDominationSpots[Spot]->IsLocked(DOM_BLUE))
 		pBuf[rCurrPos - 1] = ':';
 }
 
