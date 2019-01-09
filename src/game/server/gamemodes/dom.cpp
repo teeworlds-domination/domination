@@ -668,7 +668,7 @@ void CGameControllerDOM::SendChat(int ClientID, const char *pText) const
 
 void CGameControllerDOM::SendChatIntro(int ClientID) const
 {
-	char aBuf[64];
+	char aBuf[256];
 	str_format(aBuf, sizeof(aBuf), "Hey, %s! New here?", Server()->ClientName(ClientID));
 	SendChat(ClientID, aBuf);
 
