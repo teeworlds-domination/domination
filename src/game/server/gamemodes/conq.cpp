@@ -467,22 +467,9 @@ void CGameControllerCONQ::AddColorizedOpenParenthesis(int Spot, char *pBuf, int 
 		return;
 	}
 
-	if (m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)
-	{
-		if (m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED)
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, '{');
-		else
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, m_apDominationSpots[Spot]->IsLocked(DOM_RED) || m_apDominationSpots[Spot]->IsGettingCaptured()? '(' : ':');
-	}
-	else if (m_apDominationSpots[Spot]->GetTeam() == DOM_RED)
-		AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, '{');
-	else
-	{
-		if (m_apDominationSpots[Spot]->IsGettingCaptured())
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, '(');
-		else
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, m_apDominationSpots[Spot]->IsLocked(DOM_RED)? '[' : ':');
-	}
+	CGameControllerDOM::AddColorizedOpenParenthesis(Spot, pBuf, rCurrPos, MarkerPos);
+	if (!m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetTeam() != DOM_RED && !m_apDominationSpots[Spot]->IsLocked(DOM_RED))
+		pBuf[rCurrPos - 1] = ':';
 }
 
 void CGameControllerCONQ::AddColorizedCloseParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const
@@ -493,22 +480,9 @@ void CGameControllerCONQ::AddColorizedCloseParenthesis(int Spot, char *pBuf, int
 		return;
 	}
 
-	if (m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)
-	{
-		if (m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetCapTeam() == DOM_BLUE)
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, ']');
-		else
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, m_apDominationSpots[Spot]->IsLocked(DOM_BLUE) || m_apDominationSpots[Spot]->IsGettingCaptured()? ')' : ':');
-	}
-	else if (m_apDominationSpots[Spot]->GetTeam() == DOM_RED)
-	{
-		if (m_apDominationSpots[Spot]->IsGettingCaptured())
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_NEUTRAL, ')');
-		else
-			AddColorizedSymbol(pBuf, rCurrPos, DOM_RED, m_apDominationSpots[Spot]->IsLocked(DOM_BLUE)? '}' : ':');
-	}
-	else // DOM_BLUE
-		AddColorizedSymbol(pBuf, rCurrPos, DOM_BLUE, ']');
+	CGameControllerDOM::AddColorizedCloseParenthesis(Spot, pBuf, rCurrPos, MarkerPos);
+	if (!m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetTeam() != DOM_BLUE && !m_apDominationSpots[Spot]->IsLocked(DOM_BLUE))
+		pBuf[rCurrPos - 1] = ':';
 }
 
 void CGameControllerCONQ::SendChatInfo(int ClientID) const

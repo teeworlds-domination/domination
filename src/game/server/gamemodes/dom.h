@@ -32,8 +32,6 @@ private:
 	void UpdateBroadcastOverview();
 	const char* GetDominationSpotBroadcastOverview(int Spot, char *pBuf);
 
-	void SendChatInfoWithHeader(int ClientID) const;
-
 protected:
 	CDominationSpot *m_apDominationSpots[DOM_MAXDSPOTS];	//	domination spots
 	float m_aTeamscoreTick[DOM_NUMOFTEAMS];						//	number of ticks a team captured the dspots (updated)
@@ -74,6 +72,21 @@ protected:
 
 	void AddColorizedSymbol(char *pBuf, int &rCurrPos, int ColorCode, const char Symbol) const;
 
+	virtual bool SendPersonalizedBroadcast(int ClientID) const;
+	void SendBroadcast(int ClientID, const char *pText) const;
+
+	void SendChat(int ClientID, const char *pText) const;
+	void SendChatIntro(int ClientID) const;
+	virtual void SendChatInfo(int ClientID) const;
+	virtual void SendChatStats(int ClientID) const;
+
+	const char GetSpotName(int Spot) const;
+	const char *GetTeamBroadcastColor(int Team) const;
+	const char GetTeamBroadcastOpenParenthesis(int Team) const;
+	const char GetTeamBroadcastCloseParenthesis(int Team) const;
+	const char GetTeamBroadcastMarker(int Team) const;
+	const char *GetTeamName(int Team) const;
+	
 public:
 	CGameControllerDOM(class CGameContext *pGameServer);
 	virtual void Tick() override;
@@ -88,17 +101,7 @@ public:
 	virtual void OnCapture(int Spot, int Team) {};
 	virtual void OnNeutralize(int Spot, int Team) {};
 
-	virtual bool SendPersonalizedBroadcast(int ClientID) const;
-	void SendBroadcast(int ClientID, const char *pText) const;
-	void SendChat(int ClientID, const char *pText) const;
-	void SendChatIntro(int ClientID) const;
 	virtual void SendChatCommand(int ClientID, const char *pCommand) const;
-	virtual void SendChatInfo(int ClientID) const;
-	virtual void SendChatStats(int ClientID) const;
-
-	const char GetSpotName(int Spot) const;
-	const char *GetTeamBroadcastColor(int Team) const;
-	const char *GetTeamName(int Team) const;
 
 	virtual void ShowSpawns(int Spot) const;
 };
