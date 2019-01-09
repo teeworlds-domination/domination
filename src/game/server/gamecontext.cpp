@@ -228,13 +228,14 @@ void CGameContext::SendChat(int ChatterClientID, int Mode, int To, const char *p
 	Msg.m_pMessage = pText;
 	Msg.m_TargetID = -1;
 
-	if(Mode == CHAT_ALL)
+	if (Mode != CHAT_WHISPER && str_comp_num(Msg.m_pMessage, "/", 1) == 0)
 	{
-		if (str_comp_num(Msg.m_pMessage, "/", 1) == 0)
-			static_cast<CGameControllerDOM *>(m_pController)->SendChatCommand(ChatterClientID, Msg.m_pMessage);
-		else
-			Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
+		static_cast<CGameControllerDOM *>(m_pController)->SendChatCommand(ChatterClientID, Msg.m_pMessage);
+		return;
 	}
+
+	if(Mode == CHAT_ALL)
+		Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, -1);
 	else if(Mode == CHAT_TEAM)
 	{
 		// pack one for the recording only
