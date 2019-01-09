@@ -11,6 +11,7 @@ You can find all relevant information about the gametypes, server setup, custom 
 
 Currently this mod is being developed by *Slayer* and *Fisico*. Originally it was 
 written by *ziltoide* and *Oy*.
+Special thanks go to aQua for the dommain mapres.
 
 This software is provided 'as-is', without any express or implied
 warranty. In no event will the authors be held liable for any damages
