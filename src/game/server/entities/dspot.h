@@ -27,7 +27,7 @@ public:
 	virtual void Reset() override;
 	virtual void Snap(int SnappingClient) override;
 
-	void StartCapturing(const int CaptureTeam, const int CaptureTeamSize, const int DefTeamSize, const bool Consecutive);
+	bool StartCapturing(const int CaptureTeam, const int CaptureTeamSize, const int DefTeamSize, const bool Consecutive);
 	const bool UpdateCapturing(const int NumCapturePlayers, const int NumDefPlayers);
 	void StopCapturing();
 

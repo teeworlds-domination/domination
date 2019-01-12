@@ -45,10 +45,10 @@ void CDominationSpot::Snap(int SnappingClient)
 	}
 }
 
-void CDominationSpot::StartCapturing(const int CaptureTeam, const int CaptureTeamSize, const int DefTeamSize, const bool Consecutive)
+bool CDominationSpot::StartCapturing(const int CaptureTeam, const int CaptureTeamSize, const int DefTeamSize, const bool Consecutive)
 {
 	if (!Consecutive && m_IsLocked[CaptureTeam])
-		return;
+		return false;
 
 	m_CapTime = m_aCapTimes[min(CaptureTeamSize, MAX_PLAYERS / DOM_NUMOFTEAMS + 1)];
 	if (m_WithHandicap && DefTeamSize > CaptureTeamSize)	//	handicap (faster capturing) for smaller team
@@ -58,6 +58,7 @@ void CDominationSpot::StartCapturing(const int CaptureTeam, const int CaptureTea
 	m_IsGettingCaptured = true;
 	m_FlagCounter = (m_Team == DOM_NEUTRAL ? -1.0f : 1.0f) * (static_cast<float>(DOM_FLAG_WAY) / static_cast<float>(m_Timer));
 	m_FlagY = m_Team == DOM_NEUTRAL ? DOM_FLAG_WAY : 0.0f;
+	return true;
 }
 
 const bool CDominationSpot::UpdateCapturing(const int NumCapturePlayers, const int NumDefPlayers)
