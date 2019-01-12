@@ -21,6 +21,7 @@ CGameControllerSTRIKE::CGameControllerSTRIKE(CGameContext *pGameServer)
 	m_pGameType = "CS:DOM";
 	m_GameFlags = GAMEFLAG_TEAMS|GAMEFLAG_SURVIVAL;
 
+	m_SentPersonalizedBroadcast = false;
 	m_WinTick = -1;
 	m_PurchaseTick = -1;
 
@@ -58,6 +59,7 @@ void CGameControllerSTRIKE::OnReset()
 
 	m_GameInfo.m_TimeLimit = g_Config.m_SvStrikeTimelimit;
 
+	m_SentPersonalizedBroadcast = false;
 	m_PurchaseTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvStrikeBuyTimelimit;
 	m_BombPlacedCID = -1;
 }
@@ -153,7 +155,6 @@ void CGameControllerSTRIKE::UpdatePickups()
 		m_PurchaseTick = -1;
 		for (int Pickup = 0; Pickup < m_NumOfStarterPickups; ++Pickup)
 			m_apStarterPickups[Pickup]->Despawn();
-		SendBroadcast(-1, "");
 	}
 }
 
@@ -403,24 +404,64 @@ void CGameControllerSTRIKE::LockSpot(int Spot, int Team)
 	m_aLastBroadcastState[Spot] = -2; // force update
 }
 
-bool CGameControllerSTRIKE::SendPersonalizedBroadcast(int ClientID) const
+bool CGameControllerSTRIKE::SendPersonalizedBroadcast(int ClientID)
 {
+	CCharacter *pChr = GameServer()->m_apPlayers[ClientID]->GetCharacter();
 	if (m_PurchaseTick != -1)
 	{
-		char aBuf[128];
-		str_format(aBuf, sizeof(aBuf), "Buy time ends in %2i seconds.", (m_PurchaseTick - Server()->Tick()) / Server()->TickSpeed());
-		CGameControllerDOM::SendBroadcast(-1, aBuf);
-		return true;
+		if (!pChr || (!pChr->m_aWeapons[WEAPON_SHOTGUN].m_Got && !pChr->m_aWeapons[WEAPON_GRENADE].m_Got && !pChr->m_aWeapons[WEAPON_LASER].m_Got))
+		{
+			char aBuf[128];
+			str_format(aBuf, sizeof(aBuf), "%sPick one weapon: %s%2i %sseconds left", GetTeamBroadcastColor(GameServer()->m_apPlayers[ClientID]->GetTeam() == TEAM_RED? DOM_RED : DOM_BLUE), GetTeamBroadcastColor(DOM_NEUTRAL), (m_PurchaseTick - Server()->Tick()) / Server()->TickSpeed(), GetTeamBroadcastColor(GameServer()->m_apPlayers[ClientID]->GetTeam() == TEAM_RED? DOM_RED : DOM_BLUE));
+			CGameControllerDOM::SendBroadcast(ClientID, aBuf);
+			m_SentPersonalizedBroadcast = true;
+			return true;
+		}
 	}
+
+	if (m_pFlag && GameServer()->m_apPlayers[ClientID]->GetTeam() != TEAM_BLUE)
+	{
+		if ((m_pFlag->IsAtStand() || !m_pFlag->GetCarrier()) && !m_pFlag->IsHidden())
+		{
+			char aBuf[128];
+			str_format(aBuf, sizeof(aBuf), "%sThe flag has no carrier", GetTeamBroadcastColor(DOM_RED));
+			CGameControllerDOM::SendBroadcast(ClientID, aBuf);
+			m_SentPersonalizedBroadcast = true;
+			return true;
+		}
+		else if (!m_pFlag->IsHidden() && (!pChr || m_pFlag->GetCarrier() == GameServer()->m_apPlayers[ClientID]->GetCharacter()))
+		{
+			char aBuf[128];
+			str_format(aBuf, sizeof(aBuf), "%sPlace the flag on a spot", GetTeamBroadcastColor(DOM_RED));
+			CGameControllerDOM::SendBroadcast(ClientID, aBuf);
+			m_SentPersonalizedBroadcast = true;
+			return true;
+		}
+	}
+
 	if (m_WinTick != -1)
 	{
 		char aBuf[128];
-		str_format(aBuf, sizeof(aBuf), "%s will win in %2i seconds.", GetTeamName(DOM_RED)
-				, (m_WinTick - Server()->Tick()) / Server()->TickSpeed());
-		CGameControllerDOM::SendBroadcast(-1, aBuf);
+		if (GameServer()->m_apPlayers[ClientID]->GetTeam() == TEAM_RED)
+			str_format(aBuf, sizeof(aBuf), "%sDefend the spot: %s%2i %sseconds left.", GetTeamBroadcastColor(DOM_RED), GetTeamBroadcastColor(DOM_NEUTRAL)
+					, (m_WinTick - Server()->Tick()) / Server()->TickSpeed(), GetTeamBroadcastColor(DOM_RED));
+		else
+			str_format(aBuf, sizeof(aBuf), "%sNeutralize the spot: %s%2i %sseconds left.", GetTeamBroadcastColor(DOM_BLUE), GetTeamBroadcastColor(DOM_NEUTRAL)
+					, (m_WinTick - Server()->Tick()) / Server()->TickSpeed(), GetTeamBroadcastColor(DOM_BLUE));
+		CGameControllerDOM::SendBroadcast(ClientID, aBuf);
+		m_SentPersonalizedBroadcast = true;
 		return true;
 	}
-	return CGameControllerDOM::SendPersonalizedBroadcast(ClientID);
+
+	if (CGameControllerDOM::SendPersonalizedBroadcast(ClientID))
+		return true;
+	else if (m_SentPersonalizedBroadcast)
+	{
+		CGameControllerDOM::SendBroadcast(ClientID, "");
+		m_SentPersonalizedBroadcast = false;
+		return true;
+	}
+	return false;
 }
 
 void CGameControllerSTRIKE::SendChatInfo(int ClientID) const

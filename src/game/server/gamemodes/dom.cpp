@@ -408,7 +408,7 @@ void CGameControllerDOM::UpdateChat()
 	}
 }
 
-bool CGameControllerDOM::SendPersonalizedBroadcast(int ClientID) const
+bool CGameControllerDOM::SendPersonalizedBroadcast(int ClientID)
 {
 	if (GetRespawnDelay(false) > 3.0f && GameServer()->m_apPlayers[ClientID]->GetTeam() != TEAM_SPECTATORS
 			&& !GameServer()->m_apPlayers[ClientID]->GetCharacter() && GameServer()->m_apPlayers[ClientID]->m_RespawnTick > Server()->Tick()+Server()->TickSpeed())

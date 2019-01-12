@@ -10,6 +10,7 @@
 class CGameControllerSTRIKE : public CGameControllerDOM
 {
 private:
+	bool m_SentPersonalizedBroadcast;
 	int  m_WinTick;
 	int  m_PurchaseTick;
 
@@ -44,7 +45,7 @@ protected:
 	virtual bool WithHandicap() const override { return false; }
 	virtual bool WithAdditiveCapStrength() const override { return false; }
 
-	virtual bool SendPersonalizedBroadcast(int ClientID) const;
+	virtual bool SendPersonalizedBroadcast(int ClientID);
 
 public:
 	CGameControllerSTRIKE(class CGameContext *pGameServer);

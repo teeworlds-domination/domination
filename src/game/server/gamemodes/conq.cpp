@@ -360,7 +360,7 @@ float CGameControllerCONQ::EvaluateSpawnPosConq(vec2 Pos, int SpawnSpot, int Nex
 	return DistanceSpawnSpot;
 }
 
-bool CGameControllerCONQ::SendPersonalizedBroadcast(int ClientID) const
+bool CGameControllerCONQ::SendPersonalizedBroadcast(int ClientID)
 {
 	if (m_WinTick != -1)
 	{

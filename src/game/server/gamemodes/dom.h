@@ -76,7 +76,7 @@ protected:
 
 	void AddColorizedSymbol(char *pBuf, int &rCurrPos, int ColorCode, const char Symbol) const;
 
-	virtual bool SendPersonalizedBroadcast(int ClientID) const;
+	virtual bool SendPersonalizedBroadcast(int ClientID);
 	void SendBroadcast(int ClientID, const char *pText) const;
 
 	void SendChat(int ClientID, const char *pText) const;

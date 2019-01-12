@@ -28,7 +28,7 @@ protected:
 	void UnlockSpot(int Spot, int Team);
 	void LockSpot(int Spot, int Team);
 
-	virtual bool SendPersonalizedBroadcast(int ClientID) const;
+	virtual bool SendPersonalizedBroadcast(int ClientID);
 
 	void DoWincheckMatch();
 
