@@ -149,8 +149,9 @@ MACRO_CONFIG_STR(SvStrikeCapTimes, sv_strike_captimes, 32, "5", CFGFLAG_SAVE|CFG
 MACRO_CONFIG_INT(SvStrikeBuyTimelimit, sv_strike_buy_timelimit, 10, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Buytime limit in seconds (0 disables)")
 MACRO_CONFIG_INT(SvStrikeDropAmmoOnDeath, sv_strike_drop_ammo, 4, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Drop x remaining ammo on death (0 = no ammo drop)")
 MACRO_CONFIG_INT(SvStrikeExplodeTime, sv_strike_explode_time, 30, 0, 300, CFGFLAG_SAVE|CFGFLAG_SERVER, "Duration before the captured spot explodes")
-MACRO_CONFIG_INT(SvStrikeWeaponRespawn, sv_strike_weapon_respawn, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Respawn weapons until buytime expires (0 = no respawn)")
+MACRO_CONFIG_INT(SvStrikeSpawnArmor, sv_strike_spawn_armor, 10, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Amount of armor to spawn with")
 MACRO_CONFIG_INT(SvStrikeTimelimit, sv_strike_timelimit, 2, 0, 5, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time limit in minutes (0 disables)")
+MACRO_CONFIG_INT(SvStrikeWeaponRespawn, sv_strike_weapon_respawn, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Respawn weapons until buytime expires (0 = no respawn)")
 
 // debug
 #ifdef CONF_DEBUG // this one can crash the server if not used correctly

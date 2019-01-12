@@ -370,7 +370,7 @@ void CGameControllerSTRIKE::OnCharacterSpawn(CCharacter *pChr)
 {
 	// give start equipment
 	pChr->IncreaseHealth(10);
-	pChr->IncreaseArmor(10);
+	pChr->IncreaseArmor(g_Config.m_SvStrikeSpawnArmor);
 
 	pChr->GiveWeapon(WEAPON_HAMMER, -1);
 	pChr->GiveWeapon(WEAPON_GUN, 10);
