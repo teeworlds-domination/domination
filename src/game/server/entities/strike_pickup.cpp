@@ -34,8 +34,8 @@ void CStrikePickup::Tick()
 			// respawn
 			m_SpawnTick = -1;
 
-			if(m_Type == PICKUP_GRENADE || m_Type == PICKUP_SHOTGUN || m_Type == PICKUP_LASER)
-				GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SPAWN);
+			// if(m_Type == PICKUP_GRENADE || m_Type == PICKUP_SHOTGUN || m_Type == PICKUP_LASER)
+			// 	GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SPAWN);
 		}
 		else
 			return;
@@ -141,7 +141,7 @@ void CStrikePickup::Tick()
 					m_SpawnTick = Server()->Tick() + Server()->TickSpeed() * RespawnTime;
 			}
 			else
-				m_SpawnTick = m_IsWeapon && g_Config.m_SvStrikeWeaponRespawn? Server()->Tick() + Server()->TickSpeed()/2 : NO_RESPAWN;
+				m_SpawnTick = m_IsWeapon && g_Config.m_SvStrikeWeaponRespawn? Server()->Tick() + Server()->TickSpeed()/3 : NO_RESPAWN;
 		}
 	}
 }
@@ -184,6 +184,7 @@ void CStrikePickup::Snap(int SnappingClient)
 void CStrikePickup::Despawn()
 {
 	m_SpawnTick = NO_RESPAWN;
+	GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SPAWN);
 }
 
 bool CStrikePickup::GiveCharacterWeapon(CCharacter *pChr, int Weapon, int Ammo) const
