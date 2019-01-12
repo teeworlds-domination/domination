@@ -11,7 +11,7 @@ private:
 	bool m_Hidden;
 
 protected:
-	bool CanBeResetAfterDrop() const { return false; };
+	virtual bool CanBeResetAfterDrop() const override { return false; }
 
 public:
 	CStrikeFlag(CGameWorld *pGameWorld, int Team, vec2 StandPos);

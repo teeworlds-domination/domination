@@ -44,7 +44,7 @@ public:
 	void Drop();
 
 protected:
-	bool CanBeResetAfterDrop() const { return true; };
+	virtual bool CanBeResetAfterDrop() const { return true; }
 };
 
 #endif
