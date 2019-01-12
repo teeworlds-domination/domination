@@ -241,6 +241,7 @@ bool CGameControllerSTRIKE::CanSpawn(int Team, vec2 *pOutPos)
 
 void CGameControllerSTRIKE::OnStartCapturing(int Spot, int Team)
 {
+	GameServer()->CreateSound(m_apDominationSpots[Spot]->GetPos(), SOUND_PLAYER_SPAWN);
 	if (m_pFlag && Team == TEAM_RED)
 		m_pFlag->Hide();
 }
