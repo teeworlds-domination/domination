@@ -20,6 +20,8 @@ CStrikePickup::CStrikePickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Te
 
 void CStrikePickup::Reset()
 {
+	CPickup::Reset();
+
 	if (m_IsTemporary)
 		GameWorld()->RemoveEntity(this);
 }
