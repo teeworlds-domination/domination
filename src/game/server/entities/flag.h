@@ -42,6 +42,9 @@ public:
 	/* Functions */
 	void Grab(class CCharacter *pChar);
 	void Drop();
+
+protected:
+	bool CanBeResetAfterDrop() const { return true; };
 };
 
 #endif

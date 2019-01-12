@@ -9,15 +9,13 @@ class CGameControllerCONQ : public CGameControllerDOM
 private:
 	int m_WinTick;
 
-	void CalculateSpawns();
 	void CalculateSpotSpawns(int Spot, int Team);
-
-	void UnlockSpot(int Spot, int Team);
-	void LockSpot(int Spot, int Team);
 
 protected:
 	vec2 m_aaaSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS][64];
 	int  m_aaNumSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS];
+
+	virtual void CalculateSpawns();
 
 	virtual float EvaluateSpawnPosConq(vec2 Pos, int SpawnSpot, int NextSpot, int PreviousSpot, bool &IsStartpointAfterPreviousSpot) const;
 	virtual void  EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) const;
@@ -26,6 +24,9 @@ protected:
 
 	void EndMatch();
 	virtual void UpdateScoring() override {};
+
+	void UnlockSpot(int Spot, int Team);
+	void LockSpot(int Spot, int Team);
 
 	virtual bool SendPersonalizedBroadcast(int ClientID) const;
 
@@ -49,8 +50,8 @@ public:
 
 	virtual void OnReset() override;
 
-	virtual void OnCapture(int Spot, int Team) override;
-	virtual void OnNeutralize(int Spot, int Team) override;
+	virtual void OnCapture(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]) override;
+	virtual void OnNeutralize(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]) override;
 	virtual int  OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 
 	virtual void SendChatInfo(int ClientID) const override;

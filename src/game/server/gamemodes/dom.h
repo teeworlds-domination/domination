@@ -50,18 +50,22 @@ protected:
 	virtual void Init();
 
 	virtual void StartCapturing(int Spot, int RedTeamSize, int BlueTeamSize, bool Consecutive);
-	virtual void Capture(int Spot, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_CLIENTS]);
-	virtual void Neutralize(int Spot);
+	virtual void Capture(int Spot, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]);
+	virtual void Neutralize(int Spot, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]);
 
 	virtual void UpdateCaptureProcess();
 	virtual void UpdateBroadcast();
 	virtual void UpdateChat();
 	virtual void UpdateScoring();
 
+	virtual int CalcCaptureStrength(CCharacter *pChr) const;
+
 	virtual int GetNextSpot(int Spot) const;
 	virtual int GetPreviousSpot(int Spot) const;
 
 	virtual void SetCapTimes(const char* pCapTimes);
+	virtual bool WithHandicap() const { return true; }
+	virtual bool WithAdditiveCapStrength() const { return true; }
 
 protected:
 	virtual void AddColorizedOpenParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const;
@@ -98,8 +102,10 @@ public:
 	virtual void OnPlayerConnect(class CPlayer *pPlayer) override;
 	virtual void OnReset() override;
 
-	virtual void OnCapture(int Spot, int Team) {};
-	virtual void OnNeutralize(int Spot, int Team) {};
+	virtual void OnStartCapturing(int Spot, int Team) {};
+	virtual void OnAbortCapturing(int Spot) {};
+	virtual void OnCapture(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]);
+	virtual void OnNeutralize(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]) {};
 
 	virtual void SendChatCommand(int ClientID, const char *pCommand) const;
 

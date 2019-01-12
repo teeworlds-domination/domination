@@ -842,7 +842,7 @@ void IGameController::CheckGameInfo()
 
 bool IGameController::IsFriendlyFire(int ClientID1, int ClientID2) const
 {
-	if(ClientID1 == ClientID2)
+	if(ClientID1 == -1 || ClientID2 == -1 || ClientID1 == ClientID2)
 		return false;
 
 	if(IsTeamplay())

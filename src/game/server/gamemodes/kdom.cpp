@@ -31,9 +31,9 @@ int CGameControllerKDOM::OnCharacterDeath(class CCharacter *pVictim, class CPlay
 	return CGameControllerDOM::OnCharacterDeath(pVictim, pKiller, Weapon);
 }
 
-void CGameControllerKDOM::OnCapture(int SpotNumber, int Team)
+void CGameControllerKDOM::OnCapture(int SpotNumber, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS])
 {
-	CGameControllerDOM::OnCapture(SpotNumber, Team);
+	CGameControllerDOM::OnCapture(SpotNumber, Team, NumOfCapCharacters, apCapCharacters);
 
 	m_aTeamscore[Team] += g_Config.m_SvKdomCapTeamscoreMultiplier * (m_aNumOfTeamDominationSpots[Team] - 1);
 }

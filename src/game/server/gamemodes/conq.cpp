@@ -19,6 +19,8 @@ CGameControllerCONQ::CGameControllerCONQ(CGameContext *pGameServer)
 {
 	m_pGameType = "CONQ";
 
+	m_WinTick = -1;
+
 	mem_zero(m_aaaSpotSpawnPoints, DOM_MAXDSPOTS * DOM_NUMOFTEAMS * 64);
 	mem_zero(m_aaNumSpotSpawnPoints, DOM_MAXDSPOTS * DOM_NUMOFTEAMS);
 
@@ -45,12 +47,12 @@ void CGameControllerCONQ::Init()
 		if ((Spot = GetNextSpot(-1)) > -1)
 		{
 			m_apDominationSpots[Spot]->SetTeam(DOM_RED);
-			OnCapture(Spot, DOM_RED);
+			OnCapture(Spot, DOM_RED, 0, 0);
 		}
 		if ((Spot = GetPreviousSpot(DOM_MAXDSPOTS)) > -1)
 		{
 			m_apDominationSpots[Spot]->SetTeam(DOM_BLUE);
-			OnCapture(Spot, DOM_BLUE);
+			OnCapture(Spot, DOM_BLUE, 0, 0);
 		}
 
 		m_aNumOfTeamDominationSpots[DOM_RED] = m_aNumOfTeamDominationSpots[DOM_BLUE] = 1;
@@ -371,9 +373,9 @@ bool CGameControllerCONQ::SendPersonalizedBroadcast(int ClientID) const
 	return CGameControllerDOM::SendPersonalizedBroadcast(ClientID);
 }
 
-void CGameControllerCONQ::OnCapture(int Spot, int Team)
+void CGameControllerCONQ::OnCapture(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS])
 {
-	CGameControllerDOM::OnCapture(Spot, Team);
+	CGameControllerDOM::OnCapture(Spot, Team, NumOfCapCharacters, apCapCharacters);
 
 	++m_aTeamscore[Team];
 	UnlockSpot(Spot, Team);
@@ -404,9 +406,9 @@ void CGameControllerCONQ::OnCapture(int Spot, int Team)
 	}
 }
 
-void CGameControllerCONQ::OnNeutralize(int Spot, int Team)
+void CGameControllerCONQ::OnNeutralize(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS])
 {
-	CGameControllerDOM::OnNeutralize(Spot, Team);
+	CGameControllerDOM::OnNeutralize(Spot, Team, NumOfCapCharacters, apCapCharacters);
 
 	m_WinTick = -1;
 	--m_aTeamscore[Team ^ 1];

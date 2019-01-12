@@ -60,7 +60,7 @@ void CFlag::TickDefered()
 
 		if(!m_AtStand)
 		{
-			if(Server()->Tick() > m_DropTick + Server()->TickSpeed()*30)
+			if(Server()->Tick() > m_DropTick + Server()->TickSpeed()*30 && CanBeResetAfterDrop())
 			{
 				Reset();
 				GameServer()->m_pController->OnFlagReturn(this);

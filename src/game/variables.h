@@ -145,6 +145,13 @@ MACRO_CONFIG_STR(SvConqCapTimes, sv_conq_captimes, 32, "10 15 20 25 30 35 40 45"
 MACRO_CONFIG_INT(SvConqRespawnDelay, sv_conq_respawn_delay, 10, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "How many seconds to wait before respawning")
 MACRO_CONFIG_INT(SvConqWintime, sv_conq_wintime, 30, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time a team has to recapture their base spot (0 = infinite)")
 
+MACRO_CONFIG_STR(SvStrikeCapTimes, sv_strike_captimes, 32, "5", CFGFLAG_SAVE|CFGFLAG_SERVER, "Captimes for dynamic capturing")
+MACRO_CONFIG_INT(SvStrikeBuyTimelimit, sv_strike_buy_timelimit, 10, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Buytime limit in seconds (0 disables)")
+MACRO_CONFIG_INT(SvStrikeDropAmmoOnDeath, sv_strike_drop_ammo, 4, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Drop x remaining ammo on death (0 = no ammo drop)")
+MACRO_CONFIG_INT(SvStrikeExplodeTime, sv_strike_explode_time, 30, 0, 300, CFGFLAG_SAVE|CFGFLAG_SERVER, "Duration before the captured spot explodes")
+MACRO_CONFIG_INT(SvStrikeWeaponRespawn, sv_strike_weapon_respawn, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Respawn weapons until buytime expires (0 = no respawn)")
+MACRO_CONFIG_INT(SvStrikeTimelimit, sv_strike_timelimit, 2, 0, 5, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time limit in minutes (0 disables)")
+
 // debug
 #ifdef CONF_DEBUG // this one can crash the server if not used correctly
 	MACRO_CONFIG_INT(DbgDummies, dbg_dummies, 0, 0, MAX_CLIENTS-1, CFGFLAG_SERVER, "")

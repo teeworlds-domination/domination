@@ -20,8 +20,10 @@ private:
 	int m_CapTime;               // Time needed for capturing process
 	int m_Timer;                 // Timer for capturing process
 
+	bool m_WithHandicap;
+
 public:
-	CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id, int CapTimes[MAX_PLAYERS / 2 + 1]);
+	CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id, int CapTimes[MAX_PLAYERS / 2 + 1], bool Handicap);
 	virtual void Reset() override;
 	virtual void Snap(int SnappingClient) override;
 

@@ -11,9 +11,11 @@
 #include "dspot.h"
 
 // DSPOT
-CDominationSpot::CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id, int CapTimes[MAX_PLAYERS / 2 + 1]) : CEntity(pGameWorld, CGameWorld::ENTTYPE_FLAG, Pos),
+CDominationSpot::CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id, int CapTimes[MAX_PLAYERS / 2 + 1], bool Handicap)
+: CEntity(pGameWorld, CGameWorld::ENTTYPE_FLAG, Pos),
 	m_Pos(Pos),
-	m_Id(Id)
+	m_Id(Id),
+	m_WithHandicap(Handicap)
 {
 	for (int i = 0; i < MAX_PLAYERS / DOM_NUMOFTEAMS + 1; ++i)
 		m_aCapTimes[i] = CapTimes[1];
@@ -49,7 +51,7 @@ void CDominationSpot::StartCapturing(const int CaptureTeam, const int CaptureTea
 		return;
 
 	m_CapTime = m_aCapTimes[min(CaptureTeamSize, MAX_PLAYERS / DOM_NUMOFTEAMS + 1)];
-	if (DefTeamSize > CaptureTeamSize)	//	handicap (faster capturing) for smaller team
+	if (m_WithHandicap && DefTeamSize > CaptureTeamSize)	//	handicap (faster capturing) for smaller team
 		m_CapTime = m_CapTime * CaptureTeamSize / DefTeamSize;
 	m_Timer = m_CapTime * Server()->TickSpeed();
 	m_CapTeam = CaptureTeam;
