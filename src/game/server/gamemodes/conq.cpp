@@ -441,6 +441,13 @@ void CGameControllerCONQ::ShiftLocks(int Spot, int Team)
 				}
 			}
 		}
+		else
+		{
+			// win
+			if (PreviousSpot > -1)
+				LockSpot(PreviousSpot, Team ^ 1);
+			LockSpot(Spot, Team ^ 1);
+		}
 	}
 }
 
