@@ -21,7 +21,7 @@ CDominationSpot::CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id, int C
 	, m_WithNeutral(Neutral)
 {
 	for (int i = 0; i < MAX_PLAYERS / DOM_NUMOFTEAMS + 1; ++i)
-		m_aCapTimes[i] = CapTimes[1];
+		m_aCapTimes[i] = CapTimes[i];
 
 	Reset();
 };
