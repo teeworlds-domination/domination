@@ -70,6 +70,7 @@ void CGameControllerCONQ::OnReset()
 	CGameControllerDOM::OnReset();
 
 	m_GameInfo.m_ScoreLimit = m_NumOfDominationSpots;
+	UpdateGameInfo(-1);
 }
 
 void CGameControllerCONQ::Tick()
