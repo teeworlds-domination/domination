@@ -251,46 +251,48 @@ void CGameControllerSTRIKE::OnAbortCapturing(int Spot)
 
 void CGameControllerSTRIKE::OnCapture(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS])
 {
-	if (NumOfCapCharacters)
-		m_BombPlacedCID = apCapCharacters[0]->GetPlayer()->GetCID();
-
-	if (m_pFlag)
+	if (Team == DOM_RED)
 	{
-		m_pFlag->Drop();
-		m_pFlag->Hide();
+		// bomb placed
+		if (NumOfCapCharacters)
+			m_BombPlacedCID = apCapCharacters[0]->GetPlayer()->GetCID();
+
+		if (m_pFlag)
+		{
+			m_pFlag->Drop();
+			m_pFlag->Hide();
+		}
+
+		m_WinTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvStrikeExplodeTime;
+		m_GameInfo.m_TimeLimit = 0;
+		UpdateGameInfo(-1);
+
+		UnlockSpot(Spot, Team ^ 1);
+
+		int NextSpot = -1;
+		while ((NextSpot = GetNextSpot(NextSpot)) > -1)
+		{
+			LockSpot(NextSpot, Team);
+
+			if (NextSpot == Spot)
+				continue;
+
+			LockSpot(NextSpot, Team ^ 1);
+		}
 	}
-
-	m_WinTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvStrikeExplodeTime;
-	m_GameInfo.m_TimeLimit = 0;
-	UpdateGameInfo(-1);
-
-	UnlockSpot(Spot, Team ^ 1);
-
-	int NextSpot = -1;
-	while ((NextSpot = GetNextSpot(NextSpot)) > -1)
+	else
 	{
-		LockSpot(NextSpot, Team);
+		// bomb defused
+		for (int i = 0; i < NumOfCapCharacters; ++i)
+		{
+			if (apCapCharacters[i] && apCapCharacters[i]->GetPlayer())
+				apCapCharacters[i]->GetPlayer()->m_Score += g_Config.m_SvDomCapPoints;
+		}
 
-		if (NextSpot == Spot)
-			continue;
-
-		LockSpot(NextSpot, Team ^ 1);
+		m_WinTick = -1;
+		++m_aTeamscore[Team];
+		EndRound();
 	}
-}
-
-void CGameControllerSTRIKE::OnNeutralize(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS])
-{
-	CGameControllerDOM::OnNeutralize(Spot, Team, NumOfCapCharacters, apCapCharacters);
-
-	for (int i = 0; i < NumOfCapCharacters; ++i)
-	{
-		if (apCapCharacters[i] && apCapCharacters[i]->GetPlayer())
-			apCapCharacters[i]->GetPlayer()->m_Score += g_Config.m_SvDomCapPoints;
-	}
-
-	m_WinTick = -1;
-	++m_aTeamscore[Team];
-	EndRound();
 }
 
 int CGameControllerSTRIKE::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, int Weapon)

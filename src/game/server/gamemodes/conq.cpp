@@ -44,18 +44,20 @@ void CGameControllerCONQ::Init()
 			LockSpot(Spot, DOM_BLUE);
 		}
 
+		m_aNumOfTeamDominationSpots[DOM_RED] = m_aNumOfTeamDominationSpots[DOM_BLUE] = 1;
+
 		if ((Spot = GetNextSpot(-1)) > -1)
 		{
+			UnlockSpot(Spot, DOM_RED);
 			m_apDominationSpots[Spot]->SetTeam(DOM_RED);
 			OnCapture(Spot, DOM_RED, 0, 0);
 		}
 		if ((Spot = GetPreviousSpot(DOM_MAXDSPOTS)) > -1)
 		{
+			UnlockSpot(Spot, DOM_BLUE);
 			m_apDominationSpots[Spot]->SetTeam(DOM_BLUE);
 			OnCapture(Spot, DOM_BLUE, 0, 0);
 		}
-
-		m_aNumOfTeamDominationSpots[DOM_RED] = m_aNumOfTeamDominationSpots[DOM_BLUE] = 1;
 
 		CalculateSpawns();
 	}
@@ -100,9 +102,7 @@ void CGameControllerCONQ::DoWincheckMatch()
 	//	check if teams have players alive
 	for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
 	{
-		if (m_NumOfDominationSpots == m_aNumOfTeamDominationSpots[Team ^ 1])
-			EndMatch(); // Opponent owns all spots -> game over
-		else if (!m_aNumOfTeamDominationSpots[Team])
+		if (!m_aNumOfTeamDominationSpots[Team])
 		{
 			bool PlayerAlive = false;
 			for (int cid = 0; cid < MAX_CLIENTS; ++cid)
@@ -118,8 +118,32 @@ void CGameControllerCONQ::DoWincheckMatch()
 			if (g_Config.m_SvConqWintime && m_WinTick == -1)
 				m_WinTick = Server()->Tick();
 		}
-		else if (m_aNumOfTeamDominationSpots[Team ^ 1] && m_WinTick != -1)
-			m_WinTick = -1; // both teams have spots -> reset WinTick
+		if (m_NumOfDominationSpots == m_aNumOfTeamDominationSpots[Team ^ 1])
+		{
+			if (m_WinTick != -1)
+			{
+				bool NoCapturing = true;
+				int Spot = -1;
+				while((Spot = GetNextSpot(Spot)) > -1)
+				{
+					if (m_apDominationSpots[Spot]->IsGettingCaptured())
+					{
+						NoCapturing = false;
+						break;
+					}
+				}
+				if (NoCapturing)
+				{
+					EndMatch(); // Opponent owns all spots -> game over
+					break;
+				}
+			}
+			else
+			{
+				EndMatch();
+				break;
+			}
+		}
 	}
 
 	// Check timelimit
@@ -377,60 +401,44 @@ void CGameControllerCONQ::OnCapture(int Spot, int Team, int NumOfCapCharacters, 
 {
 	CGameControllerDOM::OnCapture(Spot, Team, NumOfCapCharacters, apCapCharacters);
 
-	++m_aTeamscore[Team];
-	UnlockSpot(Spot, Team);
+	m_WinTick = -1;
+	m_aTeamscore[Team] = m_aNumOfTeamDominationSpots[Team];
+	m_aTeamscore[Team ^ 1] = m_aNumOfTeamDominationSpots[Team ^ 1];
 
-	bool HasAllPreviousSpots = true;
+	ShiftLocks(Spot, Team);
+}
 
-	// do un-/locking
-	int PreviousSpot = Spot;
-	while ((PreviousSpot = GetPreviousSpot(PreviousSpot, Team)) > -1)
+void CGameControllerCONQ::OnAbortCapturing(int Spot)
+{
+	ShiftLocks(Spot, m_apDominationSpots[Spot]->GetTeam());
+}
+
+void CGameControllerCONQ::ShiftLocks(int Spot, int Team)
+{
+	int PreviousSpot = GetPreviousSpot(Spot, Team);
+	if (PreviousSpot == -1
+			|| (m_apDominationSpots[PreviousSpot]->GetTeam() == Team && !m_apDominationSpots[PreviousSpot]->IsGettingCaptured()))
 	{
-		if (m_apDominationSpots[PreviousSpot]->GetTeam() != Team)
-		{
-			HasAllPreviousSpots = false;
-			break;
-		}
-	}
-	if (HasAllPreviousSpots)
-	{
-		int NextSpot = Spot;
-		while ((NextSpot = GetNextSpot(NextSpot, Team)) > -1)
+		int NextSpot = GetNextSpot(Spot, Team);
+		if (NextSpot > -1)
 		{
 			if (m_apDominationSpots[NextSpot]->GetTeam() != Team)
 			{
+				// shift this
+				if (PreviousSpot > -1)
+					LockSpot(PreviousSpot, Team ^ 1);
 				UnlockSpot(NextSpot, Team);
-				break;
 			}
-		}
-	}
-}
-
-void CGameControllerCONQ::OnNeutralize(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS])
-{
-	CGameControllerDOM::OnNeutralize(Spot, Team, NumOfCapCharacters, apCapCharacters);
-
-	m_WinTick = -1;
-	--m_aTeamscore[Team ^ 1];
-
-	// do un-/locking
-	int PreviousSpot = Spot;
-	while ((PreviousSpot = GetPreviousSpot(PreviousSpot, Team)) > -1)
-	{
-		// lock all previous spots that the opponent team does not already own
-		if (m_apDominationSpots[PreviousSpot]->GetTeam() == (Team ^ 1))
-			continue;
-		LockSpot(PreviousSpot, Team ^ 1);
-		break;
-	}
-	int NextSpot = Spot;
-	while ((NextSpot = GetNextSpot(NextSpot, Team)) > -1)
-	{
-		// lock this neutralized spot if the opponent team does not have any next spot
-		if (m_apDominationSpots[NextSpot]->GetTeam() != (Team ^ 1))
-		{
-			LockSpot(Spot, Team ^ 1);
-			break;
+			else if (!m_apDominationSpots[NextSpot]->IsGettingCaptured())
+			{
+				// shift next
+				int NextAfterNextSpot = GetNextSpot(NextSpot, Team);
+				if (NextAfterNextSpot > -1)
+				{
+					LockSpot(Spot, Team ^ 1);
+					UnlockSpot(NextAfterNextSpot, Team);
+				}
+			}
 		}
 	}
 }

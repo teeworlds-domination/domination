@@ -49,7 +49,7 @@ protected:
 	virtual void EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type, bool IgnoreSpotOwner) const;
 	virtual void Init();
 
-	virtual void StartCapturing(int Spot, int RedTeamSize, int BlueTeamSize, bool Consecutive);
+	virtual void StartCapturing(int Spot, int RedTeamSize, int BlueTeamSize);
 	virtual void Capture(int Spot, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]);
 	virtual void Neutralize(int Spot, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]);
 
@@ -64,8 +64,11 @@ protected:
 	virtual int GetPreviousSpot(int Spot) const;
 
 	virtual void SetCapTimes(const char* pCapTimes);
-	virtual bool WithHandicap() const { return true; }
+
 	virtual bool WithAdditiveCapStrength() const { return true; }
+	virtual bool WithHandicap() const { return true; }
+	virtual bool WithHardCaptureAbort() const { return false; }
+	virtual bool WithNeutralState() const { return true; }
 
 protected:
 	virtual void AddColorizedOpenParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const;

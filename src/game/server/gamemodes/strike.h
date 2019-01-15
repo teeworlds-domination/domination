@@ -3,9 +3,7 @@
 #ifndef GAME_SERVER_GAMEMODES_STRIKE_H
 #define GAME_SERVER_GAMEMODES_STRIKE_H
 
-#include <game/server/entities/strike_pickup.h>
-
-#include "conq.h"
+#include "dom.h"
 
 class CGameControllerSTRIKE : public CGameControllerDOM
 {
@@ -14,7 +12,7 @@ private:
 	int  m_WinTick;
 	int  m_PurchaseTick;
 
-	CStrikePickup* m_apStarterPickups[64];
+	class CStrikePickup* m_apStarterPickups[64];
 	int  m_NumOfStarterPickups;
 
 private:
@@ -42,10 +40,13 @@ protected:
 	virtual void UpdateBomb();
 
 	virtual int CalcCaptureStrength(CCharacter *pChr) const override;
-	virtual bool WithHandicap() const override { return false; }
-	virtual bool WithAdditiveCapStrength() const override { return false; }
 
 	virtual bool SendPersonalizedBroadcast(int ClientID);
+
+	virtual bool WithAdditiveCapStrength() const override { return false; }
+	virtual bool WithHandicap() const override { return false; }
+	virtual bool WithHardCaptureAbort() const { return true; }
+	virtual bool WithNeutralState() const override { return false; }
 
 public:
 	CGameControllerSTRIKE(class CGameContext *pGameServer);
@@ -64,7 +65,6 @@ public:
 	virtual void OnStartCapturing(int Spot, int Team) override;
 	virtual void OnAbortCapturing(int Spot) override;
 	virtual void OnCapture(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]) override;
-	virtual void OnNeutralize(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]) override;
 	virtual int  OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 	virtual void OnCharacterSpawn(class CCharacter *pChr) override;
 

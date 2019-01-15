@@ -10,6 +10,7 @@ private:
 	int m_WinTick;
 
 	void CalculateSpotSpawns(int Spot, int Team);
+	void ShiftLocks(int Spot, int Team);
 
 protected:
 	vec2 m_aaaSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS][64];
@@ -37,6 +38,8 @@ protected:
 	int GetNextSpot(int Spot, int Team) const;
 	int GetPreviousSpot(int Spot, int Team) const;
 
+	virtual bool WithNeutralState() const override { return false; }
+
 protected:
 	virtual void AddColorizedOpenParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const;
 	virtual void AddColorizedCloseParenthesis(int Spot, char *pBuf, int &rCurrPos, int MarkerPos) const;
@@ -51,7 +54,8 @@ public:
 	virtual void OnReset() override;
 
 	virtual void OnCapture(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]) override;
-	virtual void OnNeutralize(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]) override;
+	virtual void OnAbortCapturing(int Spot) override;
+
 	virtual int  OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 
 	virtual void SendChatInfo(int ClientID) const override;
