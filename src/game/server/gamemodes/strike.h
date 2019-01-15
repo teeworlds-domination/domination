@@ -16,7 +16,7 @@ private:
 	int  m_NumOfStarterPickups;
 
 private:
-	class CStrikeFlag *m_pFlag;
+	class CStrikeFlag *m_apFlags[2];
 
 protected:
 	int  m_BombPlacedCID;

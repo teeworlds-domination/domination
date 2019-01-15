@@ -27,7 +27,8 @@ CGameControllerSTRIKE::CGameControllerSTRIKE(CGameContext *pGameServer)
 
 	m_NumOfStarterPickups = 0;
 	
-	m_pFlag = 0;
+	m_apFlags[TEAM_RED] = 0;
+	m_apFlags[TEAM_BLUE] = 0;
 
 	m_BombPlacedCID = -1;
 
@@ -62,6 +63,8 @@ void CGameControllerSTRIKE::OnReset()
 	m_SentPersonalizedBroadcast = false;
 	m_PurchaseTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvStrikeBuyTimelimit;
 	m_BombPlacedCID = -1;
+	if (m_apFlags[TEAM_BLUE])
+		m_apFlags[TEAM_BLUE]->Hide();
 }
 
 void CGameControllerSTRIKE::Tick()
@@ -137,11 +140,11 @@ bool CGameControllerSTRIKE::OnEntity(int Index, vec2 Pos)
 
 	int Team = -1;
 	if(Index == ENTITY_FLAGSTAND_RED) Team = TEAM_RED;
-	// if(Index == ENTITY_FLAGSTAND_BLUE) Team = TEAM_BLUE;
-	if(Team == -1 || m_pFlag)
+	if(Index == ENTITY_FLAGSTAND_BLUE) Team = TEAM_BLUE;
+	if(Team == -1 || m_apFlags[Team])
 		return false;
 
-	m_pFlag = new CStrikeFlag(&GameServer()->m_World, Team, Pos);
+	m_apFlags[Team] = new CStrikeFlag(&GameServer()->m_World, Team, Pos);
 	return true;
 }
 
@@ -239,14 +242,15 @@ bool CGameControllerSTRIKE::CanSpawn(int Team, vec2 *pOutPos)
 void CGameControllerSTRIKE::OnStartCapturing(int Spot, int Team)
 {
 	GameServer()->CreateSound(m_apDominationSpots[Spot]->GetPos(), SOUND_PLAYER_SPAWN);
-	if (m_pFlag && Team == TEAM_RED)
-		m_pFlag->Hide();
 }
 
 void CGameControllerSTRIKE::OnAbortCapturing(int Spot)
 {
-	if (m_pFlag && m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)
-		m_pFlag->Show();
+	if (m_apFlags[TEAM_BLUE] && m_apFlags[TEAM_BLUE]->GetCarrier())
+	{
+		m_apFlags[TEAM_BLUE]->Drop();
+		m_apFlags[TEAM_BLUE]->Hide();
+	}
 }
 
 void CGameControllerSTRIKE::OnCapture(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS])
@@ -257,10 +261,10 @@ void CGameControllerSTRIKE::OnCapture(int Spot, int Team, int NumOfCapCharacters
 		if (NumOfCapCharacters)
 			m_BombPlacedCID = apCapCharacters[0]->GetPlayer()->GetCID();
 
-		if (m_pFlag)
+		if (m_apFlags[Team])
 		{
-			m_pFlag->Drop();
-			m_pFlag->Hide();
+			m_apFlags[Team]->Drop();
+			m_apFlags[Team]->Hide();
 		}
 
 		m_WinTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvStrikeExplodeTime;
@@ -304,18 +308,31 @@ int CGameControllerSTRIKE::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKille
 
 	int HadFlag = 0;
 
-	// drop flag
-	if(Weapon != WEAPON_GAME && m_pFlag && pKiller && pKiller->GetCharacter() && m_pFlag->GetCarrier() == pKiller->GetCharacter())
-		HadFlag |= 2;
-	if(m_pFlag && m_pFlag->GetCarrier() == pVictim)
+	for(int i = 0; i < 2; i++)
 	{
-		GameServer()->SendGameMsg(GAMEMSG_CTF_DROP, -1);
-		m_pFlag->Drop();
+		CFlag *F = m_apFlags[i];
+		if(Weapon != WEAPON_GAME && F && pKiller && pKiller->GetCharacter() && F->GetCarrier() == pKiller->GetCharacter())
+			HadFlag |= 2;
+		if(F && F->GetCarrier() == pVictim)
+		{
+			GameServer()->SendGameMsg(GAMEMSG_CTF_DROP, -1);
+			F->Drop();
 
-		//if(pKiller && pKiller->GetTeam() != pVictim->GetPlayer()->GetTeam())
-		//	pKiller->m_Score++;
+			int CapSpot = -1;
+			while ((CapSpot = GetNextSpot(CapSpot)) > -1)
+			{
+				if (m_apDominationSpots[CapSpot]->IsGettingCaptured())
+				{
+					m_apDominationSpots[CapSpot]->AbortCapturing();
+					break;
+				}
+			}
 
-		HadFlag |= 1;
+			//if(pKiller && pKiller->GetTeam() != pVictim->GetPlayer()->GetTeam())
+			//	pKiller->m_Score++;
+
+			HadFlag |= 1;
+		}
 	}
 
 	return HadFlag;
@@ -389,7 +406,21 @@ void CGameControllerSTRIKE::OnPlayerDisconnect(CPlayer *pPlayer)
 
 int CGameControllerSTRIKE::CalcCaptureStrength(CCharacter* pChr) const
 {
-	return !m_pFlag || pChr->GetPlayer()->GetTeam() == TEAM_BLUE || m_pFlag->GetCarrier() == pChr? 1 : 0;
+	if (pChr->GetPlayer()->GetTeam() == TEAM_BLUE)
+	{
+		if (!m_apFlags[TEAM_BLUE])
+			return 1;
+		else if (m_apFlags[TEAM_BLUE]->GetCarrier())
+			return m_apFlags[TEAM_BLUE]->GetCarrier() == pChr? 1 : 0;
+		else
+		{
+			m_apFlags[TEAM_BLUE]->Grab(pChr);
+			m_apFlags[TEAM_BLUE]->Show();
+			return 1;
+		}
+	}
+
+	return !m_apFlags[TEAM_RED] || m_apFlags[TEAM_RED]->GetCarrier() == pChr? 1 : 0;
 }
 
 void CGameControllerSTRIKE::UnlockSpot(int Spot, int Team)
@@ -419,9 +450,9 @@ bool CGameControllerSTRIKE::SendPersonalizedBroadcast(int ClientID)
 		}
 	}
 
-	if (m_pFlag && GameServer()->m_apPlayers[ClientID]->GetTeam() != TEAM_BLUE)
+	if (m_apFlags[TEAM_RED] && GameServer()->m_apPlayers[ClientID]->GetTeam() != TEAM_BLUE)
 	{
-		if ((m_pFlag->IsAtStand() || !m_pFlag->GetCarrier()) && !m_pFlag->IsHidden())
+		if ((m_apFlags[TEAM_RED]->IsAtStand() || !m_apFlags[TEAM_RED]->GetCarrier()) && !m_apFlags[TEAM_RED]->IsHidden())
 		{
 			char aBuf[128];
 			str_format(aBuf, sizeof(aBuf), "%sThe flag has no carrier", GetTeamBroadcastColor(DOM_RED));
@@ -429,7 +460,7 @@ bool CGameControllerSTRIKE::SendPersonalizedBroadcast(int ClientID)
 			m_SentPersonalizedBroadcast = true;
 			return true;
 		}
-		else if (!m_pFlag->IsHidden() && (!pChr || m_pFlag->GetCarrier() == GameServer()->m_apPlayers[ClientID]->GetCharacter()))
+		else if (!m_apFlags[TEAM_RED]->IsHidden() && (!pChr || m_apFlags[TEAM_RED]->GetCarrier() == GameServer()->m_apPlayers[ClientID]->GetCharacter()))
 		{
 			char aBuf[128];
 			str_format(aBuf, sizeof(aBuf), "%sPlace the flag on a spot", GetTeamBroadcastColor(DOM_RED));
@@ -489,15 +520,19 @@ bool CGameControllerSTRIKE::CanBeMovedOnBalance(int ClientID) const
 	CCharacter* Character = GameServer()->m_apPlayers[ClientID]->GetCharacter();
 	if(Character)
 	{
-		if(m_pFlag && m_pFlag->GetCarrier() == Character)
-			return false;
+		for(int fi = 0; fi < 2; fi++)
+		{
+			CFlag *F = m_apFlags[fi];
+			if(F && F->GetCarrier() == Character)
+				return false;
+		}
 	}
 	return true;
 }
 
 void CGameControllerSTRIKE::UpdateBomb()
 {
-	CStrikeFlag *F = m_pFlag;
+	CStrikeFlag *F = m_apFlags[TEAM_RED];
 
 	if(!F)
 		return;
@@ -587,48 +622,62 @@ void CGameControllerSTRIKE::Snap(int SnappingClient)
 		return;
 
 	pGameDataFlag->m_FlagDropTickRed = 0;
-	if(m_pFlag && !m_pFlag->IsHidden())
+	if(m_apFlags[TEAM_RED] && !m_apFlags[TEAM_RED]->IsHidden())
 	{
-		if(m_pFlag->IsAtStand())
+		if(m_apFlags[TEAM_RED]->IsAtStand())
 			pGameDataFlag->m_FlagCarrierRed = FLAG_ATSTAND;
-		else if(m_pFlag->GetCarrier() && m_pFlag->GetCarrier()->GetPlayer())
+		else if(m_apFlags[TEAM_RED]->GetCarrier() && m_apFlags[TEAM_RED]->GetCarrier()->GetPlayer())
 		{
 			int Spot = -1;
 			while ((Spot = GetNextSpot(Spot)) > -1)
 			{
-				if (m_apDominationSpots[Spot]->IsGettingCaptured())
+				if (m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED)
 					break;
 			}
-			if (Spot > -1 && m_apDominationSpots[Spot]->IsGettingCaptured())
+			if (Spot > -1 && m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED)
 			{
 				pGameDataFlag->m_FlagCarrierRed = FLAG_TAKEN;
-				pGameDataFlag->m_FlagDropTickRed = m_pFlag->GetDropTick();
+				pGameDataFlag->m_FlagDropTickRed = m_apFlags[TEAM_RED]->GetDropTick();
 			}
 			else
-				pGameDataFlag->m_FlagCarrierRed = m_pFlag->GetCarrier()->GetPlayer()->GetCID();
+				pGameDataFlag->m_FlagCarrierRed = m_apFlags[TEAM_RED]->GetCarrier()->GetPlayer()->GetCID();
 		}
 		else
 		{
 			pGameDataFlag->m_FlagCarrierRed = FLAG_TAKEN;
-			pGameDataFlag->m_FlagDropTickRed = m_pFlag->GetDropTick();
+			pGameDataFlag->m_FlagDropTickRed = m_apFlags[TEAM_RED]->GetDropTick();
 		}
 	}
 	else
 		pGameDataFlag->m_FlagCarrierRed = FLAG_MISSING;
+
 	pGameDataFlag->m_FlagDropTickBlue = 0;
-	/*
-	if(m_apFlags[TEAM_BLUE])
+	if(m_apFlags[TEAM_BLUE] && !m_apFlags[TEAM_BLUE]->IsHidden())
 	{
 		if(m_apFlags[TEAM_BLUE]->IsAtStand())
 			pGameDataFlag->m_FlagCarrierBlue = FLAG_ATSTAND;
 		else if(m_apFlags[TEAM_BLUE]->GetCarrier() && m_apFlags[TEAM_BLUE]->GetCarrier()->GetPlayer())
-			pGameDataFlag->m_FlagCarrierBlue = m_apFlags[TEAM_BLUE]->GetCarrier()->GetPlayer()->GetCID();
+		{
+			int Spot = -1;
+			while ((Spot = GetNextSpot(Spot)) > -1)
+			{
+				if (m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetCapTeam() == DOM_BLUE)
+					break;
+			}
+			if (Spot > -1 && m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetCapTeam() == DOM_BLUE)
+			{
+				pGameDataFlag->m_FlagCarrierBlue = FLAG_TAKEN;
+				pGameDataFlag->m_FlagDropTickBlue = m_apFlags[TEAM_BLUE]->GetDropTick();
+			}
+			else
+				pGameDataFlag->m_FlagCarrierBlue = m_apFlags[TEAM_BLUE]->GetCarrier()->GetPlayer()->GetCID();
+		}
 		else
 		{
 			pGameDataFlag->m_FlagCarrierBlue = FLAG_TAKEN;
 			pGameDataFlag->m_FlagDropTickBlue = m_apFlags[TEAM_BLUE]->GetDropTick();
 		}
 	}
-	else */
+	else
 		pGameDataFlag->m_FlagCarrierBlue = FLAG_MISSING;
 }
