@@ -152,6 +152,7 @@ MACRO_CONFIG_INT(SvStrikeExplodeTime, sv_strike_explode_time, 30, 0, 300, CFGFLA
 MACRO_CONFIG_INT(SvStrikeSpawnArmor, sv_strike_spawn_armor, 10, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Amount of armor to spawn with")
 MACRO_CONFIG_INT(SvStrikeTimelimit, sv_strike_timelimit, 2, 0, 5, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time limit in minutes (0 disables)")
 MACRO_CONFIG_INT(SvStrikeWeaponRespawn, sv_strike_weapon_respawn, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Respawn weapons until buytime expires (0 = no respawn)")
+MACRO_CONFIG_INT(SvStrikeHalftime, sv_strike_halftime, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Swap teams after half of the match (0 = no swap during match)")
 
 // debug
 #ifdef CONF_DEBUG // this one can crash the server if not used correctly

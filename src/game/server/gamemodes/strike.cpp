@@ -12,6 +12,7 @@
 #include <game/server/entities/dspot.h>
 #include <game/server/entities/strike_flag.h>
 #include <game/server/entities/strike_pickup.h>
+#include <math.h>
 
 #include "strike.h"
 
@@ -215,6 +216,9 @@ void CGameControllerSTRIKE::EndRound()
 {
 	m_WinTick = -1;
 	IGameController::EndRound();
+	if (g_Config.m_SvStrikeHalftime && m_GameInfo.m_ScoreLimit > 1
+			&& (m_aTeamscore[TEAM_RED] + m_aTeamscore[TEAM_BLUE] == ceilf(m_GameInfo.m_ScoreLimit / 2.0f)))
+		GameServer()->SwapTeams();
 }
 
 void CGameControllerSTRIKE::ExplodeBomb()
