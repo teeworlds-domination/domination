@@ -255,7 +255,7 @@ void CGameControllerDOM::UpdateCaptureProcess()
 		{
 			aaapCapPlayers[DomCaparea][pPlayer->GetTeam()][aaPlayerStats[DomCaparea][pPlayer->GetTeam()]++] = pPlayer->GetCharacter();
 			if (!aaPlayerStrength[DomCaparea][pPlayer->GetTeam()] || WithAdditiveCapStrength())
-				aaPlayerStrength[DomCaparea][pPlayer->GetTeam()] += CalcCaptureStrength(pPlayer->GetCharacter());
+				aaPlayerStrength[DomCaparea][pPlayer->GetTeam()] += CalcCaptureStrength(DomCaparea, pPlayer->GetCharacter());
 		}
 	}
 
@@ -601,7 +601,7 @@ int CGameControllerDOM::GetPreviousSpot(int Spot) const
 	return -1;
 }
 
-int CGameControllerDOM::CalcCaptureStrength(CCharacter* pChr) const
+int CGameControllerDOM::CalcCaptureStrength(int Spot, CCharacter* pChr) const
 {
 	return pChr->IsNinja()? 2 : 1;  // ninja doubles the players strength
 }

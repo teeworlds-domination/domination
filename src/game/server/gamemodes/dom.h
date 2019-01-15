@@ -58,7 +58,7 @@ protected:
 	virtual void UpdateChat();
 	virtual void UpdateScoring();
 
-	virtual int CalcCaptureStrength(CCharacter *pChr) const;
+	virtual int CalcCaptureStrength(int Spot, CCharacter *pChr) const;
 
 	virtual int GetNextSpot(int Spot) const;
 	virtual int GetPreviousSpot(int Spot) const;

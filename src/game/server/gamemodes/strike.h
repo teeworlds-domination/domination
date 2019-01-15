@@ -39,7 +39,7 @@ protected:
 	virtual void UpdatePickups();
 	virtual void UpdateBomb();
 
-	virtual int CalcCaptureStrength(CCharacter *pChr) const override;
+	virtual int CalcCaptureStrength(int Spot, CCharacter *pChr) const override;
 
 	virtual bool SendPersonalizedBroadcast(int ClientID);
 

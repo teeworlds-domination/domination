@@ -404,10 +404,12 @@ void CGameControllerSTRIKE::OnPlayerDisconnect(CPlayer *pPlayer)
 	CGameControllerDOM::OnPlayerDisconnect(pPlayer);
 }
 
-int CGameControllerSTRIKE::CalcCaptureStrength(CCharacter* pChr) const
+int CGameControllerSTRIKE::CalcCaptureStrength(int Spot, CCharacter* pChr) const
 {
 	if (pChr->GetPlayer()->GetTeam() == TEAM_BLUE)
 	{
+		if (!m_apDominationSpots[Spot]->GetTeam() == DOM_RED)
+			return 0;
 		if (!m_apFlags[TEAM_BLUE])
 			return 1;
 		else if (m_apFlags[TEAM_BLUE]->GetCarrier())
