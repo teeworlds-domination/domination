@@ -148,7 +148,7 @@ MACRO_CONFIG_INT(SvConqWintime, sv_conq_wintime, 30, 0, 60, CFGFLAG_SAVE|CFGFLAG
 MACRO_CONFIG_STR(SvStrikeCapTimes, sv_strike_captimes, 32, "5", CFGFLAG_SAVE|CFGFLAG_SERVER, "Captimes for dynamic capturing")
 MACRO_CONFIG_INT(SvStrikeBuyTimelimit, sv_strike_buy_timelimit, 10, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Buytime limit in seconds (0 disables)")
 MACRO_CONFIG_INT(SvStrikeDropAmmoOnDeath, sv_strike_drop_ammo, 4, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Drop x remaining ammo on death (0 = no ammo drop)")
-MACRO_CONFIG_INT(SvStrikeExplodeTime, sv_strike_explode_time, 30, 0, 300, CFGFLAG_SAVE|CFGFLAG_SERVER, "Duration before the captured spot explodes")
+MACRO_CONFIG_INT(SvStrikeExplodeTime, sv_strike_explode_time, 40, 0, 300, CFGFLAG_SAVE|CFGFLAG_SERVER, "Duration before the captured spot explodes")
 MACRO_CONFIG_INT(SvStrikeHalftime, sv_strike_halftime, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Swap teams after half of the match (0 = no swap during match)")
 MACRO_CONFIG_INT(SvStrikeSpawnArmor, sv_strike_spawn_armor, 10, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Amount of armor to spawn with")
 MACRO_CONFIG_INT(SvStrikeTimelimit, sv_strike_timelimit, 2, 0, 5, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time limit in minutes (0 disables)")
