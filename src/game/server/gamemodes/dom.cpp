@@ -125,7 +125,7 @@ float CGameControllerDOM::GetRespawnDelay(bool Self) const
 	return max(IGameController::GetRespawnDelay(Self), Self ? g_Config.m_SvDomRespawnDelay + 3.0f : g_Config.m_SvDomRespawnDelay);
 }
 
-bool CGameControllerDOM::EvaluateSpawnPosDom(CSpawnEval *pEval, int Type, vec2 Pos) const
+bool CGameControllerDOM::EvaluateSpawnPosDom(CSpawnEval *pEval, int Type, vec2 Pos, bool AllowNeutral) const
 {
 	float BadDistance = FLT_MAX;
 	float GoodDistance = FLT_MAX;
@@ -134,7 +134,7 @@ bool CGameControllerDOM::EvaluateSpawnPosDom(CSpawnEval *pEval, int Type, vec2 P
 	while ((Spot = GetNextSpot(Spot)) > -1)
 	{
 		if ((m_apDominationSpots[Spot]->GetTeam() == pEval->m_FriendlyTeam)
-				|| (Type == 0 && m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)) // own dspot
+				|| (AllowNeutral && m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)) // own dspot
 			GoodDistance = min(GoodDistance, distance(Pos, m_apDominationSpots[Spot]->GetPos()));
 		else	// neutral or enemy dspot
 			BadDistance = min(BadDistance, distance(Pos, m_apDominationSpots[Spot]->GetPos()));
@@ -143,19 +143,19 @@ bool CGameControllerDOM::EvaluateSpawnPosDom(CSpawnEval *pEval, int Type, vec2 P
 }
 
 //	choose a random spawn point near an own domination spot, else a random one
-void CGameControllerDOM::EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type, bool IgnoreSpotOwner) const
+void CGameControllerDOM::EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type, bool AllowNeutral, bool IgnoreSpotOwner) const
 {
 	if (!m_aNumSpawnPoints[Type])
 		return;
 
-	if (Type && !m_aNumOfTeamDominationSpots[Type - 1])
+	if (Type && !m_aNumOfTeamDominationSpots[Type - 1] && (!AllowNeutral && m_NumOfDominationSpots == m_aNumOfTeamDominationSpots[(Type - 1) ^ 1]) )
 		return; // team does not own any spot
 
 	// get spawn point
 	int NumStartpoints = 0;
 	vec2 *pStartpoint = new vec2[m_aNumSpawnPoints[Type]];
 	for(int i = 0; i < m_aNumSpawnPoints[Type]; i++)
-		if (IgnoreSpotOwner || EvaluateSpawnPosDom(pEval, Type, m_aaSpawnPoints[Type][i]))
+		if (IgnoreSpotOwner || EvaluateSpawnPosDom(pEval, Type, m_aaSpawnPoints[Type][i], AllowNeutral))
 		{
 			// check if the position is occupado
 			CCharacter *aEnts[MAX_CLIENTS];
@@ -219,13 +219,27 @@ bool CGameControllerDOM::CanSpawn(int Team, vec2 *pOutPos)
 	CSpawnEval Eval;
 	Eval.m_FriendlyTeam = Team;
 
-	// try first try own team spawn, then normal spawn
-	EvaluateSpawnTypeDom(&Eval, 1+(Team&1), false);
+	// TODO rewrite smarter
+	EvaluateSpawnTypeDom(&Eval, 1+(Team&1), false, false); // try own at own spot
 	if(!Eval.m_Got)
 	{
-		EvaluateSpawnTypeDom(&Eval, 0, false);
+		EvaluateSpawnTypeDom(&Eval, 0, false, false); // try random at own spot
 		if(!Eval.m_Got)
-			EvaluateSpawnTypeDom(&Eval, 0, true);
+		{
+			EvaluateSpawnTypeDom(&Eval, 1+(Team&1), true, false); // try own at random
+			if(!Eval.m_Got)
+			{
+				EvaluateSpawnTypeDom(&Eval, 0, true, false); // try random at random
+				if(!Eval.m_Got)
+				{
+					EvaluateSpawnTypeDom(&Eval, 0, true, true); // try random at enemy
+					if(!Eval.m_Got)
+					{
+						EvaluateSpawnTypeDom(&Eval, 1+(Team&1), true, true); // try own at enemy
+					}
+				}
+			}
+		}
 	}
 
 	*pOutPos = Eval.m_Pos;

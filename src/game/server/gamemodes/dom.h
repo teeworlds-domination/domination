@@ -45,8 +45,8 @@ protected:
 
 	int   m_aLastBroadcastState[DOM_MAXDSPOTS];
 	
-	virtual bool EvaluateSpawnPosDom(CSpawnEval *pEval, int Type, vec2 Pos) const;
-	virtual void EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type, bool IgnoreSpotOwner) const;
+	virtual bool EvaluateSpawnPosDom(CSpawnEval *pEval, int Type, vec2 Pos, bool AllowNeutral) const;
+	virtual void EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type, bool AllowNeutral, bool IgnoreSpotOwner) const;
 	virtual void Init();
 
 	virtual void StartCapturing(int Spot, int RedTeamSize, int BlueTeamSize);
