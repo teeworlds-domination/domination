@@ -197,18 +197,14 @@ void CGameControllerSTRIKE::DoWincheckRound()
 			// bomb exploded
 			++m_aTeamscore[TEAM_RED];
 			if (m_BombPlacedCID > -1 && GameServer()->m_apPlayers[m_BombPlacedCID])
-				GameServer()->m_apPlayers[m_BombPlacedCID]->m_Score += g_Config.m_SvDomCapPoints;
+				GameServer()->m_apPlayers[m_BombPlacedCID]->m_Score += floorf(g_Config.m_SvDomCapPoints / 3.0f * 2);
 			ExplodeBomb();
 			EndRound();
 		}
-
-		// bomb placed and all blue are dead
-		if(Count[TEAM_BLUE] == 0)
+		else if(Count[TEAM_BLUE] == 0)
 		{
-			// all blue dead
+			// bomb placed and all blue are dead
 			++m_aTeamscore[TEAM_RED];
-			if (m_BombPlacedCID > -1 && GameServer()->m_apPlayers[m_BombPlacedCID])
-				GameServer()->m_apPlayers[m_BombPlacedCID]->m_Score += g_Config.m_SvDomCapPoints;
 			EndRound();
 		}
 	}
@@ -281,7 +277,10 @@ void CGameControllerSTRIKE::OnCapture(int Spot, int Team, int NumOfCapCharacters
 	{
 		// bomb placed
 		if (NumOfCapCharacters)
+		{
+			apCapCharacters[0]->GetPlayer()->m_Score += ceilf(g_Config.m_SvDomCapPoints / 3.0f);
 			m_BombPlacedCID = apCapCharacters[0]->GetPlayer()->GetCID();
+		}
 
 		m_WinTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvStrikeExplodeTime;
 		m_GameInfo.m_TimeLimit = 0;
@@ -303,11 +302,8 @@ void CGameControllerSTRIKE::OnCapture(int Spot, int Team, int NumOfCapCharacters
 	else
 	{
 		// bomb defused
-		for (int i = 0; i < NumOfCapCharacters; ++i)
-		{
-			if (apCapCharacters[i] && apCapCharacters[i]->GetPlayer())
-				apCapCharacters[i]->GetPlayer()->m_Score += g_Config.m_SvDomCapPoints;
-		}
+		if (NumOfCapCharacters)
+			apCapCharacters[0]->GetPlayer()->m_Score += g_Config.m_SvDomCapPoints;
 
 		m_WinTick = -1;
 		++m_aTeamscore[Team];
