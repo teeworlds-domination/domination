@@ -164,7 +164,7 @@ void CGameControllerSTRIKE::UpdatePickups()
 void CGameControllerSTRIKE::DoWincheckMatch()
 {
 	// check score win condition
-	if((m_GameInfo.m_ScoreLimit > 0 && (m_aTeamscore[TEAM_RED] >= m_GameInfo.m_ScoreLimit || m_aTeamscore[TEAM_BLUE] >= m_GameInfo.m_ScoreLimit)))
+	if (m_GameInfo.m_ScoreLimit > 0 && (m_aTeamscore[TEAM_RED] >= m_GameInfo.m_ScoreLimit || m_aTeamscore[TEAM_BLUE] >= m_GameInfo.m_ScoreLimit))
 		EndMatch();
 }
 
@@ -219,7 +219,7 @@ void CGameControllerSTRIKE::EndRound()
 	m_WinTick = -1;
 	IGameController::EndRound();
 	if (g_Config.m_SvStrikeHalftime && m_GameInfo.m_ScoreLimit > 1
-			&& (m_aTeamscore[TEAM_RED] + m_aTeamscore[TEAM_BLUE] == ceilf(m_GameInfo.m_ScoreLimit / 2.0f)))
+			&& (m_aTeamscore[TEAM_RED] + m_aTeamscore[TEAM_BLUE] == m_GameInfo.m_ScoreLimit))
 		GameServer()->SwapTeams();
 }
 
