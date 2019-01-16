@@ -646,7 +646,7 @@ void CGameControllerSTRIKE::Snap(int SnappingClient)
 			if (Spot > -1 && m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED)
 			{
 				pGameDataFlag->m_FlagCarrierRed = FLAG_TAKEN;
-				pGameDataFlag->m_FlagDropTickRed = m_apFlags[TEAM_RED]->GetDropTick();
+				// pGameDataFlag->m_FlagDropTickRed = m_apFlags[TEAM_RED]->GetDropTick();
 			}
 			else
 				pGameDataFlag->m_FlagCarrierRed = m_apFlags[TEAM_RED]->GetCarrier()->GetPlayer()->GetCID();
@@ -676,7 +676,7 @@ void CGameControllerSTRIKE::Snap(int SnappingClient)
 			if (Spot > -1 && m_apDominationSpots[Spot]->IsGettingCaptured() && m_apDominationSpots[Spot]->GetCapTeam() == DOM_BLUE)
 			{
 				pGameDataFlag->m_FlagCarrierBlue = FLAG_TAKEN;
-				pGameDataFlag->m_FlagDropTickBlue = m_apFlags[TEAM_BLUE]->GetDropTick();
+				// pGameDataFlag->m_FlagDropTickBlue = m_apFlags[TEAM_BLUE]->GetDropTick();
 			}
 			else
 				pGameDataFlag->m_FlagCarrierBlue = m_apFlags[TEAM_BLUE]->GetCarrier()->GetPlayer()->GetCID();
