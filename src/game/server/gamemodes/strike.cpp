@@ -236,6 +236,7 @@ void CGameControllerSTRIKE::ExplodeBomb()
 			}
 		}
 	}
+	GameServer()->CreateGlobalSound(SOUND_GRENADE_EXPLODE);
 }
 
 bool CGameControllerSTRIKE::CanSpawn(int Team, vec2 *pOutPos)
