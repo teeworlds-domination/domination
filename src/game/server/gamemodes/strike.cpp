@@ -249,12 +249,20 @@ bool CGameControllerSTRIKE::CanSpawn(int Team, vec2 *pOutPos)
 void CGameControllerSTRIKE::OnStartCapturing(int Spot, int Team)
 {
 	GameServer()->CreateSound(m_apDominationSpots[Spot]->GetPos(), SOUND_PLAYER_SPAWN);
+
+	if (m_apFlags[Team])
+		m_apFlags[Team]->SetCapturing(true);
 }
 
 void CGameControllerSTRIKE::OnAbortCapturing(int Spot)
 {
-	if (m_apFlags[TEAM_BLUE] && m_apFlags[TEAM_BLUE]->GetCarrier())
+	if (m_apFlags[TEAM_RED] && m_apFlags[TEAM_RED]->IsCapturing())
 	{
+		m_apFlags[TEAM_RED]->SetCapturing(false);
+	}
+	else if (m_apFlags[TEAM_BLUE] && m_apFlags[TEAM_BLUE]->IsCapturing())
+	{
+		m_apFlags[TEAM_BLUE]->SetCapturing(false);
 		m_apFlags[TEAM_BLUE]->Drop();
 		m_apFlags[TEAM_BLUE]->Hide();
 	}
@@ -264,6 +272,7 @@ void CGameControllerSTRIKE::OnCapture(int Spot, int Team, int NumOfCapCharacters
 {
 	if (m_apFlags[Team])
 	{
+		m_apFlags[Team]->SetCapturing(false);
 		m_apFlags[Team]->Drop();
 		m_apFlags[Team]->Hide();
 	}

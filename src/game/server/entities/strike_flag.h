@@ -9,6 +9,7 @@ class CStrikeFlag : public CFlag
 {
 private:
 	bool m_Hidden;
+	bool m_IsCapturing;
 
 protected:
 	virtual bool CanBeResetAfterDrop() const override { return false; }
@@ -22,6 +23,9 @@ public:
 	void Hide();
 	void Show();
 	bool IsHidden() const { return m_Hidden; }
+
+	void SetCapturing(bool IsCapturing);
+	bool IsCapturing() const { return m_IsCapturing; }
 };
 
 #endif
