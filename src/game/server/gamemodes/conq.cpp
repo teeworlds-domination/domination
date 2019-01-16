@@ -181,7 +181,7 @@ void CGameControllerCONQ::EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) con
 	}
 
 	int NumStartpoints = 0;
-	int *pStartpoint = new int[m_aaNumSpotSpawnPoints[SpawnSpot][Team]];
+	vec2 *pStartpoint = new vec2[m_aaNumSpotSpawnPoints[SpawnSpot][Team]];
 	for(int i = 0; i < m_aaNumSpotSpawnPoints[SpawnSpot][Team]; i++)
 	{
 		// check if the position is occupado
@@ -211,14 +211,14 @@ void CGameControllerCONQ::EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) con
 			pEval->m_Got = true;
 			pEval->m_Score = S;
 			pEval->m_Pos = P;
-			pStartpoint[NumStartpoints++] = i;
+			pStartpoint[NumStartpoints++] = P;
 		}
 	}
 
 	if (NumStartpoints)
 	{
 		pEval->m_Got = true;
-		pEval->m_Pos = m_aaaSpotSpawnPoints[SpawnSpot][Team][pStartpoint[Server()->Tick() % NumStartpoints]];
+		pEval->m_Pos = pStartpoint[Server()->Tick() % NumStartpoints];
 	}
 	delete[] pStartpoint;
 	pStartpoint = 0;

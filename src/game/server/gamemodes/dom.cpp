@@ -153,7 +153,7 @@ void CGameControllerDOM::EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type, bool 
 
 	// get spawn point
 	int NumStartpoints = 0;
-	int *pStartpoint = new int[m_aNumSpawnPoints[Type]];
+	vec2 *pStartpoint = new vec2[m_aNumSpawnPoints[Type]];
 	for(int i = 0; i < m_aNumSpawnPoints[Type]; i++)
 		if (IgnoreSpotOwner || EvaluateSpawnPosDom(pEval, Type, m_aaSpawnPoints[Type][i]))
 		{
@@ -176,9 +176,9 @@ void CGameControllerDOM::EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type, bool 
 			if(Result == -1)
 				continue;	// try next spawn point
 
+			vec2 P = m_aaSpawnPoints[Type][i]+Positions[Result];
 			if (!Type) // for neutral spawns, check distance to other player
 			{
-				vec2 P = m_aaSpawnPoints[Type][i]+Positions[Result];
 				float S = IGameController::EvaluateSpawnPos(pEval, P);
 				if(!pEval->m_Got || pEval->m_Score >= S - (S * 0.3f))
 				{
@@ -195,13 +195,13 @@ void CGameControllerDOM::EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type, bool 
 				else
 					continue;
 			}
-			pStartpoint[NumStartpoints++] = i;
+			pStartpoint[NumStartpoints++] = P;
 		}
 
 	if (NumStartpoints)
 	{
 		pEval->m_Got = true;
-		pEval->m_Pos = m_aaSpawnPoints[Type][pStartpoint[Server()->Tick() % NumStartpoints]];
+		pEval->m_Pos = pStartpoint[Server()->Tick() % NumStartpoints];
 	}
 	delete[] pStartpoint;
 	pStartpoint = 0;
