@@ -34,6 +34,8 @@ CGameControllerSTRIKE::CGameControllerSTRIKE(CGameContext *pGameServer)
 	m_BombPlacedCID = -1;
 
 	SetCapTimes(g_Config.m_SvStrikeCapTimes);
+
+	m_apFlags[TEAM_BLUE] = new CStrikeFlag(&GameServer()->m_World, TEAM_BLUE, vec2(0.0f, 0.0f));
 }
 
 void CGameControllerSTRIKE::Init()
@@ -141,7 +143,7 @@ bool CGameControllerSTRIKE::OnEntity(int Index, vec2 Pos)
 
 	int Team = -1;
 	if(Index == ENTITY_FLAGSTAND_RED) Team = TEAM_RED;
-	if(Index == ENTITY_FLAGSTAND_BLUE) Team = TEAM_BLUE;
+	// if(Index == ENTITY_FLAGSTAND_BLUE) Team = TEAM_BLUE;
 	if(Team == -1 || m_apFlags[Team])
 		return false;
 
@@ -260,17 +262,17 @@ void CGameControllerSTRIKE::OnAbortCapturing(int Spot)
 
 void CGameControllerSTRIKE::OnCapture(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS])
 {
+	if (m_apFlags[Team])
+	{
+		m_apFlags[Team]->Drop();
+		m_apFlags[Team]->Hide();
+	}
+
 	if (Team == DOM_RED)
 	{
 		// bomb placed
 		if (NumOfCapCharacters)
 			m_BombPlacedCID = apCapCharacters[0]->GetPlayer()->GetCID();
-
-		if (m_apFlags[Team])
-		{
-			m_apFlags[Team]->Drop();
-			m_apFlags[Team]->Hide();
-		}
 
 		m_WinTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvStrikeExplodeTime;
 		m_GameInfo.m_TimeLimit = 0;
