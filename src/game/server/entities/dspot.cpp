@@ -21,7 +21,7 @@ CDominationSpot::CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id, int C
 	, m_WithNeutral(Neutral)
 {
 	for (int i = 0; i < MAX_PLAYERS / DOM_NUMOFTEAMS + 1; ++i)
-		m_aCapTimes[i] = CapTimes[i] * PLAYER_STRENGTH_MULTIPLIER;
+		m_aCapTimes[i] = CapTimes[i];
 
 	Reset();
 };
@@ -86,13 +86,13 @@ bool CDominationSpot::UpdateCapturing(int NumCapturePlayers, int NumDefPlayers)
 	if (m_WithHardCaptureAbort && !NumCapturePlayers)
 		AbortCapturing();
 
-	int DiffPlayers = (NumCapturePlayers - NumDefPlayers) * PLAYER_STRENGTH_MULTIPLIER;
+	int DiffPlayers = NumCapturePlayers - NumDefPlayers;
 	if (!DiffPlayers)
 	{
 		if (NumCapturePlayers) // even number on both sides
 			return false;
 		else
-			DiffPlayers = -1; // no player at all
+			DiffPlayers = -50; // no player at all // BASE_STRENGTH / 2 = 100 / 2
 	}
 
 	m_Timer -= DiffPlayers;

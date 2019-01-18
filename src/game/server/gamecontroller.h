@@ -122,7 +122,7 @@ protected:
 
 	void UpdateGameInfo(int ClientID);
 
-	int GetTeamSize(int Team) { return m_aTeamSize[Team]; }
+	int GetTeamSize(int Team) const { return m_aTeamSize[Team]; }
 
 public:
 	IGameController(class CGameContext *pGameServer);

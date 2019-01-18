@@ -55,7 +55,7 @@ void CGameControllerDOM::Init()
 		Temp[m_NumOfDominationSpots] = 10.0f;
 	m_DompointsCounter = Temp[m_NumOfDominationSpots] / Server()->TickSpeed();
 
-	SetCapTimes(g_Config.m_SvDomCapTimes);
+	SetCapTime(g_Config.m_SvDomCapTime);
 }
 
 void CGameControllerDOM::OnReset()
@@ -269,7 +269,7 @@ void CGameControllerDOM::UpdateCaptureProcess()
 		{
 			aaapCapPlayers[DomCaparea][pPlayer->GetTeam()][aaPlayerStats[DomCaparea][pPlayer->GetTeam()]++] = pPlayer->GetCharacter();
 			if (!aaPlayerStrength[DomCaparea][pPlayer->GetTeam()] || WithAdditiveCapStrength())
-				aaPlayerStrength[DomCaparea][pPlayer->GetTeam()] += CalcCaptureStrength(DomCaparea, pPlayer->GetCharacter());
+				aaPlayerStrength[DomCaparea][pPlayer->GetTeam()] += CalcCaptureStrength(DomCaparea, pPlayer->GetCharacter(), !aaPlayerStrength[DomCaparea][pPlayer->GetTeam()]);
 		}
 	}
 
@@ -615,9 +615,10 @@ int CGameControllerDOM::GetPreviousSpot(int Spot) const
 	return -1;
 }
 
-int CGameControllerDOM::CalcCaptureStrength(int Spot, CCharacter* pChr) const
+int CGameControllerDOM::CalcCaptureStrength(int Spot, CCharacter* pChr, bool IsFirst) const
 {
-	return pChr->IsNinja()? 2 : 1;  // ninja doubles the players strength
+	return (IsFirst? BASE_CAPSTRENGTH : (GetTeamSize(pChr->GetPlayer()->GetTeam()) == 2? ADD_CAPSTRENGTH * 2 : ADD_CAPSTRENGTH))
+			+ (pChr->IsNinja()? BASE_CAPSTRENGTH : 0);  // ninja doubles the players strength
 }
 
 const char* CGameControllerDOM::GetTeamName(int Team) const
@@ -681,16 +682,16 @@ const char CGameControllerDOM::GetTeamBroadcastMarker(int Team) const
 	}
 }
 
-void CGameControllerDOM::SetCapTimes(const char *pCapTimes)
+void CGameControllerDOM::SetCapTime(int CapTime)
 {
-	sscanf(pCapTimes, "%d %d %d %d %d %d %d %d", m_aCapTimes + 1, m_aCapTimes + 2, m_aCapTimes + 3, m_aCapTimes + 4, m_aCapTimes + 5, m_aCapTimes + 6, m_aCapTimes + 7, m_aCapTimes +8);
-	m_aCapTimes[0] = 5;
+	m_aCapTimes[1] = CapTime * BASE_CAPSTRENGTH;
 	for (int i = 1; i < MAX_PLAYERS / DOM_NUMOFTEAMS + 1; ++i)
-		if (m_aCapTimes[i] <= 0)
-			m_aCapTimes[i] = m_aCapTimes[i - 1];
-		else if (m_aCapTimes[i] > 60)
-			m_aCapTimes[i] = 60;
+		m_aCapTimes[i] = CapTime * (BASE_CAPSTRENGTH + (WithAdditiveCapStrength()? ((i - 1) * ADD_CAPSTRENGTH) : 0) );
 	m_aCapTimes[0] = m_aCapTimes[1];
+
+	// special case: for 2 player teams the second player is two times as strong (60)
+	if (WithAdditiveCapStrength())
+		m_aCapTimes[2] += CapTime * ADD_CAPSTRENGTH;
 }
 
 void CGameControllerDOM::SendChat(int ClientID, const char *pText) const

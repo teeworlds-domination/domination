@@ -135,17 +135,17 @@ MACRO_CONFIG_INT(SvVoteKickBantime, sv_vote_kick_bantime, 5, 0, 1440, CFGFLAG_SA
 MACRO_CONFIG_INT(SvDomCapPoints, sv_dom_cappoints, 5, 0, 100, CFGFLAG_SAVE|CFGFLAG_SERVER, "Number of points player get for capturing a domination spot")
 MACRO_CONFIG_STR(SvDomUseSpots, sv_dom_use_spots, 32, "1 1 1 1 1", CFGFLAG_SAVE|CFGFLAG_SERVER, "En-/disables domination spots")
 
-MACRO_CONFIG_STR(SvDomCapTimes, sv_dom_captimes, 32, "5 8 11 14 17 20 23 27", CFGFLAG_SAVE|CFGFLAG_SERVER, "Captimes for dynamic capturing")
+MACRO_CONFIG_INT(SvDomCapTime, sv_dom_captime, 5, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Base captime for dom")
 MACRO_CONFIG_INT(SvDomRespawnDelay, sv_dom_respawn_delay, 2, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "How many seconds to wait before respawning")
 MACRO_CONFIG_STR(SvDomScorings, sv_dom_scorings, 64, "2.0 1.0 0.7 0.5 0.4", CFGFLAG_SAVE|CFGFLAG_SERVER, "Dompoints for dynamic capturing")
 
 MACRO_CONFIG_INT(SvKdomCapTeamscoreMultiplier, sv_kdom_capscore, 0, 0, 100, CFGFLAG_SAVE|CFGFLAG_SERVER, "Multiplier for the score the team gets for capturing a domination spot")
 
-MACRO_CONFIG_STR(SvConqCapTimes, sv_conq_captimes, 32, "10 15 20 25 30 35 40 45", CFGFLAG_SAVE|CFGFLAG_SERVER, "Captimes for dynamic capturing")
+MACRO_CONFIG_INT(SvConqCapTime, sv_conq_captime, 10, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Base captime for conq")
 MACRO_CONFIG_INT(SvConqRespawnDelay, sv_conq_respawn_delay, 10, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "How many seconds to wait before respawning")
 MACRO_CONFIG_INT(SvConqWintime, sv_conq_wintime, 30, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time a team has to recapture their base spot (0 = infinite)")
 
-MACRO_CONFIG_STR(SvStrikeCapTimes, sv_strike_captimes, 32, "5", CFGFLAG_SAVE|CFGFLAG_SERVER, "Captimes for dynamic capturing")
+MACRO_CONFIG_INT(SvStrikeCapTime, sv_strike_captime, 5, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Base captime for strike")
 MACRO_CONFIG_INT(SvStrikeBuyTimelimit, sv_strike_buy_timelimit, 10, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Buytime limit in seconds (0 disables)")
 MACRO_CONFIG_INT(SvStrikeDropAmmoOnDeath, sv_strike_drop_ammo, 4, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Drop x remaining ammo on death (0 = no ammo drop)")
 MACRO_CONFIG_INT(SvStrikeExplodeTime, sv_strike_explode_time, 40, 0, 300, CFGFLAG_SAVE|CFGFLAG_SERVER, "Duration before the captured spot explodes")

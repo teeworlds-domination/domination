@@ -17,6 +17,12 @@ enum
 	DOM_FLAG_WAY = 64
 };
 
+enum
+{
+	ADD_CAPSTRENGTH = 30,
+	BASE_CAPSTRENGTH = 100
+};
+
 class CDominationSpot;
 
 class CGameControllerDOM : public IGameController
@@ -58,12 +64,12 @@ protected:
 	virtual void UpdateChat();
 	virtual void UpdateScoring();
 
-	virtual int CalcCaptureStrength(int Spot, CCharacter *pChr) const;
+	virtual int CalcCaptureStrength(int Spot, CCharacter *pChr, bool IsFirst) const;
 
 	virtual int GetNextSpot(int Spot) const;
 	virtual int GetPreviousSpot(int Spot) const;
 
-	virtual void SetCapTimes(const char* pCapTimes);
+	virtual void SetCapTime(int CapTime);
 
 	virtual bool WithAdditiveCapStrength() const { return true; }
 	virtual bool WithHandicap() const { return true; }

@@ -33,7 +33,7 @@ CGameControllerSTRIKE::CGameControllerSTRIKE(CGameContext *pGameServer)
 
 	m_BombPlacedCID = -1;
 
-	SetCapTimes(g_Config.m_SvStrikeCapTimes);
+	SetCapTime(g_Config.m_SvStrikeCapTime);
 
 	m_apFlags[TEAM_BLUE] = new CStrikeFlag(&GameServer()->m_World, TEAM_BLUE, vec2(0.0f, 0.0f));
 }
@@ -416,25 +416,26 @@ void CGameControllerSTRIKE::OnPlayerDisconnect(CPlayer *pPlayer)
 	CGameControllerDOM::OnPlayerDisconnect(pPlayer);
 }
 
-int CGameControllerSTRIKE::CalcCaptureStrength(int Spot, CCharacter* pChr) const
+int CGameControllerSTRIKE::CalcCaptureStrength(int Spot, CCharacter* pChr, bool IsFirst) const
 {
 	if (pChr->GetPlayer()->GetTeam() == TEAM_BLUE)
 	{
 		if (!m_apDominationSpots[Spot]->GetTeam() == DOM_RED)
 			return 0;
 		if (!m_apFlags[TEAM_BLUE])
-			return 1;
+			return BASE_CAPSTRENGTH;
 		else if (m_apFlags[TEAM_BLUE]->GetCarrier())
-			return m_apFlags[TEAM_BLUE]->GetCarrier() == pChr? 1 : 0;
+			return m_apFlags[TEAM_BLUE]->GetCarrier() == pChr? BASE_CAPSTRENGTH : 0;
 		else
 		{
+			// TODO should not being done here
 			m_apFlags[TEAM_BLUE]->Grab(pChr);
 			m_apFlags[TEAM_BLUE]->Show();
-			return 1;
+			return BASE_CAPSTRENGTH;
 		}
 	}
 
-	return !m_apFlags[TEAM_RED] || m_apFlags[TEAM_RED]->GetCarrier() == pChr? 1 : 0;
+	return !m_apFlags[TEAM_RED] || m_apFlags[TEAM_RED]->GetCarrier() == pChr? BASE_CAPSTRENGTH : 0;
 }
 
 void CGameControllerSTRIKE::UnlockSpot(int Spot, int Team)

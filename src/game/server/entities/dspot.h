@@ -26,11 +26,6 @@ private:
 	bool m_WithHardCaptureAbort;
 	bool m_WithNeutral;
 
-	enum
-	{
-		PLAYER_STRENGTH_MULTIPLIER = 2
-	};
-
 public:
 	CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id, int CapTimes[MAX_PLAYERS / 2 + 1], bool Handicap, bool HardCaptureAbort, bool Neutral);
 	virtual void Reset() override;
