@@ -361,7 +361,7 @@ void CGameControllerDOM::Neutralize(int Spot, int NumOfCapCharacters, CCharacter
 
 void CGameControllerDOM::UpdateBroadcast()
 {
-	if (m_LastBroadcastCalcTick + Server()->TickSpeed() > Server()->Tick())
+	if (m_LastBroadcastCalcTick + Server()->TickSpeed()*0.5f > Server()->Tick())
 		return;
 
 	m_LastBroadcastCalcTick = Server()->Tick();
