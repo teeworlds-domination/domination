@@ -585,10 +585,13 @@ void CGameControllerDOM::AddColorizedMarker(int Spot, char *pBuf, int &rCurrPos)
 	// TODO hackish
 	// static const char* CHAR_DOUBLE_ARROW_RIGHT = "»";
 	// static const char* CHAR_DOUBLE_ARROW_LEFT = "«";
-	if (abs(m_apDominationSpots[Spot]->GetCapStrength()) > BASE_CAPSTRENGTH)
-		pBuf[rCurrPos++] = (m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED? '\273' : '\253');
-	else if (m_apDominationSpots[Spot]->GetCapStrength() < -BASE_CAPSTRENGTH)
-		pBuf[rCurrPos++] = (m_apDominationSpots[Spot]->GetCapTeam() == DOM_BLUE? '\273' : '\253');
+	if (abs(m_apDominationSpots[Spot]->GetCapStrength()) > (GetMaxCapStrengthForTeamSize(GetTeamSize(m_apDominationSpots[Spot]->GetCapTeam())) / 2) + (BASE_CAPSTRENGTH / 2) )
+	{
+		if (m_apDominationSpots[Spot]->GetCapStrength() > 0)
+			pBuf[rCurrPos++] = (m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED? '\273' : '\253');
+		else
+			pBuf[rCurrPos++] = (m_apDominationSpots[Spot]->GetCapTeam() == DOM_BLUE? '\273' : '\253');
+	}
 }
 
 void CGameControllerDOM::AddColorizedSymbol(char *pBuf, int &rCurrPos, int ColorCode, const char Symbol) const
@@ -628,6 +631,17 @@ int CGameControllerDOM::CalcCaptureStrength(int Spot, CCharacter* pChr, bool IsF
 	return (IsFirst? BASE_CAPSTRENGTH : (GetTeamSize(pChr->GetPlayer()->GetTeam()) == 2? ADD_CAPSTRENGTH * 2 : ADD_CAPSTRENGTH))
 			+ (pChr->IsNinja()? BASE_CAPSTRENGTH : 0);  // ninja doubles the players strength
 }
+
+int CGameControllerDOM::GetMaxCapStrengthForTeamSize(int TeamSize) const {
+	if (!TeamSize)
+		return 0;
+
+	if (TeamSize == 2)
+		return GetMaxCapStrengthForTeamSize(3); // for 2, the second is double the strength
+
+	return BASE_CAPSTRENGTH + (ADD_CAPSTRENGTH * (TeamSize - 1));
+}
+
 
 const char* CGameControllerDOM::GetTeamName(int Team) const
 {
@@ -686,7 +700,7 @@ const char CGameControllerDOM::GetTeamBroadcastMarker(int Team, int CapStrength)
 	if (!CapStrength)
 		return 'x';
 
-	if (abs(CapStrength) > BASE_CAPSTRENGTH)
+	if (abs(CapStrength) > (GetMaxCapStrengthForTeamSize(GetTeamSize(Team)) / 2) + (BASE_CAPSTRENGTH / 2) )
 		return '\302';
 
 	return (Team == DOM_RED && CapStrength > 0) || (Team == TEAM_BLUE && CapStrength < 0)? '>' : '<';

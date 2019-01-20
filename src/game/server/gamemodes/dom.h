@@ -100,6 +100,8 @@ protected:
 	const char GetTeamBroadcastCloseParenthesis(int Team) const;
 	const char GetTeamBroadcastMarker(int Team, int CapStrength) const;
 	const char *GetTeamName(int Team) const;
+
+	int GetMaxCapStrengthForTeamSize(int TeamSize) const;
 	
 public:
 	CGameControllerDOM(class CGameContext *pGameServer);
