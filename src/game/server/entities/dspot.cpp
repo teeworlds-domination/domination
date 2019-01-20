@@ -81,21 +81,21 @@ void CDominationSpot::StartCapturing(int CaptureTeam, int CaptureTeamSize, int D
 	static_cast<CGameControllerDOM*>(GameServer()->m_pController)->OnStartCapturing(m_Id, CaptureTeam);
 }
 
-bool CDominationSpot::UpdateCapturing(int NumCapturePlayers, int NumDefPlayers)
+bool CDominationSpot::UpdateCapturing(int CapStrength, int DefStrength)
 {
-	if (m_WithHardCaptureAbort && !NumCapturePlayers)
+	if (m_WithHardCaptureAbort && !CapStrength)
 		AbortCapturing();
 
-	int DiffPlayers = NumCapturePlayers - NumDefPlayers;
-	if (!DiffPlayers)
+	int DiffStrength = CapStrength - DefStrength;
+	if (!DiffStrength)
 	{
-		if (NumCapturePlayers) // even number on both sides
+		if (CapStrength) // even number on both sides
 			return false;
 		else
-			DiffPlayers = -50; // no player at all // BASE_STRENGTH / 2 = 100 / 2
+			DiffStrength = -50; // no player at all // BASE_STRENGTH / 2 = 100 / 2
 	}
 
-	m_Timer -= DiffPlayers;
+	m_Timer -= DiffStrength;
 
 	if (m_Timer / Server()->TickSpeed() >= m_CapTime)
 	{
@@ -105,9 +105,9 @@ bool CDominationSpot::UpdateCapturing(int NumCapturePlayers, int NumDefPlayers)
 	}
 
 	if (m_NextTeam == DOM_RED || (m_Team == DOM_RED && m_NextTeam == DOM_NEUTRAL))
-		m_FlagRedY += m_FlagCounter * DiffPlayers;
+		m_FlagRedY += m_FlagCounter * DiffStrength;
 	if (m_NextTeam == DOM_BLUE || (m_Team == DOM_BLUE && m_NextTeam == DOM_NEUTRAL))
-		m_FlagBlueY += m_FlagCounter * DiffPlayers;
+		m_FlagBlueY += m_FlagCounter * DiffStrength;
 
 	if (m_Timer <= 0)
 	{

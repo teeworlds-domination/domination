@@ -55,7 +55,7 @@ protected:
 	virtual void EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type, bool AllowNeutral, bool IgnoreSpotOwner) const;
 	virtual void Init();
 
-	virtual void StartCapturing(int Spot, int RedTeamSize, int BlueTeamSize);
+	virtual void StartCapturing(int Spot, int RedCapStrength, int BlueCapStrength);
 	virtual void Capture(int Spot, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]);
 	virtual void Neutralize(int Spot, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]);
 

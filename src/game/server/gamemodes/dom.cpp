@@ -295,15 +295,15 @@ void CGameControllerDOM::UpdateCaptureProcess()
 	}
 }
 
-void CGameControllerDOM::StartCapturing(int Spot, int NumOfRedCapPlayers, int NumOfBlueCapPlayers)
+void CGameControllerDOM::StartCapturing(int Spot, int RedCapStrength, int BlueCapStrength)
 {
 	if (Spot < 0 || Spot > DOM_MAXDSPOTS - 1)
 		return;
 
 	int Team = -1;
-	if (m_apDominationSpots[Spot]->GetTeam() != DOM_RED && NumOfRedCapPlayers > NumOfBlueCapPlayers)
+	if (m_apDominationSpots[Spot]->GetTeam() != DOM_RED && RedCapStrength > BlueCapStrength)
 		Team = TEAM_RED;
-	else if (m_apDominationSpots[Spot]->GetTeam() != DOM_BLUE && NumOfRedCapPlayers < NumOfBlueCapPlayers)
+	else if (m_apDominationSpots[Spot]->GetTeam() != DOM_BLUE && RedCapStrength < BlueCapStrength)
 		Team = TEAM_BLUE;
 	else
 		return;

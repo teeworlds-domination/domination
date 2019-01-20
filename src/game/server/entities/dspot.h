@@ -32,7 +32,7 @@ public:
 	virtual void Snap(int SnappingClient) override;
 
 	void StartCapturing(int CaptureTeam, int CaptureTeamSize, int DefTeamSize);
-	bool UpdateCapturing(int NumCapturePlayers, int NumDefPlayers);
+	bool UpdateCapturing(int CapStrength, int DefStrength);
 	void AbortCapturing();
 	void Neutralize();
 	void Capture();
