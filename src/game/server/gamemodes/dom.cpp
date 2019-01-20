@@ -301,18 +301,12 @@ void CGameControllerDOM::StartCapturing(int Spot, int NumOfRedCapPlayers, int Nu
 		return;
 
 	int Team = -1;
-	if (m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)
-	{
-		if (NumOfRedCapPlayers > NumOfBlueCapPlayers)
-			Team = TEAM_RED;
-		else if (NumOfRedCapPlayers < NumOfBlueCapPlayers)
-			Team = TEAM_BLUE;
-		else
-			return;
-	}
-	else if ((m_apDominationSpots[Spot]->GetTeam() == DOM_RED && NumOfBlueCapPlayers) || (m_apDominationSpots[Spot]->GetTeam() == DOM_BLUE && NumOfRedCapPlayers))
-		Team = m_apDominationSpots[Spot]->GetTeam() ^ 1;
-	else return;
+	if (m_apDominationSpots[Spot]->GetTeam() != DOM_RED && NumOfRedCapPlayers > NumOfBlueCapPlayers)
+		Team = TEAM_RED;
+	else if (m_apDominationSpots[Spot]->GetTeam() != DOM_BLUE && NumOfRedCapPlayers < NumOfBlueCapPlayers)
+		Team = TEAM_BLUE;
+	else
+		return;
 
 	m_apDominationSpots[Spot]->StartCapturing(Team, GetTeamSize(Team), GetTeamSize(Team ^ 1));
 }
