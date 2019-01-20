@@ -21,6 +21,7 @@ private:
 
 	int m_CapTime;               // Time needed for capturing process
 	int m_Timer;                 // Timer for capturing process
+	int m_CapStrength;
 
 	bool m_WithHandicap;
 	bool m_WithHardCaptureAbort;
@@ -51,6 +52,7 @@ public:
 	vec2 GetPos() const     { return m_Pos; }
 	int GetCapTime() const  { return m_CapTime; }
 	int GetTimer() const    { return m_Timer; }
+	int GetCapStrength() const { return m_CapStrength; }
 
 	void SetTeam(int Team)  { m_Team = Team; }
 };

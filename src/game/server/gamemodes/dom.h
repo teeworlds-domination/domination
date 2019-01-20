@@ -50,6 +50,7 @@ protected:
 	int   m_aCapTimes[MAX_PLAYERS / 2 + 1];						// Dynamic capture timer, considering the team sizes (dyn_captimes[get_team_size])
 
 	int   m_aLastBroadcastState[DOM_MAXDSPOTS];
+	int   m_aLastSpotCapStrength[DOM_MAXDSPOTS];
 	
 	virtual bool EvaluateSpawnPosDom(CSpawnEval *pEval, int Type, vec2 Pos, bool AllowNeutral) const;
 	virtual void EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type, bool AllowNeutral, bool IgnoreSpotOwner) const;
@@ -97,7 +98,7 @@ protected:
 	const char *GetTeamBroadcastColor(int Team) const;
 	const char GetTeamBroadcastOpenParenthesis(int Team) const;
 	const char GetTeamBroadcastCloseParenthesis(int Team) const;
-	const char GetTeamBroadcastMarker(int Team) const;
+	const char GetTeamBroadcastMarker(int Team, int CapStrength) const;
 	const char *GetTeamName(int Team) const;
 	
 public:

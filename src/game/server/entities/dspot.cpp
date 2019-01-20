@@ -30,9 +30,12 @@ void CDominationSpot::Reset()
 {
 	m_CapTime = 0;
 	m_Timer = -1;
+	m_CapStrength = 0;
+
 	m_Team = DOM_NEUTRAL;
 	m_CapTeam = DOM_NEUTRAL;
 	m_NextTeam = DOM_NEUTRAL;
+
 	m_IsGettingCaptured = false;
 	m_IsLocked[DOM_RED] = m_IsLocked[DOM_BLUE] = false;
 	m_FlagRedY = 0.0f;
@@ -86,17 +89,16 @@ bool CDominationSpot::UpdateCapturing(int CapStrength, int DefStrength)
 	if (m_WithHardCaptureAbort && !CapStrength)
 		AbortCapturing();
 
-	int DiffStrength = CapStrength - DefStrength;
-	if (!DiffStrength)
+	m_CapStrength = CapStrength - DefStrength;
+	if (!m_CapStrength)
 	{
 		if (CapStrength) // even number on both sides
 			return false;
 		else
-			DiffStrength = -50; // no player at all // BASE_STRENGTH / 2 = 100 / 2
+			m_CapStrength = -50; // no player at all // BASE_STRENGTH / 2 = 100 / 2
 	}
 
-	m_Timer -= DiffStrength;
-
+	m_Timer -= m_CapStrength;
 	if (m_Timer / Server()->TickSpeed() >= m_CapTime)
 	{
 		// capture defended
@@ -105,9 +107,9 @@ bool CDominationSpot::UpdateCapturing(int CapStrength, int DefStrength)
 	}
 
 	if (m_NextTeam == DOM_RED || (m_Team == DOM_RED && m_NextTeam == DOM_NEUTRAL))
-		m_FlagRedY += m_FlagCounter * DiffStrength;
+		m_FlagRedY += m_FlagCounter * m_CapStrength;
 	if (m_NextTeam == DOM_BLUE || (m_Team == DOM_BLUE && m_NextTeam == DOM_NEUTRAL))
-		m_FlagBlueY += m_FlagCounter * DiffStrength;
+		m_FlagBlueY += m_FlagCounter * m_CapStrength;
 
 	if (m_Timer <= 0)
 	{
@@ -145,6 +147,7 @@ void CDominationSpot::AbortCapturing()
 void CDominationSpot::StopCapturing()
 {
 	m_IsGettingCaptured = false;
+	m_CapStrength = 0;
 	m_NextTeam = m_Team;
 	m_FlagRedY = 0.0f;
 	m_FlagBlueY = 0.0f;

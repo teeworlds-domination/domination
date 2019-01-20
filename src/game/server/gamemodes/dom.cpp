@@ -71,7 +71,10 @@ void CGameControllerDOM::OnReset()
 
 	mem_zero(m_aaBufBroadcastSpotOverview, DOM_MAXDSPOTS * 48 * sizeof(char));
 	for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
+	{
 		m_aLastBroadcastState[Spot] = -2; // force update
+		m_aLastSpotCapStrength[Spot] = 0;
+	}
 
 	Init();
 }
@@ -329,6 +332,7 @@ void CGameControllerDOM::Capture(int Spot, int NumOfCapCharacters, CCharacter* a
 
 	++m_aNumOfTeamDominationSpots[m_apDominationSpots[Spot]->GetTeam()];
 	m_aLastBroadcastState[Spot] = -2; // force update
+	m_aLastSpotCapStrength[Spot] = 0;
 
 	OnCapture(Spot, m_apDominationSpots[Spot]->GetTeam(), NumOfCapCharacters, apCapCharacters);
 }
@@ -349,6 +353,7 @@ void CGameControllerDOM::Neutralize(int Spot, int NumOfCapCharacters, CCharacter
 
 	--m_aNumOfTeamDominationSpots[m_apDominationSpots[Spot]->GetCapTeam() ^ 1];
 	m_aLastBroadcastState[Spot] = -2; // force update
+	m_aLastSpotCapStrength[Spot] = 0;
 
 	OnNeutralize(Spot, m_apDominationSpots[Spot]->GetCapTeam(), NumOfCapCharacters, apCapCharacters);
 }
@@ -465,9 +470,10 @@ const char* CGameControllerDOM::GetDominationSpotBroadcastOverview(int Spot, cha
 	else
 		MarkerPos = -1;
 
-	if (MarkerPos != m_aLastBroadcastState[Spot])
+	if (MarkerPos != m_aLastBroadcastState[Spot] || m_apDominationSpots[Spot]->GetCapStrength() != m_aLastSpotCapStrength[Spot])
 	{
 		m_aLastBroadcastState[Spot] = MarkerPos;
+		m_aLastSpotCapStrength[Spot] = m_apDominationSpots[Spot]->GetCapStrength();
 		m_UpdateBroadcast = true;
 
 		int CurrPos = 0;
@@ -574,7 +580,15 @@ void CGameControllerDOM::AddColorizedMarker(int Spot, char *pBuf, int &rCurrPos)
 
 	AddColorizedSymbol(pBuf, rCurrPos
 			, m_apDominationSpots[Spot]->GetNextTeam()
-			, GetTeamBroadcastMarker(m_apDominationSpots[Spot]->GetCapTeam()));
+			, GetTeamBroadcastMarker(m_apDominationSpots[Spot]->GetCapTeam(), m_apDominationSpots[Spot]->GetCapStrength()));
+
+	// TODO hackish
+	// static const char* CHAR_DOUBLE_ARROW_RIGHT = "»";
+	// static const char* CHAR_DOUBLE_ARROW_LEFT = "«";
+	if (abs(m_apDominationSpots[Spot]->GetCapStrength()) > BASE_CAPSTRENGTH)
+		pBuf[rCurrPos++] = (m_apDominationSpots[Spot]->GetCapTeam() == DOM_RED? '\273' : '\253');
+	else if (m_apDominationSpots[Spot]->GetCapStrength() < -BASE_CAPSTRENGTH)
+		pBuf[rCurrPos++] = (m_apDominationSpots[Spot]->GetCapTeam() == DOM_BLUE? '\273' : '\253');
 }
 
 void CGameControllerDOM::AddColorizedSymbol(char *pBuf, int &rCurrPos, int ColorCode, const char Symbol) const
@@ -667,13 +681,25 @@ const char CGameControllerDOM::GetTeamBroadcastCloseParenthesis(int Team) const
 	}
 }
 
-const char CGameControllerDOM::GetTeamBroadcastMarker(int Team) const
+const char CGameControllerDOM::GetTeamBroadcastMarker(int Team, int CapStrength) const
 {
+	if (!CapStrength)
+		return 'x';
+
+	if (abs(CapStrength) > BASE_CAPSTRENGTH)
+		return '\302';
+
+	return (Team == DOM_RED && CapStrength > 0) || (Team == TEAM_BLUE && CapStrength < 0)? '>' : '<';
+
+	/*
 	switch(Team)
 	{
-	case DOM_RED:  return '>';
-	default:       return '<';
+	case DOM_RED:  
+		return '>';
+	default:
+		return '<';
 	}
+	*/
 }
 
 void CGameControllerDOM::SetCapTime(int CapTime)
