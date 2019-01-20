@@ -103,11 +103,11 @@ bool CGameControllerDOM::OnEntity(int Index, vec2 Pos)
 	//	save domination spot flag positions
 	switch (Index + ENTITY_OFFSET)
 	{
-	case TILE_DOM_FLAG_A: if (!m_apDominationSpots[0]) GameServer()->m_World.InsertEntity(m_apDominationSpots[0] = new CDominationSpot(&GameServer()->m_World, Pos, 0, m_aCapTimes, WithHandicap(), WithHardCaptureAbort(), WithNeutralState())); break;
-	case TILE_DOM_FLAG_B: if (!m_apDominationSpots[1]) GameServer()->m_World.InsertEntity(m_apDominationSpots[1] = new CDominationSpot(&GameServer()->m_World, Pos, 1, m_aCapTimes, WithHandicap(), WithHardCaptureAbort(), WithNeutralState())); break;
-	case TILE_DOM_FLAG_C: if (!m_apDominationSpots[2]) GameServer()->m_World.InsertEntity(m_apDominationSpots[2] = new CDominationSpot(&GameServer()->m_World, Pos, 2, m_aCapTimes, WithHandicap(), WithHardCaptureAbort(), WithNeutralState())); break;
-	case TILE_DOM_FLAG_D: if (!m_apDominationSpots[3]) GameServer()->m_World.InsertEntity(m_apDominationSpots[3] = new CDominationSpot(&GameServer()->m_World, Pos, 3, m_aCapTimes, WithHandicap(), WithHardCaptureAbort(), WithNeutralState())); break;
- 	case TILE_DOM_FLAG_E: if (!m_apDominationSpots[4]) GameServer()->m_World.InsertEntity(m_apDominationSpots[4] = new CDominationSpot(&GameServer()->m_World, Pos, 4, m_aCapTimes, WithHandicap(), WithHardCaptureAbort(), WithNeutralState())); break;
+	case TILE_DOM_FLAG_A: if (!m_apDominationSpots[0]) GameServer()->m_World.InsertEntity(m_apDominationSpots[0] = new CDominationSpot(&GameServer()->m_World, Pos, 0, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
+	case TILE_DOM_FLAG_B: if (!m_apDominationSpots[1]) GameServer()->m_World.InsertEntity(m_apDominationSpots[1] = new CDominationSpot(&GameServer()->m_World, Pos, 1, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
+	case TILE_DOM_FLAG_C: if (!m_apDominationSpots[2]) GameServer()->m_World.InsertEntity(m_apDominationSpots[2] = new CDominationSpot(&GameServer()->m_World, Pos, 2, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
+	case TILE_DOM_FLAG_D: if (!m_apDominationSpots[3]) GameServer()->m_World.InsertEntity(m_apDominationSpots[3] = new CDominationSpot(&GameServer()->m_World, Pos, 3, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
+ 	case TILE_DOM_FLAG_E: if (!m_apDominationSpots[4]) GameServer()->m_World.InsertEntity(m_apDominationSpots[4] = new CDominationSpot(&GameServer()->m_World, Pos, 4, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
 	default: return false;
 	}
 	
@@ -275,6 +275,20 @@ void CGameControllerDOM::UpdateCaptureProcess()
 				aaPlayerStrength[DomCaparea][pPlayer->GetTeam()] += CalcCaptureStrength(DomCaparea, pPlayer->GetCharacter(), !aaPlayerStrength[DomCaparea][pPlayer->GetTeam()]);
 		}
 	}
+
+	if (WithHandicap())
+		for (DomCaparea = 0; DomCaparea < m_NumOfDominationSpots; ++DomCaparea)
+		{
+			if (!m_aDominationSpotsEnabled[DomCaparea])
+				continue;
+
+			for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
+			{
+				//	handicap (faster capturing) for smaller team
+				if (aaPlayerStrength[DomCaparea][Team] && GetTeamSize(Team) < GetTeamSize(Team ^ 1))
+					aaPlayerStrength[DomCaparea][Team] += ADD_CAPSTRENGTH;
+			}
+		}
 
 	//	capturing process for all dspots
 	int Spot = -1;

@@ -23,12 +23,11 @@ private:
 	int m_Timer;                 // Timer for capturing process
 	int m_CapStrength;
 
-	bool m_WithHandicap;
 	bool m_WithHardCaptureAbort;
 	bool m_WithNeutral;
 
 public:
-	CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id, int CapTimes[MAX_PLAYERS / 2 + 1], bool Handicap, bool HardCaptureAbort, bool Neutral);
+	CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id, int CapTimes[MAX_PLAYERS / 2 + 1], bool HardCaptureAbort, bool Neutral);
 	virtual void Reset() override;
 	virtual void Snap(int SnappingClient) override;
 

@@ -12,11 +12,10 @@
 
 // DSPOT
 CDominationSpot::CDominationSpot(CGameWorld *pGameWorld, vec2 Pos, int Id, int CapTimes[MAX_PLAYERS / 2 + 1]
-		, bool Handicap, bool HardCaptureAbort, bool Neutral)
+		, bool HardCaptureAbort, bool Neutral)
 		: CEntity(pGameWorld, CGameWorld::ENTTYPE_FLAG, Pos)
 	, m_Pos(Pos)
 	, m_Id(Id)
-	, m_WithHandicap(Handicap)
 	, m_WithHardCaptureAbort(HardCaptureAbort)
 	, m_WithNeutral(Neutral)
 {
@@ -69,8 +68,6 @@ void CDominationSpot::StartCapturing(int CaptureTeam, int CaptureTeamSize, int D
 		return;
 
 	m_CapTime = m_aCapTimes[min(CaptureTeamSize, MAX_PLAYERS / DOM_NUMOFTEAMS + 1)];
-	if (m_WithHandicap && DefTeamSize > CaptureTeamSize)	//	handicap (faster capturing) for smaller team
-		m_CapTime = m_CapTime * CaptureTeamSize / DefTeamSize;
 	m_Timer = m_CapTime * Server()->TickSpeed();
 	m_CapTeam = CaptureTeam;
 	m_NextTeam = m_WithNeutral && m_Team != DOM_NEUTRAL? DOM_NEUTRAL : m_CapTeam;
