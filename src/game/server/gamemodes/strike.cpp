@@ -63,15 +63,6 @@ void CGameControllerSTRIKE::OnReset()
 	m_BombPlacedCID = -1;
 	if (m_apFlags[TEAM_BLUE])
 		m_apFlags[TEAM_BLUE]->Hide();
-
-	if (m_NumOfDominationSpots)
-	{
-		int Spot = -1;
-		while ((Spot = GetNextSpot(Spot)) > -1)
-		{
-			LockSpot(Spot, DOM_BLUE);
-		}
-	}
 }
 
 void CGameControllerSTRIKE::Tick()
@@ -289,19 +280,6 @@ void CGameControllerSTRIKE::OnCapture(int Spot, int Team, int NumOfCapCharacters
 		m_WinTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvStrikeExplodeTime;
 		m_GameInfo.m_TimeLimit = 0;
 		UpdateGameInfo(-1);
-
-		UnlockSpot(Spot, Team ^ 1);
-
-		int NextSpot = -1;
-		while ((NextSpot = GetNextSpot(NextSpot)) > -1)
-		{
-			LockSpot(NextSpot, Team);
-
-			if (NextSpot == Spot)
-				continue;
-
-			LockSpot(NextSpot, Team ^ 1);
-		}
 	}
 	else
 	{
@@ -426,7 +404,7 @@ int CGameControllerSTRIKE::CalcCaptureStrength(int Spot, CCharacter* pChr, bool 
 	{
 		if (!m_apDominationSpots[Spot]->GetTeam() == DOM_RED)
 			return 0;
-		if (!m_apFlags[TEAM_BLUE])
+		if (!m_apFlags[TEAM_BLUE]) // should not occur
 			return BASE_CAPSTRENGTH;
 		else if (m_apFlags[TEAM_BLUE]->GetCarrier())
 			return m_apFlags[TEAM_BLUE]->GetCarrier() == pChr? BASE_CAPSTRENGTH : 0;
@@ -440,18 +418,6 @@ int CGameControllerSTRIKE::CalcCaptureStrength(int Spot, CCharacter* pChr, bool 
 	}
 
 	return m_apFlags[TEAM_RED] && m_apFlags[TEAM_RED]->GetCarrier() == pChr? BASE_CAPSTRENGTH : 0;
-}
-
-void CGameControllerSTRIKE::UnlockSpot(int Spot, int Team)
-{
-	m_apDominationSpots[Spot]->Unlock(Team);
-	m_aLastBroadcastState[Spot] = -2; // force update
-}
-
-void CGameControllerSTRIKE::LockSpot(int Spot, int Team)
-{
-	m_apDominationSpots[Spot]->Lock(Team);
-	m_aLastBroadcastState[Spot] = -2; // force update
 }
 
 bool CGameControllerSTRIKE::SendPersonalizedBroadcast(int ClientID)

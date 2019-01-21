@@ -32,9 +32,6 @@ private:
 protected:
 	virtual void Init() override;
 
-	void UnlockSpot(int Spot, int Team);
-	void LockSpot(int Spot, int Team);
-
 	virtual void UpdateScoring() override {};
 	virtual void UpdatePickups();
 	virtual void UpdateBomb();
