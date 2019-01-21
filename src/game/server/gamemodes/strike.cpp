@@ -34,18 +34,35 @@ CGameControllerSTRIKE::CGameControllerSTRIKE(CGameContext *pGameServer)
 	m_BombPlacedCID = -1;
 
 	SetCapTime(g_Config.m_SvStrikeCapTime);
-
-	m_apFlags[TEAM_BLUE] = new CStrikeFlag(&GameServer()->m_World, TEAM_BLUE, vec2(0.0f, 0.0f));
 }
 
 void CGameControllerSTRIKE::Init()
 {
 	CGameControllerDOM::Init();
 
-	m_WinTick = -1;
+	if (m_NumOfDominationSpots)
+	{
+		m_apFlags[TEAM_BLUE] = new CStrikeFlag(&GameServer()->m_World, TEAM_BLUE, vec2(0.0f, 0.0f));
+		if (!m_apFlags[TEAM_RED])
+			GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "CS:DOM", "Red flag is missing: red team can not capture.");
+	}
+	else if (m_apFlags[TEAM_RED])
+		m_apFlags[TEAM_RED]->Destroy();
+}
+
+void CGameControllerSTRIKE::OnReset()
+{
+	CGameControllerDOM::OnReset();
 
 	m_GameInfo.m_TimeLimit = g_Config.m_SvStrikeTimelimit;
 	UpdateGameInfo(-1);
+
+	m_SentPersonalizedBroadcast = false;
+	m_WinTick = -1;
+	m_PurchaseTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvStrikeBuyTimelimit;
+	m_BombPlacedCID = -1;
+	if (m_apFlags[TEAM_BLUE])
+		m_apFlags[TEAM_BLUE]->Hide();
 
 	if (m_NumOfDominationSpots)
 	{
@@ -55,19 +72,6 @@ void CGameControllerSTRIKE::Init()
 			LockSpot(Spot, DOM_BLUE);
 		}
 	}
-}
-
-void CGameControllerSTRIKE::OnReset()
-{
-	CGameControllerDOM::OnReset();
-
-	m_GameInfo.m_TimeLimit = g_Config.m_SvStrikeTimelimit;
-
-	m_SentPersonalizedBroadcast = false;
-	m_PurchaseTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvStrikeBuyTimelimit;
-	m_BombPlacedCID = -1;
-	if (m_apFlags[TEAM_BLUE])
-		m_apFlags[TEAM_BLUE]->Hide();
 }
 
 void CGameControllerSTRIKE::Tick()
@@ -435,7 +439,7 @@ int CGameControllerSTRIKE::CalcCaptureStrength(int Spot, CCharacter* pChr, bool 
 		}
 	}
 
-	return !m_apFlags[TEAM_RED] || m_apFlags[TEAM_RED]->GetCarrier() == pChr? BASE_CAPSTRENGTH : 0;
+	return m_apFlags[TEAM_RED] && m_apFlags[TEAM_RED]->GetCarrier() == pChr? BASE_CAPSTRENGTH : 0;
 }
 
 void CGameControllerSTRIKE::UnlockSpot(int Spot, int Team)
