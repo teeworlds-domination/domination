@@ -27,13 +27,30 @@ CGameControllerCONQ::CGameControllerCONQ(CGameContext *pGameServer)
 	SetCapTime(g_Config.m_SvConqCapTime);
 
 	m_GameInfo.m_ScoreLimit = 5;
+
+	for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
+		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
+			m_aaNumSpotSpawnPoints[Spot][Team] = 0;
 }
 
 void CGameControllerCONQ::Init()
 {
 	CGameControllerDOM::Init();
 
+	if (m_NumOfDominationSpots > 1)
+		CalculateSpawns();
+	else
+		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "CONQ", "Initialization failed, not enough spots.");
+}
+
+void CGameControllerCONQ::OnReset()
+{
+	CGameControllerDOM::OnReset();
+
 	m_WinTick = -1;
+
+	m_GameInfo.m_ScoreLimit = m_NumOfDominationSpots;
+	UpdateGameInfo(-1);
 
 	if (m_NumOfDominationSpots > 1)
 	{
@@ -58,19 +75,7 @@ void CGameControllerCONQ::Init()
 			m_apDominationSpots[Spot]->SetTeam(DOM_BLUE);
 			OnCapture(Spot, DOM_BLUE, 0, 0);
 		}
-
-		CalculateSpawns();
 	}
-	else
-		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "CONQ", "Initialization failed, not enough spots.");
-}
-
-void CGameControllerCONQ::OnReset()
-{
-	CGameControllerDOM::OnReset();
-
-	m_GameInfo.m_ScoreLimit = m_NumOfDominationSpots;
-	UpdateGameInfo(-1);
 }
 
 void CGameControllerCONQ::Tick()
@@ -245,10 +250,6 @@ bool CGameControllerCONQ::CanSpawn(int Team, vec2 *pOutPos)
 
 void CGameControllerCONQ::CalculateSpawns()
 {
-	for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
-		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
-			m_aaNumSpotSpawnPoints[Spot][Team] = 0;
-
 	int Spot;
 	for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
 	{
