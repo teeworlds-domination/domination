@@ -122,7 +122,7 @@ bool CGameControllerSTRIKE::OnEntity(int Index, vec2 Pos)
 		if(g_Config.m_SvPowerups)
 			Type = PICKUP_NINJA;
 		break;
-	case ENTITIY_AMMO:
+	case ENTITY_AMMO:
 		Type = PICKUP_AMMO;
 	}
 
