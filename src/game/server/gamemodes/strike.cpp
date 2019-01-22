@@ -232,11 +232,6 @@ void CGameControllerSTRIKE::ExplodeBomb()
 	GameServer()->CreateGlobalSound(SOUND_GRENADE_EXPLODE);
 }
 
-bool CGameControllerSTRIKE::CanSpawn(int Team, vec2 *pOutPos)
-{
-	return IGameController::CanSpawn(Team, pOutPos);
-}
-
 void CGameControllerSTRIKE::OnStartCapturing(int Spot, int Team)
 {
 	GameServer()->CreateSound(m_apDominationSpots[Spot]->GetPos(), SOUND_PLAYER_SPAWN);
@@ -489,12 +484,6 @@ void CGameControllerSTRIKE::SendChatInfo(int ClientID) const
 	CGameControllerDOM::SendChat(ClientID, "Be aware of the timelimits!");
 	CGameControllerDOM::SendChat(ClientID, "Survival: You can not respawn.");
 }
-
-void CGameControllerSTRIKE::ShowSpawns(int Spot) const
-{
-	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dom", "This command is not supported for the current gametype.");
-}
-
 
 
 

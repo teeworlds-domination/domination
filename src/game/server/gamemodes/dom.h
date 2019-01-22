@@ -39,6 +39,9 @@ private:
 	const char* GetDominationSpotBroadcastOverview(int Spot, char *pBuf);
 
 protected:
+	vec2 m_aaaSpotSpawnPoints[DOM_MAXDSPOTS][3][64];
+	int  m_aaNumSpotSpawnPoints[DOM_MAXDSPOTS][3];
+
 	CDominationSpot *m_apDominationSpots[DOM_MAXDSPOTS];	//	domination spots
 	float m_aTeamscoreTick[DOM_NUMOFTEAMS];						//	number of ticks a team captured the dspots (updated)
 	int   m_aNumOfTeamDominationSpots[DOM_NUMOFTEAMS];			//	number of owned dspots per team
@@ -51,9 +54,15 @@ protected:
 
 	int   m_aLastBroadcastState[DOM_MAXDSPOTS];
 	int   m_aLastSpotCapStrength[DOM_MAXDSPOTS];
+
+protected:
+	virtual void CalculateSpawns();
+	virtual void CalculateSpotSpawns(int Spot, int Type);
 	
-	virtual bool EvaluateSpawnPosDom(CSpawnEval *pEval, int Type, vec2 Pos, bool AllowNeutral) const;
-	virtual void EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type, bool AllowNeutral, bool IgnoreSpotOwner) const;
+	bool IsSpawnAtSpot(vec2 Pos, int Spot) const;
+	void EvaluateSpawnTypeDom(CSpawnEval *pEval, int SpotTeam) const;
+	void EvaluateSpawnTypeDom(CSpawnEval *pEval, int SpotTeam, int SpawnType) const;
+
 	virtual void Init();
 
 	virtual void StartCapturing(int Spot, int RedCapStrength, int BlueCapStrength);

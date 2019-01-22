@@ -9,17 +9,14 @@ class CGameControllerCONQ : public CGameControllerDOM
 private:
 	int m_WinTick;
 
-	void CalculateSpotSpawns(int Spot, int Team);
 	void ShiftLocks(int Spot, int Team);
 
 protected:
-	vec2 m_aaaSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS][64];
-	int  m_aaNumSpotSpawnPoints[DOM_MAXDSPOTS][DOM_NUMOFTEAMS];
+	virtual void CalculateSpawns() override;
+	virtual void CalculateSpotSpawns(int Spot, int Type) override;
 
-	virtual void CalculateSpawns();
-
-	virtual float EvaluateSpawnPosConq(vec2 Pos, int SpawnSpot, int NextSpot, int PreviousSpot, bool &IsStartpointAfterPreviousSpot) const;
-	virtual void  EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) const;
+	float EvaluateSpawnPosConq(vec2 Pos, int SpawnSpot, int NextSpot, int PreviousSpot, bool &IsStartpointAfterPreviousSpot) const;
+	void  EvaluateSpawnTypeConq(CSpawnEval *pEval, int Type) const;
 
 	virtual void Init() override;
 
@@ -59,7 +56,5 @@ public:
 	virtual int  OnCharacterDeath(class CCharacter *pVictim, class CPlayer *pKiller, int Weapon) override;
 
 	virtual void SendChatInfo(int ClientID) const override;
-
-	virtual void ShowSpawns(int Spot) const override;
 };
 #endif

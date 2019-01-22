@@ -1444,7 +1444,7 @@ void CGameContext::OnConsoleInit()
 	Console()->Register("clear_votes", "", CFGFLAG_SERVER, ConClearVotes, this, "Clears the voting options");
 	Console()->Register("vote", "r", CFGFLAG_SERVER, ConVote, this, "Force a vote to yes/no");
 
-	Console()->Register("conq_spawns", "i", CFGFLAG_SERVER, ConDomShowSpawns, this, "Shows all spawns for spot i");
+	Console()->Register("dom_spawns", "i", CFGFLAG_SERVER, ConDomShowSpawns, this, "Shows all spawns for spot i");
 }
 
 void CGameContext::OnInit()

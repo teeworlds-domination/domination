@@ -9,6 +9,7 @@
 
 #include <game/server/entities/character.h>
 #include <game/server/entities/dspot.h>
+#include <game/server/entities/strike_pickup.h>
 
 #include "dom.h"
 
@@ -19,6 +20,13 @@ CGameControllerDOM::CGameControllerDOM(CGameContext *pGameServer)
 	m_pGameType = "DOM";
 
 	m_GameFlags = GAMEFLAG_TEAMS|GAMEFLAG_FLAGS;
+
+	mem_zero(m_aaaSpotSpawnPoints, DOM_MAXDSPOTS * 3 * 64);
+	mem_zero(m_aaNumSpotSpawnPoints, DOM_MAXDSPOTS * 3);
+
+	for (int Type = 0; Type < 3; ++Type)
+		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
+			m_aaNumSpotSpawnPoints[Spot][Type] = 0;
 
 	m_aTeamscoreTick[0] = 0;
 	m_aTeamscoreTick[1] = 0;
@@ -56,6 +64,9 @@ void CGameControllerDOM::Init()
 	m_DompointsCounter = Temp[m_NumOfDominationSpots] / Server()->TickSpeed();
 
 	SetCapTime(g_Config.m_SvDomCapTime);
+
+	if (m_NumOfDominationSpots)
+		CalculateSpawns();
 }
 
 void CGameControllerDOM::OnReset()
@@ -100,15 +111,41 @@ bool CGameControllerDOM::OnEntity(int Index, vec2 Pos)
 	if(IGameController::OnEntity(Index, Pos))
 		return true;
 
-	//	save domination spot flag positions
-	switch (Index + ENTITY_OFFSET)
+	if (Index + ENTITY_OFFSET >= TILE_DOM_FLAG_A && Index + ENTITY_OFFSET <= TILE_DOM_CAPAREA_E)
 	{
-	case TILE_DOM_FLAG_A: if (!m_apDominationSpots[0]) GameServer()->m_World.InsertEntity(m_apDominationSpots[0] = new CDominationSpot(&GameServer()->m_World, Pos, 0, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
-	case TILE_DOM_FLAG_B: if (!m_apDominationSpots[1]) GameServer()->m_World.InsertEntity(m_apDominationSpots[1] = new CDominationSpot(&GameServer()->m_World, Pos, 1, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
-	case TILE_DOM_FLAG_C: if (!m_apDominationSpots[2]) GameServer()->m_World.InsertEntity(m_apDominationSpots[2] = new CDominationSpot(&GameServer()->m_World, Pos, 2, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
-	case TILE_DOM_FLAG_D: if (!m_apDominationSpots[3]) GameServer()->m_World.InsertEntity(m_apDominationSpots[3] = new CDominationSpot(&GameServer()->m_World, Pos, 3, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
- 	case TILE_DOM_FLAG_E: if (!m_apDominationSpots[4]) GameServer()->m_World.InsertEntity(m_apDominationSpots[4] = new CDominationSpot(&GameServer()->m_World, Pos, 4, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
-	default: return false;
+		//	save domination spot flag positions
+		switch (Index + ENTITY_OFFSET)
+		{
+		case TILE_DOM_FLAG_A: if (!m_apDominationSpots[0]) GameServer()->m_World.InsertEntity(m_apDominationSpots[0] = new CDominationSpot(&GameServer()->m_World, Pos, 0, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
+		case TILE_DOM_FLAG_B: if (!m_apDominationSpots[1]) GameServer()->m_World.InsertEntity(m_apDominationSpots[1] = new CDominationSpot(&GameServer()->m_World, Pos, 1, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
+		case TILE_DOM_FLAG_C: if (!m_apDominationSpots[2]) GameServer()->m_World.InsertEntity(m_apDominationSpots[2] = new CDominationSpot(&GameServer()->m_World, Pos, 2, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
+		case TILE_DOM_FLAG_D: if (!m_apDominationSpots[3]) GameServer()->m_World.InsertEntity(m_apDominationSpots[3] = new CDominationSpot(&GameServer()->m_World, Pos, 3, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
+		case TILE_DOM_FLAG_E: if (!m_apDominationSpots[4]) GameServer()->m_World.InsertEntity(m_apDominationSpots[4] = new CDominationSpot(&GameServer()->m_World, Pos, 4, m_aCapTimes, WithHardCaptureAbort(), WithNeutralState())); break;
+		default: return false;
+		}
+	}
+	else
+	{
+		// save spawn positions
+		switch (Index)
+		{
+		case ENTITY_SPAWN_SPOT_A_RANDOM: m_aaaSpotSpawnPoints[0][0][m_aaNumSpotSpawnPoints[0][0]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_A_RED:    m_aaaSpotSpawnPoints[0][1][m_aaNumSpotSpawnPoints[0][1]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_A_BLUE:   m_aaaSpotSpawnPoints[0][2][m_aaNumSpotSpawnPoints[0][2]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_B_RANDOM: m_aaaSpotSpawnPoints[1][0][m_aaNumSpotSpawnPoints[1][0]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_B_RED:    m_aaaSpotSpawnPoints[1][1][m_aaNumSpotSpawnPoints[1][1]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_B_BLUE:   m_aaaSpotSpawnPoints[1][2][m_aaNumSpotSpawnPoints[1][2]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_C_RANDOM: m_aaaSpotSpawnPoints[2][0][m_aaNumSpotSpawnPoints[2][0]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_C_RED:    m_aaaSpotSpawnPoints[2][1][m_aaNumSpotSpawnPoints[2][1]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_C_BLUE:   m_aaaSpotSpawnPoints[2][2][m_aaNumSpotSpawnPoints[2][2]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_D_RANDOM: m_aaaSpotSpawnPoints[3][0][m_aaNumSpotSpawnPoints[3][0]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_D_RED:    m_aaaSpotSpawnPoints[3][1][m_aaNumSpotSpawnPoints[3][1]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_D_BLUE:   m_aaaSpotSpawnPoints[3][2][m_aaNumSpotSpawnPoints[3][2]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_E_RANDOM: m_aaaSpotSpawnPoints[4][0][m_aaNumSpotSpawnPoints[4][0]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_E_RED:    m_aaaSpotSpawnPoints[4][1][m_aaNumSpotSpawnPoints[4][1]++] = Pos; break;
+		case ENTITY_SPAWN_SPOT_E_BLUE:   m_aaaSpotSpawnPoints[4][2][m_aaNumSpotSpawnPoints[4][2]++] = Pos; break;
+		default: return false;
+		}
 	}
 	
 	return true;
@@ -128,86 +165,97 @@ float CGameControllerDOM::GetRespawnDelay(bool Self) const
 	return max(IGameController::GetRespawnDelay(Self), Self ? g_Config.m_SvDomRespawnDelay + 3.0f : g_Config.m_SvDomRespawnDelay);
 }
 
-bool CGameControllerDOM::EvaluateSpawnPosDom(CSpawnEval *pEval, int Type, vec2 Pos, bool AllowNeutral) const
+void CGameControllerDOM::EvaluateSpawnTypeDom(CSpawnEval *pEval, int SpotTeam, int SpawnType) const
 {
-	float BadDistance = FLT_MAX;
-	float GoodDistance = FLT_MAX;
+	int Type = SpotTeam == DOM_NEUTRAL? 0 : 1+(SpotTeam&1);
+	int NumSpawns = 0;
 
 	int Spot = -1;
 	while ((Spot = GetNextSpot(Spot)) > -1)
 	{
-		if ((m_apDominationSpots[Spot]->GetTeam() == pEval->m_FriendlyTeam)
-				|| (AllowNeutral && m_apDominationSpots[Spot]->GetTeam() == DOM_NEUTRAL)) // own dspot
-			GoodDistance = min(GoodDistance, distance(Pos, m_apDominationSpots[Spot]->GetPos()));
-		else	// neutral or enemy dspot
-			BadDistance = min(BadDistance, distance(Pos, m_apDominationSpots[Spot]->GetPos()));
+		if (m_apDominationSpots[Spot]->GetTeam() == SpotTeam)
+			NumSpawns += m_aaNumSpotSpawnPoints[Spot][SpawnType];
 	}
-	return GoodDistance <= BadDistance;
-}
 
-//	choose a random spawn point near an own domination spot, else a random one
-void CGameControllerDOM::EvaluateSpawnTypeDom(CSpawnEval *pEval, int Type, bool AllowNeutral, bool IgnoreSpotOwner) const
-{
-	if (!m_aNumSpawnPoints[Type])
+	if (!NumSpawns)
 		return;
 
-	if (Type && !m_aNumOfTeamDominationSpots[Type - 1] && (!AllowNeutral && m_NumOfDominationSpots == m_aNumOfTeamDominationSpots[(Type - 1) ^ 1]) )
-		return; // team does not own any spot
+	vec2 *pSpawnpoint = new vec2[NumSpawns];
+	NumSpawns = 0;
 
-	// get spawn point
+	Spot = -1;
+	while ((Spot = GetNextSpot(Spot)) > -1)
+	{
+		if (m_apDominationSpots[Spot]->GetTeam() != SpotTeam)
+			continue;
+
+		for (int Spawn = 0; Spawn < m_aaNumSpotSpawnPoints[Spot][SpawnType]; ++Spawn)
+			pSpawnpoint[NumSpawns++] = m_aaaSpotSpawnPoints[Spot][SpawnType][Spawn];
+	}
+
+	vec2 *pStartpoint = new vec2[NumSpawns];
 	int NumStartpoints = 0;
-	vec2 *pStartpoint = new vec2[m_aNumSpawnPoints[Type]];
-	for(int i = 0; i < m_aNumSpawnPoints[Type]; i++)
-		if (IgnoreSpotOwner || EvaluateSpawnPosDom(pEval, Type, m_aaSpawnPoints[Type][i], AllowNeutral))
+
+	for(int i = 0; i < NumSpawns; i++)
+	{
+		// check if the position is occupado
+		CCharacter *aEnts[MAX_CLIENTS];
+		int Num = GameServer()->m_World.FindEntities(pSpawnpoint[i], 64, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+		vec2 Positions[5] = { vec2(0.0f, 0.0f), vec2(-32.0f, 0.0f), vec2(0.0f, -32.0f), vec2(32.0f, 0.0f), vec2(0.0f, 32.0f) };	// start, left, up, right, down
+		int Result = -1;
+		for(int Index = 0; Index < 5 && Result == -1; ++Index)
 		{
-			// check if the position is occupado
-			CCharacter *aEnts[MAX_CLIENTS];
-			int Num = GameServer()->m_World.FindEntities(m_aaSpawnPoints[Type][i], 64, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
-			vec2 Positions[5] = { vec2(0.0f, 0.0f), vec2(-32.0f, 0.0f), vec2(0.0f, -32.0f), vec2(32.0f, 0.0f), vec2(0.0f, 32.0f) };	// start, left, up, right, down
-			int Result = -1;
-			for(int Index = 0; Index < 5 && Result == -1; ++Index)
-			{
-				Result = Index;
-				for(int c = 0; c < Num; ++c)
-					if(GameServer()->Collision()->CheckPoint(m_aaSpawnPoints[Type][i]+Positions[Index]) ||
-						distance(aEnts[c]->GetPos(), m_aaSpawnPoints[Type][i]+Positions[Index]) <= aEnts[c]->GetProximityRadius())
-					{
-						Result = -1;
-						break;
-					}
-			}
-			if(Result == -1)
-				continue;	// try next spawn point
-
-			vec2 P = m_aaSpawnPoints[Type][i]+Positions[Result];
-			if (!Type) // for neutral spawns, check distance to other player
-			{
-				float S = IGameController::EvaluateSpawnPos(pEval, P);
-				if(!pEval->m_Got || pEval->m_Score >= S - (S * 0.3f))
+			Result = Index;
+			for(int c = 0; c < Num; ++c)
+				if(GameServer()->Collision()->CheckPoint(pSpawnpoint[i]+Positions[Index]) ||
+					distance(aEnts[c]->GetPos(), pSpawnpoint[i]+Positions[Index]) <= aEnts[c]->GetProximityRadius())
 				{
-					if (NumStartpoints && pEval->m_Score > S + (S * 0.3f))
-					{
-						NumStartpoints = 0; // got a way better spawn point, drop the other
-						pEval->m_Score = S;
-					}
-
-					if (!pEval->m_Got)
-						pEval->m_Score = S;
-					pEval->m_Got = true;
+					Result = -1;
+					break;
 				}
-				else
-					continue;
-			}
-			pStartpoint[NumStartpoints++] = P;
 		}
+		if(Result == -1)
+			continue;	// try next spawn point
+
+		vec2 P = pSpawnpoint[i]+Positions[Result];
+		if (!Type) // for neutral spawns, check distance to other player
+		{
+			float S = IGameController::EvaluateSpawnPos(pEval, P);
+			if(!pEval->m_Got || pEval->m_Score >= S - (S * 0.3f))
+			{
+				if (NumStartpoints && pEval->m_Score > S + (S * 0.3f))
+				{
+					NumStartpoints = 0; // got a way better spawn point, drop the other
+					pEval->m_Score = S;
+				}
+
+				if (!pEval->m_Got)
+					pEval->m_Score = S;
+				pEval->m_Got = true;
+			}
+			else
+				continue;
+		}
+		pStartpoint[NumStartpoints++] = P;
+	}
 
 	if (NumStartpoints)
 	{
 		pEval->m_Got = true;
 		pEval->m_Pos = pStartpoint[Server()->Tick() % NumStartpoints];
 	}
+	delete[] pSpawnpoint;
+	pSpawnpoint = 0;
 	delete[] pStartpoint;
 	pStartpoint = 0;
+}
+
+void CGameControllerDOM::EvaluateSpawnTypeDom(CSpawnEval *pEval, int SpotTeam) const
+{
+	// first try own spawns, then random spawns
+	EvaluateSpawnTypeDom(pEval, SpotTeam, 1+(pEval->m_FriendlyTeam&1));
+	if (!pEval->m_Got)
+		EvaluateSpawnTypeDom(pEval, SpotTeam, 0);
 }
 
 bool CGameControllerDOM::CanSpawn(int Team, vec2 *pOutPos)
@@ -222,31 +270,64 @@ bool CGameControllerDOM::CanSpawn(int Team, vec2 *pOutPos)
 	CSpawnEval Eval;
 	Eval.m_FriendlyTeam = Team;
 
-	// TODO rewrite smarter
-	EvaluateSpawnTypeDom(&Eval, 1+(Team&1), false, false); // try own at own spot
-	if(!Eval.m_Got)
+	EvaluateSpawnTypeDom(&Eval, Team);         // own spawn or random spawn at own spot
+	if (!Eval.m_Got)
 	{
-		EvaluateSpawnTypeDom(&Eval, 0, false, false); // try random at own spot
-		if(!Eval.m_Got)
-		{
-			EvaluateSpawnTypeDom(&Eval, 1+(Team&1), true, false); // try own at random
-			if(!Eval.m_Got)
-			{
-				EvaluateSpawnTypeDom(&Eval, 0, true, false); // try random at random
-				if(!Eval.m_Got)
-				{
-					EvaluateSpawnTypeDom(&Eval, 0, true, true); // try random at enemy
-					if(!Eval.m_Got)
-					{
-						EvaluateSpawnTypeDom(&Eval, 1+(Team&1), true, true); // try own at enemy
-					}
-				}
-			}
-		}
+		EvaluateSpawnTypeDom(&Eval, DOM_NEUTRAL);  // own spawn or random spawn at neutral spot
+		if (!Eval.m_Got)
+			EvaluateSpawnTypeDom(&Eval, Team ^ 1);     // own spawn or random spawn at enemy spot
 	}
 
 	*pOutPos = Eval.m_Pos;
 	return Eval.m_Got;
+}
+
+void CGameControllerDOM::CalculateSpawns()
+{
+	int Spot;
+	// calc implicit spot spawns if no explicit are set
+	Spot = -1;
+	while ((Spot = GetNextSpot(Spot)) > -1)
+	{
+		CalculateSpotSpawns(Spot, 0); // random
+		CalculateSpotSpawns(Spot, 1); // red
+		CalculateSpotSpawns(Spot, 2); // blue
+	}
+}
+
+void CGameControllerDOM::CalculateSpotSpawns(int Spot, int Type)
+{
+	if (m_aaNumSpotSpawnPoints[Spot][Type] || !m_aNumSpawnPoints[Type])
+		return;
+
+	if (!m_NumOfDominationSpots)
+	{
+		for (int i = 0; i < m_aNumSpawnPoints[Type]; ++i)
+			m_aaaSpotSpawnPoints[Spot][Type][m_aaNumSpotSpawnPoints[Spot][Type]++] = m_aaSpawnPoints[Type][i];
+		return;
+	}
+
+	for (int i = 0; i < m_aNumSpawnPoints[Type]; ++i)
+		if (IsSpawnAtSpot(m_aaSpawnPoints[Type][i], Spot))
+			m_aaaSpotSpawnPoints[Spot][Type][m_aaNumSpotSpawnPoints[Spot][Type]++] = m_aaSpawnPoints[Type][i];
+
+	return;
+}
+
+bool CGameControllerDOM::IsSpawnAtSpot(vec2 Pos, int Spot) const
+{
+	float DistanceSpot = min(FLT_MAX, distance(Pos, m_apDominationSpots[Spot]->GetPos()));
+	float DistanceNextSpot = FLT_MAX;
+
+	int NextSpot = -1;
+	while ((NextSpot = GetNextSpot(NextSpot)) > -1)
+	{
+		if (NextSpot == Spot)
+			continue;
+		DistanceNextSpot = min(DistanceNextSpot, distance(Pos, m_apDominationSpots[NextSpot]->GetPos()));
+	}
+
+	return DistanceSpot <= DistanceNextSpot;
 }
 
 void CGameControllerDOM::UpdateCaptureProcess()
@@ -809,5 +890,21 @@ void CGameControllerDOM::SendChatStats(int ClientID) const
 
 void CGameControllerDOM::ShowSpawns(int Spot) const
 {
-	GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "dom", "This command is not supported for the current gametype.");
+	if((m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_GAME_PAUSED) && !GameServer()->m_World.m_ResetRequested)
+	{
+		int PickupType;
+		for (int Type = 0; Type < 3; ++Type)
+		{
+			switch (Type)
+			{
+			case 0:  PickupType = PICKUP_ARMOR; break;
+			case 1:  PickupType = PICKUP_HEALTH; break;
+			default: PickupType = PICKUP_AMMO; break;
+			}
+			for (int Spawn = 0; Spawn < m_aaNumSpotSpawnPoints[Spot][Type]; ++Spawn)
+				new CStrikePickup(&GameServer()->m_World, PickupType, m_aaaSpotSpawnPoints[Spot][Type][Spawn], true);
+		}
+	}
+	else
+		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "DOM", "This command can only be used in running games.");
 }

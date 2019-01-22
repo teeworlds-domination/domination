@@ -10,7 +10,6 @@
 
 #include <game/server/entities/character.h>
 #include <game/server/entities/dspot.h>
-#include <game/server/entities/pickup.h>
 
 #include "conq.h"
 
@@ -21,25 +20,16 @@ CGameControllerCONQ::CGameControllerCONQ(CGameContext *pGameServer)
 
 	m_WinTick = -1;
 
-	mem_zero(m_aaaSpotSpawnPoints, DOM_MAXDSPOTS * DOM_NUMOFTEAMS * 64);
-	mem_zero(m_aaNumSpotSpawnPoints, DOM_MAXDSPOTS * DOM_NUMOFTEAMS);
-
 	SetCapTime(g_Config.m_SvConqCapTime);
 
 	m_GameInfo.m_ScoreLimit = 5;
-
-	for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
-		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
-			m_aaNumSpotSpawnPoints[Spot][Team] = 0;
 }
 
 void CGameControllerCONQ::Init()
 {
 	CGameControllerDOM::Init();
 
-	if (m_NumOfDominationSpots > 1)
-		CalculateSpawns();
-	else
+	if (m_NumOfDominationSpots < 2)
 		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "CONQ", "Initialization failed, not enough spots.");
 }
 
@@ -163,11 +153,8 @@ float CGameControllerCONQ::GetRespawnDelay(bool Self) const
 	return max(IGameController::GetRespawnDelay(Self), Self ? g_Config.m_SvConqRespawnDelay + 3.0f : g_Config.m_SvConqRespawnDelay);
 }
 
-void CGameControllerCONQ::EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) const
+void CGameControllerCONQ::EvaluateSpawnTypeConq(CSpawnEval *pEval, int Type) const
 {
-	if (!m_aNumSpawnPoints[Team + 1])
-		return;
-	
 	int SpawnSpot = -1;
 
 	int Spot = -1;
@@ -179,27 +166,27 @@ void CGameControllerCONQ::EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) con
 			break;
 	}
 
-	if (SpawnSpot == -1 || !m_aaNumSpotSpawnPoints[SpawnSpot][Team])
+	if (SpawnSpot == -1 || !m_aaNumSpotSpawnPoints[SpawnSpot][Type])
 	{
 		pEval->m_Got = false;
 		return;
 	}
 
 	int NumStartpoints = 0;
-	vec2 *pStartpoint = new vec2[m_aaNumSpotSpawnPoints[SpawnSpot][Team]];
-	for(int i = 0; i < m_aaNumSpotSpawnPoints[SpawnSpot][Team]; i++)
+	vec2 *pStartpoint = new vec2[m_aaNumSpotSpawnPoints[SpawnSpot][Type]];
+	for(int i = 0; i < m_aaNumSpotSpawnPoints[SpawnSpot][Type]; i++)
 	{
 		// check if the position is occupado
 		CCharacter *aEnts[MAX_CLIENTS];
-		int Num = GameServer()->m_World.FindEntities(m_aaaSpotSpawnPoints[SpawnSpot][Team][i], 64, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
+		int Num = GameServer()->m_World.FindEntities(m_aaaSpotSpawnPoints[SpawnSpot][Type][i], 64, (CEntity**)aEnts, MAX_CLIENTS, CGameWorld::ENTTYPE_CHARACTER);
 		vec2 Positions[5] = { vec2(0.0f, 0.0f), vec2(-32.0f, 0.0f), vec2(0.0f, -32.0f), vec2(32.0f, 0.0f), vec2(0.0f, 32.0f) };	// start, left, up, right, down
 		int Result = -1;
 		for(int Index = 0; Index < 5 && Result == -1; ++Index)
 		{
 			Result = Index;
 			for(int c = 0; c < Num; ++c)
-				if(GameServer()->Collision()->CheckPoint(m_aaaSpotSpawnPoints[SpawnSpot][Team][i]+Positions[Index]) ||
-					distance(aEnts[c]->GetPos(), m_aaaSpotSpawnPoints[SpawnSpot][Team][i]+Positions[Index]) <= aEnts[c]->GetProximityRadius())
+				if(GameServer()->Collision()->CheckPoint(m_aaaSpotSpawnPoints[SpawnSpot][Type][i]+Positions[Index]) ||
+					distance(aEnts[c]->GetPos(), m_aaaSpotSpawnPoints[SpawnSpot][Type][i]+Positions[Index]) <= aEnts[c]->GetProximityRadius())
 				{
 					Result = -1;
 					break;
@@ -209,7 +196,7 @@ void CGameControllerCONQ::EvaluateSpawnTypeConq(CSpawnEval *pEval, int Team) con
 			continue;	// try next spawn point
 
 		// check distance to other player
-		vec2 P = m_aaaSpotSpawnPoints[SpawnSpot][Team][i]+Positions[Result];
+		vec2 P = m_aaaSpotSpawnPoints[SpawnSpot][Type][i]+Positions[Result];
 		float S = IGameController::EvaluateSpawnPos(pEval, P);
 		if(!pEval->m_Got || pEval->m_Score > S)
 		{
@@ -242,7 +229,7 @@ bool CGameControllerCONQ::CanSpawn(int Team, vec2 *pOutPos)
 	Eval.m_FriendlyTeam = Team;
 
 	// only try own team spawn
-	EvaluateSpawnTypeConq(&Eval, Team);
+	EvaluateSpawnTypeConq(&Eval, 1+(Team&1));
 
 	*pOutPos = Eval.m_Pos;
 	return Eval.m_Got;
@@ -251,42 +238,43 @@ bool CGameControllerCONQ::CanSpawn(int Team, vec2 *pOutPos)
 void CGameControllerCONQ::CalculateSpawns()
 {
 	int Spot;
+	// calc implicit spot spawns if no explicit are set
 	for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
 	{
 		Spot = -1;
 		while ((Spot = GetNextSpot(Spot, Team)) > -1)
-			CalculateSpotSpawns(Spot, Team);
+			CalculateSpotSpawns(Spot, 1+(Team&1));
 	}
 }
 
-void CGameControllerCONQ::CalculateSpotSpawns(int Spot, int Team)
+void CGameControllerCONQ::CalculateSpotSpawns(int Spot, int Type)
 {
-	if (Spot < 0 || Spot >= DOM_MAXDSPOTS || !m_aDominationSpotsEnabled[Spot] || !m_aNumSpawnPoints[Team + 1])
+	if (m_aaNumSpotSpawnPoints[Spot][Type] || !m_aNumSpawnPoints[Type])
 		return;
 
 	if (m_NumOfDominationSpots <= 1)
 	{
-		for (int i = 0; i < m_aNumSpawnPoints[Team + 1]; ++i)
-			m_aaaSpotSpawnPoints[Spot][Team][m_aaNumSpotSpawnPoints[Spot][Team]++] = m_aaSpawnPoints[Team + 1][i];
+		for (int i = 0; i < m_aNumSpawnPoints[Type]; ++i)
+			m_aaaSpotSpawnPoints[Spot][Type][m_aaNumSpotSpawnPoints[Spot][Type]++] = m_aaSpawnPoints[Type][i];
 		return;
 	}
 
 	// get last spots for distance calculation
-	int PreviousSpot = GetPreviousSpot(Spot, Team);
-	int NextSpot     = GetNextSpot(Spot, Team);
+	int PreviousSpot = GetPreviousSpot(Spot, Type - 1);
+	int NextSpot     = GetNextSpot(Spot, Type - 1);
 
 	// get spawn point
 	int NumStartpoints = 0;
-	int *pStartpoint = new int[m_aNumSpawnPoints[Team + 1]];
-	float *pStartpointDistance = new float[m_aNumSpawnPoints[Team + 1]];
-	bool *pIsStartpointAfterPreviousSpot = new bool[m_aNumSpawnPoints[Team + 1]];
+	int *pStartpoint = new int[m_aNumSpawnPoints[Type]];
+	float *pStartpointDistance = new float[m_aNumSpawnPoints[Type]];
+	bool *pIsStartpointAfterPreviousSpot = new bool[m_aNumSpawnPoints[Type]];
 
 	float CurrentDistance;
 	bool IsStartpointAfterPreviousSpot = true;
 
-	for (int i = 0; i < m_aNumSpawnPoints[Team + 1]; ++i)
+	for (int i = 0; i < m_aNumSpawnPoints[Type]; ++i)
 	{
-		CurrentDistance = EvaluateSpawnPosConq(m_aaSpawnPoints[Team + 1][i], Spot, NextSpot, PreviousSpot, IsStartpointAfterPreviousSpot);
+		CurrentDistance = EvaluateSpawnPosConq(m_aaSpawnPoints[Type][i], Spot, NextSpot, PreviousSpot, IsStartpointAfterPreviousSpot);
 		if (CurrentDistance < FLT_MAX)
 		{
 			pStartpoint[NumStartpoints] = i;
@@ -312,7 +300,7 @@ void CGameControllerCONQ::CalculateSpotSpawns(int Spot, int Team)
 			for (int i = 0; i < NumStartpoints; ++i)
 			{
 				if (pIsStartpointAfterPreviousSpot[i])
-					m_aaaSpotSpawnPoints[Spot][Team][m_aaNumSpotSpawnPoints[Spot][Team]++] = m_aaSpawnPoints[Team + 1][pStartpoint[i]];
+					m_aaaSpotSpawnPoints[Spot][Type][m_aaNumSpotSpawnPoints[Spot][Type]++] = m_aaSpawnPoints[Type][pStartpoint[i]];
 			}
 		}
 		else
@@ -320,12 +308,10 @@ void CGameControllerCONQ::CalculateSpotSpawns(int Spot, int Team)
 			if (PreviousSpot > -1)
 			{
 				// pick all of previous spot
-				for (int i = 0; i < m_aaNumSpotSpawnPoints[PreviousSpot][Team]; ++i)
-				{
-					m_aaaSpotSpawnPoints[Spot][Team][m_aaNumSpotSpawnPoints[Spot][Team]++] = m_aaaSpotSpawnPoints[PreviousSpot][Team][i];
-				}
+				for (int i = 0; i < m_aaNumSpotSpawnPoints[PreviousSpot][Type]; ++i)
+					m_aaaSpotSpawnPoints[Spot][Type][m_aaNumSpotSpawnPoints[Spot][Type]++] = m_aaaSpotSpawnPoints[PreviousSpot][Type][i];
 			}
-			if (!m_aaNumSpotSpawnPoints[Spot][Team])
+			if (!m_aaNumSpotSpawnPoints[Spot][Type])
 			{
 				// choose nearest spawn behind last own spot
 				int ClosestStartpoint = 0;
@@ -338,15 +324,15 @@ void CGameControllerCONQ::CalculateSpotSpawns(int Spot, int Team)
 						CurrentDistance = pStartpointDistance[i];
 					}
 				}
-				m_aaaSpotSpawnPoints[Spot][Team][m_aaNumSpotSpawnPoints[Spot][Team]++] = m_aaSpawnPoints[Team + 1][pStartpoint[ClosestStartpoint]];
+				m_aaaSpotSpawnPoints[Spot][Type][m_aaNumSpotSpawnPoints[Spot][Type]++] = m_aaSpawnPoints[Type][pStartpoint[ClosestStartpoint]];
 			}
 		}
 	}
 	else
 	{
 		// mapping failure: pick any of the team
-		for (int i = 0; i < m_aNumSpawnPoints[Team + 1]; ++i)
-			m_aaaSpotSpawnPoints[Spot][Team][m_aaNumSpotSpawnPoints[Spot][Team]++] = m_aaSpawnPoints[Team + 1][i];
+		for (int i = 0; i < m_aNumSpawnPoints[Type]; ++i)
+			m_aaaSpotSpawnPoints[Spot][Type][m_aaNumSpotSpawnPoints[Spot][Type]++] = m_aaSpawnPoints[Type][i];
 		return;
 	}
 
@@ -356,6 +342,8 @@ void CGameControllerCONQ::CalculateSpotSpawns(int Spot, int Team)
 	pStartpointDistance = 0;
 	delete[] pIsStartpointAfterPreviousSpot;
 	pIsStartpointAfterPreviousSpot = 0;
+
+	return;
 }
 
 float CGameControllerCONQ::EvaluateSpawnPosConq(vec2 Pos, int SpawnSpot, int NextSpot, int PreviousSpot, bool &IsStartpointAfterPreviousSpot) const
@@ -515,16 +503,4 @@ void CGameControllerCONQ::SendChatInfo(int ClientID) const
 	CGameControllerDOM::SendChat(ClientID, "Tip: Capturing together speeds it up.");
 	CGameControllerDOM::SendChat(ClientID, "Own all spots to win the match.");
 	CGameControllerDOM::SendChat(ClientID, "(This mod is enjoyed best with enabled broadcast color.)");
-}
-
-void CGameControllerCONQ::ShowSpawns(int Spot) const
-{
-	if((m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_GAME_PAUSED) && !GameServer()->m_World.m_ResetRequested)
-	{
-		for (int Team = 0; Team  < DOM_NUMOFTEAMS; ++Team)
-			for (int Spawn = 0; Spawn < m_aaNumSpotSpawnPoints[Spot][Team]; ++Spawn)
-				new CPickup(&GameServer()->m_World, Team, m_aaaSpotSpawnPoints[Spot][Team][Spawn]);
-	}
-	else
-		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "conq", "This command can only be used in running games.");
 }

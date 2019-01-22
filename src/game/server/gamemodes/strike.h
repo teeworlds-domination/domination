@@ -48,7 +48,6 @@ protected:
 public:
 	CGameControllerSTRIKE(class CGameContext *pGameServer);
 	virtual void Tick() override;
-	virtual bool CanSpawn(int Team, vec2 *pOutPos) override;
 
 	virtual void DoWincheckMatch();
 	virtual void DoWincheckRound();
@@ -66,8 +65,6 @@ public:
 	virtual void OnCharacterSpawn(class CCharacter *pChr) override;
 
 	virtual void SendChatInfo(int ClientID) const override;
-
-	virtual void ShowSpawns(int Spot) const override;
 
 public:
 	// general
