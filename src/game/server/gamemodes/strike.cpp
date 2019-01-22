@@ -87,7 +87,7 @@ void CGameControllerSTRIKE::Tick()
 
 bool CGameControllerSTRIKE::OnEntity(int Index, vec2 Pos)
 {
-	if (Index + ENTITY_OFFSET >= TILE_DOM_FLAG_A && Index + ENTITY_OFFSET < TILE_DOM_CAPAREA_E)
+	if (Index + ENTITY_OFFSET >= TILE_DOM_FLAG_A && Index + ENTITY_OFFSET <= TILE_DOM_CAPAREA_E)
 		return CGameControllerDOM::OnEntity(Index, Pos);
 
 	int Type = -1;
