@@ -10,24 +10,10 @@
 
 CStrikeFlag::CStrikeFlag(CGameWorld *pGameWorld, int Team, vec2 StandPos)
 : CFlag(pGameWorld, Team, StandPos)
+	, m_Hidden(false)
+	, m_IsCapturing(false)
 {
-	m_Hidden = false;
-	m_IsCapturing = false;
-}
 
-void CStrikeFlag::Hide()
-{
-	m_Hidden = true;
-}
-
-void CStrikeFlag::Show()
-{
-	m_Hidden = false;
-}
-
-void CStrikeFlag::SetCapturing(bool IsCapturing)
-{
-	m_IsCapturing = IsCapturing;
 }
 
 void CStrikeFlag::Reset()
@@ -46,4 +32,19 @@ void CStrikeFlag::Snap(int SnappingClient)
 		return;
 
 	CFlag::Snap(SnappingClient);
+}
+
+void CStrikeFlag::Hide()
+{
+	m_Hidden = true;
+}
+
+void CStrikeFlag::Show()
+{
+	m_Hidden = false;
+}
+
+void CStrikeFlag::SetCapturing(bool IsCapturing)
+{
+	m_IsCapturing = IsCapturing;
 }
