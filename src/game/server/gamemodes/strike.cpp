@@ -22,7 +22,6 @@ CGameControllerSTRIKE::CGameControllerSTRIKE(CGameContext *pGameServer)
 		, m_PurchaseTick(-1)
 		, m_SentPersonalizedBroadcast(false)
 		, m_WinTick(-1)
-		, m_NumOfStarterPickups(0)
 {
 	m_pGameType = "CS:DOM";
 	m_GameFlags = GAMEFLAG_TEAMS|GAMEFLAG_SURVIVAL;
@@ -125,11 +124,7 @@ bool CGameControllerSTRIKE::OnEntity(int Index, vec2 Pos)
 
 	if(Type != -1)
 	{
-		CStrikePickup *pPickup = new CStrikePickup(&GameServer()->m_World, Type, Pos, false);
-
-		if (Type == WEAPON_SHOTGUN || Type == WEAPON_GRENADE || Type == WEAPON_LASER)
-			m_apStarterPickups[m_NumOfStarterPickups++] = pPickup;
-
+		new CStrikePickup(&GameServer()->m_World, Type, Pos, false);
 		return true;
 	}
 

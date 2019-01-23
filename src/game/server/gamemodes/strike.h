@@ -12,9 +12,6 @@ private:
 	int  m_PurchaseTick;
 	bool m_SentPersonalizedBroadcast;
 	int  m_WinTick;
-	
-	class CStrikePickup* m_apStarterPickups[64];
-	int  m_NumOfStarterPickups;
 
 private:
 	class CStrikeFlag *m_apFlags[2];
