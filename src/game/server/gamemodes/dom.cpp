@@ -15,37 +15,41 @@
 
 CGameControllerDOM::CGameControllerDOM(CGameContext *pGameServer)
 : IGameController(pGameServer)
-{
-	m_apDominationSpots[0] = m_apDominationSpots[1] = m_apDominationSpots[2] = m_apDominationSpots[3] = m_apDominationSpots[4] = 0;
-	m_pGameType = "DOM";
+		, m_ConstructorTick(Server()->Tick())
+		, m_LastBroadcastTick(-1)
+		, m_LastBroadcastCalcTick(-1)
+		, m_UpdateBroadcast(false)
+		, m_IsInit(false)
+		, m_DompointsCounter(0.0f)
+		, m_NumOfDominationSpots(0)
 
+{
+	m_pGameType = "DOM";
 	m_GameFlags = GAMEFLAG_TEAMS|GAMEFLAG_FLAGS;
 
-	mem_zero(m_aaaSpotSpawnPoints, DOM_MAXDSPOTS * 3 * 64);
-	mem_zero(m_aaNumSpotSpawnPoints, DOM_MAXDSPOTS * 3);
-
-	for (int Type = 0; Type < 3; ++Type)
-		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
-			m_aaNumSpotSpawnPoints[Spot][Type] = 0;
-
-	m_aTeamscoreTick[0] = 0;
-	m_aTeamscoreTick[1] = 0;
+	m_apDominationSpots[0] = m_apDominationSpots[1] = m_apDominationSpots[2] = m_apDominationSpots[3] = m_apDominationSpots[4] = 0;
 
 	m_aNumOfTeamDominationSpots[0] = 0;
 	m_aNumOfTeamDominationSpots[1] = 0;
 
-	m_LastBroadcastCalcTick = -1;
-	m_LastBroadcastTick = -1;
+	mem_zero(m_aaNumSpotSpawnPoints, DOM_MAXDSPOTS * 3);
+	for (int Type = 0; Type < 3; ++Type)
+		for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
+			m_aaNumSpotSpawnPoints[Spot][Type] = 0;
 
-	m_ConstructorTick = Server()->Tick();
 	for (int cid = 0; cid < MAX_CLIENTS; ++cid)
 		m_aPlayerIntroTick[cid] = -1;
 
-	Init();
+	mem_zero(m_aaaSpotSpawnPoints, DOM_MAXDSPOTS * 3 * 64);
+
+	m_aTeamscoreTick[0] = 0;
+	m_aTeamscoreTick[1] = 0;
 }
 
 void CGameControllerDOM::Init()
 {
+	m_IsInit = true;
+
 	sscanf(g_Config.m_SvDomUseSpots, "%d %d %d %d %d", m_aDominationSpotsEnabled , m_aDominationSpotsEnabled + 1, m_aDominationSpotsEnabled + 2, m_aDominationSpotsEnabled + 3, m_aDominationSpotsEnabled + 4);
 	float Temp[6] = {0};
 	m_NumOfDominationSpots = 0;
@@ -73,6 +77,9 @@ void CGameControllerDOM::OnReset()
 {
 	IGameController::OnReset();
 
+	if (!m_IsInit)
+		Init();
+
 	m_aTeamscoreTick[0] = 0;
 	m_aTeamscoreTick[1] = 0;
 	m_aNumOfTeamDominationSpots[0] = 0;
@@ -86,8 +93,6 @@ void CGameControllerDOM::OnReset()
 		m_aLastBroadcastState[Spot] = -2; // force update
 		m_aLastSpotCapStrength[Spot] = 0;
 	}
-
-	Init();
 }
 
 void CGameControllerDOM::Tick()
@@ -759,6 +764,14 @@ const char CGameControllerDOM::GetSpotName(int Spot) const
 	default: return 'E';
 	}
 }
+
+void CGameControllerDOM::ForceSpotBroadcastUpdate(int Spot) {
+	if (Spot < 0 || Spot > DOM_MAXDSPOTS || !m_aDominationSpotsEnabled[Spot])
+		return;
+
+	m_aLastBroadcastState[Spot] = -2;
+}
+
 
 const char* CGameControllerDOM::GetTeamBroadcastColor(int Team) const
 {

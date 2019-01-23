@@ -15,14 +15,12 @@
 
 CGameControllerCONQ::CGameControllerCONQ(CGameContext *pGameServer)
 : CGameControllerDOM(pGameServer)
+		, m_WinTick(-1)
 {
 	m_pGameType = "CONQ";
-
-	m_WinTick = -1;
+	m_GameInfo.m_ScoreLimit = 5;
 
 	SetCapTime(g_Config.m_SvConqCapTime);
-
-	m_GameInfo.m_ScoreLimit = 5;
 }
 
 void CGameControllerCONQ::Init()
@@ -450,13 +448,13 @@ int CGameControllerCONQ::OnCharacterDeath(class CCharacter *pVictim, class CPlay
 void CGameControllerCONQ::UnlockSpot(int Spot, int Team)
 {
 	m_apDominationSpots[Spot]->Unlock(Team);
-	m_aLastBroadcastState[Spot] = -2; // force update
+	ForceSpotBroadcastUpdate(Spot);
 }
 
 void CGameControllerCONQ::LockSpot(int Spot, int Team)
 {
 	m_apDominationSpots[Spot]->Lock(Team);
-	m_aLastBroadcastState[Spot] = -2; // force update
+	ForceSpotBroadcastUpdate(Spot);
 }
 
 int CGameControllerCONQ::GetNextSpot(int Spot, int Team) const

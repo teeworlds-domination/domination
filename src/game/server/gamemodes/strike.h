@@ -8,18 +8,16 @@
 class CGameControllerSTRIKE : public CGameControllerDOM
 {
 private:
+	int  m_BombPlacedCID;
+	int  m_PurchaseTick;
 	bool m_SentPersonalizedBroadcast;
 	int  m_WinTick;
-	int  m_PurchaseTick;
-
+	
 	class CStrikePickup* m_apStarterPickups[64];
 	int  m_NumOfStarterPickups;
 
 private:
 	class CStrikeFlag *m_apFlags[2];
-
-protected:
-	int  m_BombPlacedCID;
 
 private:
 	int  GetCharacterPrimaryWeaponAmmo(CCharacter *pChr) const;

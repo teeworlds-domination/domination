@@ -28,32 +28,35 @@ class CDominationSpot;
 class CGameControllerDOM : public IGameController
 {
 private:
-	char m_aBufBroadcastOverview[256];
-	char m_aaBufBroadcastSpotOverview[DOM_MAXDSPOTS][48];
-	int  m_LastBroadcastCalcTick;
+	int  m_ConstructorTick;
+	int  m_aPlayerIntroTick[MAX_CLIENTS];
 
-	int m_ConstructorTick;
-	int m_aPlayerIntroTick[MAX_CLIENTS];
+	char  m_aBufBroadcastOverview[256];
+	char  m_aaBufBroadcastSpotOverview[DOM_MAXDSPOTS][48];
+	int   m_LastBroadcastTick;									//	tick of last capturing broadcast
+	int   m_LastBroadcastCalcTick;
+	int   m_aLastBroadcastState[DOM_MAXDSPOTS];
+	int   m_aLastSpotCapStrength[DOM_MAXDSPOTS];
+	bool  m_UpdateBroadcast;									//	reports if the capturing braoadcast message should be changed
 
 	void UpdateBroadcastOverview();
 	const char* GetDominationSpotBroadcastOverview(int Spot, char *pBuf);
 
-protected:
-	vec2 m_aaaSpotSpawnPoints[DOM_MAXDSPOTS][3][64];
-	int  m_aaNumSpotSpawnPoints[DOM_MAXDSPOTS][3];
+private:
+	bool m_IsInit;
 
-	CDominationSpot *m_apDominationSpots[DOM_MAXDSPOTS];	//	domination spots
-	float m_aTeamscoreTick[DOM_NUMOFTEAMS];						//	number of ticks a team captured the dspots (updated)
-	int   m_aNumOfTeamDominationSpots[DOM_NUMOFTEAMS];			//	number of owned dspots per team
-	float m_DompointsCounter;									//	points a domination point generates in a second
-	int   m_aDominationSpotsEnabled[DOM_MAXDSPOTS];				//	enable/disables the usage for every domination spot
-	bool  m_UpdateBroadcast;									//	reports if the capturing braoadcast message should be changed
-	int   m_LastBroadcastTick;									//	tick of last capturing broadcast
-	int   m_NumOfDominationSpots;								//	number of domination spots
 	int   m_aCapTimes[MAX_PLAYERS / 2 + 1];						// Dynamic capture timer, considering the team sizes (dyn_captimes[get_team_size])
+	float m_DompointsCounter;									//	points a domination point generates in a second
+	float m_aTeamscoreTick[DOM_NUMOFTEAMS];						//	number of ticks a team captured the dspots (updated)
 
-	int   m_aLastBroadcastState[DOM_MAXDSPOTS];
-	int   m_aLastSpotCapStrength[DOM_MAXDSPOTS];
+protected:
+	int  m_aaNumSpotSpawnPoints[DOM_MAXDSPOTS][3];
+	vec2 m_aaaSpotSpawnPoints[DOM_MAXDSPOTS][3][64];
+
+	CDominationSpot *m_apDominationSpots[DOM_MAXDSPOTS];		//	domination spots
+	int   m_aNumOfTeamDominationSpots[DOM_NUMOFTEAMS];			//	number of owned dspots per team
+	int   m_aDominationSpotsEnabled[DOM_MAXDSPOTS];				//	enable/disables the usage for every domination spot
+	int   m_NumOfDominationSpots;								//	number of domination spots
 
 protected:
 	virtual void CalculateSpawns();
@@ -103,6 +106,7 @@ protected:
 	virtual void SendChatInfo(int ClientID) const;
 	virtual void SendChatStats(int ClientID) const;
 
+	void ForceSpotBroadcastUpdate(int Spot);
 	const char GetSpotName(int Spot) const;
 	const char *GetTeamBroadcastColor(int Team) const;
 	const char GetTeamBroadcastOpenParenthesis(int Team) const;

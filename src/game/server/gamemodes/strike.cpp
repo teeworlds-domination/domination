@@ -18,20 +18,17 @@
 
 CGameControllerSTRIKE::CGameControllerSTRIKE(CGameContext *pGameServer)
 : CGameControllerDOM(pGameServer)
+		, m_BombPlacedCID(-1)
+		, m_PurchaseTick(-1)
+		, m_SentPersonalizedBroadcast(false)
+		, m_WinTick(-1)
+		, m_NumOfStarterPickups(0)
 {
 	m_pGameType = "CS:DOM";
 	m_GameFlags = GAMEFLAG_TEAMS|GAMEFLAG_SURVIVAL;
-
-	m_SentPersonalizedBroadcast = false;
-	m_WinTick = -1;
-	m_PurchaseTick = -1;
-
-	m_NumOfStarterPickups = 0;
 	
 	m_apFlags[TEAM_RED] = 0;
 	m_apFlags[TEAM_BLUE] = 0;
-
-	m_BombPlacedCID = -1;
 
 	SetCapTime(g_Config.m_SvStrikeCapTime);
 }
