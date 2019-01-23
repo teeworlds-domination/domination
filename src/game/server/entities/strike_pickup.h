@@ -19,8 +19,13 @@ protected:
 	bool m_Respawn;
 	bool m_IsTemporary;
 
+	int  m_Ammo;
+	int  m_DespawnTick;
+
 private:
-	bool GiveCharacterWeapon(CCharacter *pChr, int Weapon, int Ammo) const;
+	CStrikePickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Temporary, int Ammo, int DespawnTick);
+
+	bool GiveCharacterWeapon(CCharacter *pChr, int Weapon, int Ammo);
 	bool GiveCharacterAmmo(CCharacter *pChr) const;
 	int  GetMaxAmmo(int Weapon) const;
 	int  GetCharacterPrimaryWeapon(CCharacter *pChr) const;
@@ -30,6 +35,7 @@ public:
 
 	virtual void Reset() override;
 	virtual void Tick() override;
+	virtual void TickPaused() override;
 	virtual void Snap(int SnappingClient) override;
 
 	virtual void Despawn();

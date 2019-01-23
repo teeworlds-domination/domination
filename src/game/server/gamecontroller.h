@@ -56,8 +56,6 @@ private:
 	void DoTeamBalance();
 
 	// game
-	virtual void DoWincheckMatch();
-	virtual void DoWincheckRound() {};
 	bool HasEnoughPlayers() const { return (IsTeamplay() && m_aTeamSize[TEAM_RED] > 0 && m_aTeamSize[TEAM_BLUE] > 0) || (!IsTeamplay() && m_aTeamSize[TEAM_RED] > 1); }
 	void SetGameState(EGameState GameState, int Timer=0);
 	void StartMatch();
@@ -103,6 +101,9 @@ protected:
 
 	float EvaluateSpawnPos(CSpawnEval *pEval, vec2 Pos) const;
 	virtual void EvaluateSpawnType(CSpawnEval *pEval, int Type) const;
+
+	virtual void DoWincheckMatch();
+	virtual void DoWincheckRound() {};
 
 	void EndMatch() { SetGameState(IGS_END_MATCH, TIMER_END); }
 	void EndRound() { SetGameState(IGS_END_ROUND, TIMER_END/2); }

@@ -10,12 +10,33 @@
 #include "character.h"
 #include "strike_pickup.h"
 
-CStrikePickup::CStrikePickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Temporary)
-: CPickup(pGameWorld, Type, Pos),
-		m_SnapPos(Pos),
-		m_IsTemporary(Temporary)
+CStrikePickup::CStrikePickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Temporary, int Ammo, int DespawnTick)
+: CPickup(pGameWorld, Type, Pos)
+		, m_SnapPos(Pos)
+		, m_IsTemporary(Temporary)
+		, m_Ammo(Ammo)
+		, m_DespawnTick(DespawnTick)
 {
 	m_IsWeapon = (Type == PICKUP_SHOTGUN || Type == PICKUP_GRENADE || Type == PICKUP_LASER);
+
+	if (m_IsTemporary)
+		m_SpawnTick = max(Server()->Tick() + Server()->TickSpeed(), m_SpawnTick);
+}
+
+CStrikePickup::CStrikePickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Temporary)
+: CPickup(pGameWorld, Type, Pos)
+		, m_SnapPos(Pos)
+		, m_IsTemporary(Temporary)
+		, m_DespawnTick(-1)
+{
+	m_IsWeapon = (Type == PICKUP_SHOTGUN || Type == PICKUP_GRENADE || Type == PICKUP_LASER);
+
+	if (m_IsTemporary)
+		m_SpawnTick = max(Server()->Tick() + Server()->TickSpeed(), m_SpawnTick);
+
+	if (m_IsWeapon)
+		m_Ammo = GetMaxAmmo(Type == PICKUP_SHOTGUN? WEAPON_SHOTGUN
+							: Type == PICKUP_GRENADE? WEAPON_GRENADE : WEAPON_LASER);
 }
 
 void CStrikePickup::Reset()
@@ -23,7 +44,13 @@ void CStrikePickup::Reset()
 	CPickup::Reset();
 
 	if (m_IsTemporary)
+	{
 		GameWorld()->RemoveEntity(this);
+		return;
+	}
+
+	if (m_IsWeapon)
+		m_DespawnTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvStrikeBuyTimelimit;
 }
 
 void CStrikePickup::Tick()
@@ -45,6 +72,12 @@ void CStrikePickup::Tick()
 
 	if (m_SpawnTick == NO_RESPAWN)
 		return;
+
+	if (m_DespawnTick > 0 && Server()->Tick() > m_DespawnTick)
+	{
+		Despawn();
+		return;
+	}
 
 	// Check if a player intersected us
 	CCharacter *pChr = (CCharacter *)GameServer()->m_World.ClosestEntity(m_Pos, 20.0f, CGameWorld::ENTTYPE_CHARACTER, 0);
@@ -71,7 +104,7 @@ void CStrikePickup::Tick()
 				break;
 
 			case PICKUP_GRENADE:
-				if(GiveCharacterWeapon(pChr, WEAPON_GRENADE, GetMaxAmmo(WEAPON_GRENADE)))
+				if(GiveCharacterWeapon(pChr, WEAPON_GRENADE, m_Ammo))
 				{
 					Picked = true;
 					GameServer()->CreateSound(m_Pos, SOUND_PICKUP_GRENADE);
@@ -80,7 +113,7 @@ void CStrikePickup::Tick()
 				}
 				break;
 			case PICKUP_SHOTGUN:
-				if(GiveCharacterWeapon(pChr, WEAPON_SHOTGUN, GetMaxAmmo(WEAPON_SHOTGUN)))
+				if(GiveCharacterWeapon(pChr, WEAPON_SHOTGUN, m_Ammo))
 				{
 					Picked = true;
 					GameServer()->CreateSound(m_Pos, SOUND_PICKUP_SHOTGUN);
@@ -89,7 +122,7 @@ void CStrikePickup::Tick()
 				}
 				break;
 			case PICKUP_LASER:
-				if(GiveCharacterWeapon(pChr, WEAPON_LASER, GetMaxAmmo(WEAPON_LASER)))
+				if(GiveCharacterWeapon(pChr, WEAPON_LASER, m_Ammo))
 				{
 					Picked = true;
 					GameServer()->CreateSound(m_Pos, SOUND_PICKUP_SHOTGUN);
@@ -148,6 +181,12 @@ void CStrikePickup::Tick()
 	}
 }
 
+void CStrikePickup::TickPaused()
+{
+	if(m_DespawnTick != -1)
+		++m_DespawnTick;
+}
+
 void CStrikePickup::Snap(int SnappingClient)
 {
 	if(m_SpawnTick == NO_RESPAWN)
@@ -180,37 +219,55 @@ void CStrikePickup::Snap(int SnappingClient)
 		pProj->m_StartTick = 0;
 		pProj->m_Type = WEAPON_LASER;
 	}
-
 }
 
 void CStrikePickup::Despawn()
 {
+	m_DespawnTick = -1;
 	m_SpawnTick = NO_RESPAWN;
 	GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SPAWN);
 }
 
-bool CStrikePickup::GiveCharacterWeapon(CCharacter *pChr, int Weapon, int Ammo) const
+bool CStrikePickup::GiveCharacterWeapon(CCharacter *pChr, int Weapon, int Ammo)
 {
+	int OldWeapon = GetCharacterPrimaryWeapon(pChr);
+	int OldWeaponAmmo = OldWeapon != -1? pChr->m_aWeapons[OldWeapon].m_Ammo : 0;
+	bool GaveWeapon = false;
+
 	if (!pChr->m_aWeapons[Weapon].m_Got)
 	{
 		// change weapon
-		pChr->m_aWeapons[WEAPON_SHOTGUN].m_Got = false;
-		pChr->m_aWeapons[WEAPON_GRENADE].m_Got = false;
-		pChr->m_aWeapons[WEAPON_LASER].m_Got = false;
+		if (OldWeapon != -1)
+			pChr->m_aWeapons[OldWeapon].m_Got = false;
 
-		if ((pChr->m_ActiveWeapon == WEAPON_SHOTGUN || pChr->m_ActiveWeapon == WEAPON_GRENADE || pChr->m_ActiveWeapon == WEAPON_LASER)
-				&& pChr->m_ActiveWeapon != Weapon)
+		if (pChr->GiveWeapon(Weapon, Ammo))
+		{
 			pChr->m_ActiveWeapon = Weapon;
-
-		return pChr->GiveWeapon(Weapon, Ammo);
+			GaveWeapon = true;
+		}
 	}
 	else if (pChr->m_aWeapons[Weapon].m_Ammo < Ammo)
 	{
 		// refill
-		return pChr->GiveWeapon(Weapon, Ammo);
+		GaveWeapon = pChr->GiveWeapon(Weapon, Ammo);
 	}
-	else
-		return false;
+
+	if (GaveWeapon)
+	{
+		if (OldWeapon != -1 && !g_Config.m_SvStrikeWeaponRespawn)
+		{
+			// drop weapon
+			int PickupType;
+			switch (OldWeapon)
+			{
+				case WEAPON_SHOTGUN: PickupType = PICKUP_SHOTGUN; break;
+				case WEAPON_GRENADE: PickupType = PICKUP_GRENADE; break;
+				default:             PickupType = PICKUP_LASER; break;
+			}
+			new CStrikePickup(GameWorld(), PickupType, m_Pos, true, OldWeaponAmmo, m_DespawnTick);
+		}
+	}
+	return GaveWeapon;
 }
 
 bool CStrikePickup::GiveCharacterAmmo(CCharacter *pChr) const
@@ -239,7 +296,7 @@ int CStrikePickup::GetMaxAmmo(int Weapon) const
 	{
 	case WEAPON_SHOTGUN: return 10;
 	case WEAPON_GRENADE: return 7;
-	case WEAPON_LASER: return 5;
-	default: return 10; // should not occur
+	case WEAPON_LASER:   return 5;
+	default:             return 10; // should not occur
 	}
 }

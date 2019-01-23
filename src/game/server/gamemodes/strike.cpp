@@ -149,11 +149,7 @@ bool CGameControllerSTRIKE::OnEntity(int Index, vec2 Pos)
 void CGameControllerSTRIKE::UpdatePickups()
 {
 	if (m_PurchaseTick != -1 && Server()->Tick() >= m_PurchaseTick)
-	{
 		m_PurchaseTick = -1;
-		for (int Pickup = 0; Pickup < m_NumOfStarterPickups; ++Pickup)
-			m_apStarterPickups[Pickup]->Despawn();
-	}
 }
 
 void CGameControllerSTRIKE::DoWincheckMatch()

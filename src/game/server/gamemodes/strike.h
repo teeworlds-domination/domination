@@ -49,8 +49,8 @@ public:
 	CGameControllerSTRIKE(class CGameContext *pGameServer);
 	virtual void Tick() override;
 
-	virtual void DoWincheckMatch();
-	virtual void DoWincheckRound();
+	virtual void DoWincheckMatch() override;
+	virtual void DoWincheckRound() override;
 
 	void EndRound();
 
