@@ -18,6 +18,7 @@ CGameControllerDOM::CGameControllerDOM(CGameContext *pGameServer)
 		, m_ConstructorTick(Server()->Tick())
 		, m_LastBroadcastTick(-1)
 		, m_LastBroadcastCalcTick(-1)
+		, m_SentPersonalizedBroadcast(false)
 		, m_UpdateBroadcast(false)
 		, m_IsInit(false)
 		, m_DompointsCounter(0.0f)
@@ -80,12 +81,9 @@ void CGameControllerDOM::OnReset()
 	if (!m_IsInit)
 		Init();
 
-	m_aTeamscoreTick[0] = 0;
-	m_aTeamscoreTick[1] = 0;
-	m_aNumOfTeamDominationSpots[0] = 0;
-	m_aNumOfTeamDominationSpots[1] = 0;
-	m_LastBroadcastCalcTick = -1;
 	m_LastBroadcastTick = -1;
+	m_LastBroadcastCalcTick = -1;
+	m_SentPersonalizedBroadcast = false;
 
 	mem_zero(m_aaBufBroadcastSpotOverview, DOM_MAXDSPOTS * 48 * sizeof(char));
 	for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
@@ -93,6 +91,12 @@ void CGameControllerDOM::OnReset()
 		m_aLastBroadcastState[Spot] = -2; // force update
 		m_aLastSpotCapStrength[Spot] = 0;
 	}
+
+	m_aNumOfTeamDominationSpots[0] = 0;
+	m_aNumOfTeamDominationSpots[1] = 0;
+
+	m_aTeamscoreTick[0] = 0;
+	m_aTeamscoreTick[1] = 0;
 }
 
 void CGameControllerDOM::Tick()
@@ -532,6 +536,13 @@ bool CGameControllerDOM::SendPersonalizedBroadcast(int ClientID)
 		char aBuf[32] = {0};
 		str_format(aBuf, sizeof(aBuf), "Respawn in %i seconds", (GameServer()->m_apPlayers[ClientID]->m_RespawnTick - Server()->Tick()) / Server()->TickSpeed());
 		SendBroadcast(ClientID, aBuf);
+		m_SentPersonalizedBroadcast = true;
+		return true;
+	}
+	if (m_SentPersonalizedBroadcast)
+	{
+		SendBroadcast(ClientID, "");
+		m_SentPersonalizedBroadcast = false;
 		return true;
 	}
 	return false;

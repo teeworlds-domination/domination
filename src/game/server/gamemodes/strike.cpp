@@ -453,7 +453,10 @@ bool CGameControllerSTRIKE::SendPersonalizedBroadcast(int ClientID)
 	}
 
 	if (CGameControllerDOM::SendPersonalizedBroadcast(ClientID))
+	{
+		m_SentPersonalizedBroadcast = false;
 		return true;
+	}
 	else if (m_SentPersonalizedBroadcast)
 	{
 		CGameControllerDOM::SendBroadcast(ClientID, "");
