@@ -136,7 +136,7 @@ MACRO_CONFIG_INT(SvDomCapPoints, sv_dom_cappoints, 5, 0, 100, CFGFLAG_SAVE|CFGFL
 MACRO_CONFIG_STR(SvDomUseSpots, sv_dom_use_spots, 32, "1 1 1 1 1", CFGFLAG_SAVE|CFGFLAG_SERVER, "En-/disables domination spots")
 
 MACRO_CONFIG_INT(SvDomCapTime, sv_dom_captime, 5, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Base captime for dom")
-MACRO_CONFIG_INT(SvDomRespawnDelay, sv_dom_respawn_delay, 2, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "How many seconds to wait before respawning")
+MACRO_CONFIG_INT(SvDomRespawnDelay, sv_dom_respawn_delay, 3, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "How many seconds to wait before respawning")
 MACRO_CONFIG_STR(SvDomScorings, sv_dom_scorings, 64, "2.0 1.0 0.7 0.5 0.4", CFGFLAG_SAVE|CFGFLAG_SERVER, "Dompoints for dynamic capturing")
 
 MACRO_CONFIG_INT(SvKdomCapTeamscoreMultiplier, sv_kdom_capscore, 0, 0, 100, CFGFLAG_SAVE|CFGFLAG_SERVER, "Multiplier for the score the team gets for capturing a domination spot")
