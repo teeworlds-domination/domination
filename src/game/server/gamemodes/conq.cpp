@@ -27,7 +27,12 @@ void CGameControllerCONQ::Init()
 {
 	CGameControllerDOM::Init();
 
-	if (m_NumOfDominationSpots < 2)
+	if (m_NumOfDominationSpots > 1)
+	{
+		m_GameInfo.m_ScoreLimit = m_NumOfDominationSpots;
+		UpdateGameInfo(-1);
+	}
+	else
 		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "CONQ", "Initialization failed, not enough spots.");
 }
 
@@ -35,13 +40,10 @@ void CGameControllerCONQ::OnReset()
 {
 	CGameControllerDOM::OnReset();
 
-	m_WinTick = -1;
-
-	m_GameInfo.m_ScoreLimit = m_NumOfDominationSpots;
-	UpdateGameInfo(-1);
-
 	if (m_NumOfDominationSpots > 1)
 	{
+		m_WinTick = -1;
+
 		int Spot = -1;
 		while ((Spot = GetNextSpot(Spot)) > -1)
 		{

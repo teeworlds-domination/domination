@@ -45,6 +45,8 @@ CGameControllerDOM::CGameControllerDOM(CGameContext *pGameServer)
 
 	m_aTeamscoreTick[0] = 0;
 	m_aTeamscoreTick[1] = 0;
+
+	SetCapTime(g_Config.m_SvDomCapTime);
 }
 
 void CGameControllerDOM::Init()
@@ -67,8 +69,6 @@ void CGameControllerDOM::Init()
 	else if (Temp[m_NumOfDominationSpots] > 10.0f)
 		Temp[m_NumOfDominationSpots] = 10.0f;
 	m_DompointsCounter = Temp[m_NumOfDominationSpots] / Server()->TickSpeed();
-
-	SetCapTime(g_Config.m_SvDomCapTime);
 
 	if (m_NumOfDominationSpots)
 		CalculateSpawns();
