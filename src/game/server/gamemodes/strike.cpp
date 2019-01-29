@@ -1,5 +1,7 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
+#include <base/tl/base.h>
+#include <math.h>
 #include <float.h>
 #include <stdio.h>
 
@@ -12,7 +14,6 @@
 #include <game/server/entities/dspot.h>
 #include <game/server/entities/strike_flag.h>
 #include <game/server/entities/strike_pickup.h>
-#include <math.h>
 
 #include "strike.h"
 
@@ -25,7 +26,7 @@ CGameControllerSTRIKE::CGameControllerSTRIKE(CGameContext *pGameServer)
 {
 	m_pGameType = "CS:DOM";
 	m_GameFlags = GAMEFLAG_TEAMS|GAMEFLAG_SURVIVAL;
-	
+
 	m_apFlags[TEAM_RED] = 0;
 	m_apFlags[TEAM_BLUE] = 0;
 
@@ -161,7 +162,7 @@ void CGameControllerSTRIKE::DoWincheckRound()
 			(GameServer()->m_apPlayers[i]->GetCharacter() && GameServer()->m_apPlayers[i]->GetCharacter()->IsAlive())))
 			++Count[GameServer()->m_apPlayers[i]->GetTeam()];
 	}
-	
+
 	if (m_WinTick == -1)
 	{
 		// bomb not placed, yet
@@ -199,7 +200,10 @@ void CGameControllerSTRIKE::EndRound()
 	IGameController::EndRound();
 	if (g_Config.m_SvStrikeHalftime && m_GameInfo.m_ScoreLimit > 1
 			&& (m_aTeamscore[TEAM_RED] + m_aTeamscore[TEAM_BLUE] == m_GameInfo.m_ScoreLimit))
+	{
+		swap(m_aTeamscore[TEAM_RED], m_aTeamscore[TEAM_BLUE]);
 		GameServer()->SwapTeams();
+	}
 }
 
 void CGameControllerSTRIKE::ExplodeBomb()
