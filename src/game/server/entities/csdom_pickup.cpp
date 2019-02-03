@@ -19,8 +19,10 @@ CCSDOMPickup::CCSDOMPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Temp
 {
 	m_IsWeapon = (Type == PICKUP_SHOTGUN || Type == PICKUP_GRENADE || Type == PICKUP_LASER);
 
-	if (m_IsTemporary)
+	if (m_IsWeapon && m_IsTemporary)
 		m_SpawnTick = max(Server()->Tick() + Server()->TickSpeed(), m_SpawnTick);
+	else if (Type == PICKUP_AMMO)
+		m_SpawnTick = -1;
 }
 
 CCSDOMPickup::CCSDOMPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Temporary)
@@ -31,8 +33,10 @@ CCSDOMPickup::CCSDOMPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Temp
 {
 	m_IsWeapon = (Type == PICKUP_SHOTGUN || Type == PICKUP_GRENADE || Type == PICKUP_LASER);
 
-	if (m_IsTemporary)
+	if (m_IsWeapon && m_IsTemporary)
 		m_SpawnTick = max(Server()->Tick() + Server()->TickSpeed(), m_SpawnTick);
+	else if (Type == PICKUP_AMMO)
+		m_SpawnTick = -1;
 
 	if (m_IsWeapon)
 		m_Ammo = GetMaxAmmo(Type == PICKUP_SHOTGUN? WEAPON_SHOTGUN
@@ -197,6 +201,9 @@ void CCSDOMPickup::Snap(int SnappingClient)
 		CPickup::Snap(SnappingClient);
 		return;
 	}
+
+	if(m_SpawnTick != -1 || NetworkClipped(SnappingClient))
+		return;
 
 	CNetObj_Projectile *pProj = static_cast<CNetObj_Projectile *>(Server()->SnapNewItem(NETOBJTYPE_PROJECTILE, GetID(), sizeof(CNetObj_Projectile)));
 	if(pProj)
