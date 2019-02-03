@@ -20,7 +20,7 @@
 #include "gamemodes/dom.h"
 #include "gamemodes/kdom.h"
 #include "gamemodes/conq.h"
-#include "gamemodes/strike.h"
+#include "gamemodes/csdom.h"
 
 #include "gamecontext.h"
 #include "player.h"
@@ -1465,8 +1465,8 @@ void CGameContext::OnInit()
 	 	m_pController = new CGameControllerKDOM(this);
 	else if(str_comp_nocase(g_Config.m_SvGametype, "conq") == 0)
 		m_pController = new CGameControllerCONQ(this);
-	else if(str_comp_nocase(g_Config.m_SvGametype, "strike") == 0)
-		m_pController = new CGameControllerSTRIKE(this);
+	else if(str_comp_nocase(g_Config.m_SvGametype, "csdom") == 0)
+		m_pController = new CGameControllerCSDOM(this);
 	else
 		m_pController = new CGameControllerDOM(this);
 

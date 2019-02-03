@@ -1,7 +1,7 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
-#ifndef GAME_SERVER_ENTITIES_STRIKE_PICKUP_H
-#define GAME_SERVER_ENTITIES_STRIKE_PICKUP_H
+#ifndef GAME_SERVER_ENTITIES_CSDOM_PICKUP_H
+#define GAME_SERVER_ENTITIES_CSDOM_PICKUP_H
 
 #include "pickup.h"
 
@@ -11,7 +11,7 @@ enum
 	PICKUP_AMMO = 99
 };
 
-class CStrikePickup : public CPickup
+class CCSDOMPickup : public CPickup
 {
 protected:
 	bool m_IsWeapon;
@@ -23,7 +23,7 @@ protected:
 	int  m_DespawnTick;
 
 private:
-	CStrikePickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Temporary, int Ammo, int DespawnTick);
+	CCSDOMPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Temporary, int Ammo, int DespawnTick);
 
 	bool GiveCharacterWeapon(CCharacter *pChr, int Weapon, int Ammo);
 	bool GiveCharacterAmmo(CCharacter *pChr) const;
@@ -31,7 +31,7 @@ private:
 	int  GetCharacterPrimaryWeapon(CCharacter *pChr) const;
 
 public:
-	CStrikePickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Temporary);
+	CCSDOMPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Temporary);
 
 	virtual void Reset() override;
 	virtual void Tick() override;

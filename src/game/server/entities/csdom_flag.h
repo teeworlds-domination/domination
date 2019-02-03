@@ -1,11 +1,11 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
-#ifndef GAME_SERVER_ENTITIES_STRIKE_FLAG_H
-#define GAME_SERVER_ENTITIES_STRIKE_FLAG_H
+#ifndef GAME_SERVER_ENTITIES_CSDOM_FLAG_H
+#define GAME_SERVER_ENTITIES_CSDOM_FLAG_H
 
 #include "flag.h"
 
-class CStrikeFlag : public CFlag
+class CCSDOMFlag : public CFlag
 {
 private:
 	bool m_Hidden;
@@ -15,7 +15,7 @@ protected:
 	virtual bool CanBeResetAfterDrop() const override { return false; }
 
 public:
-	CStrikeFlag(CGameWorld *pGameWorld, int Team, vec2 StandPos);
+	CCSDOMFlag(CGameWorld *pGameWorld, int Team, vec2 StandPos);
 
 	virtual void Reset() override;
 	virtual void Snap(int SnappingClient) override;

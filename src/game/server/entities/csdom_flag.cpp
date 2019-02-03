@@ -6,9 +6,9 @@
 
 #include "character.h"
 
-#include "strike_flag.h"
+#include "csdom_flag.h"
 
-CStrikeFlag::CStrikeFlag(CGameWorld *pGameWorld, int Team, vec2 StandPos)
+CCSDOMFlag::CCSDOMFlag(CGameWorld *pGameWorld, int Team, vec2 StandPos)
 : CFlag(pGameWorld, Team, StandPos)
 	, m_Hidden(false)
 	, m_IsCapturing(false)
@@ -16,14 +16,14 @@ CStrikeFlag::CStrikeFlag(CGameWorld *pGameWorld, int Team, vec2 StandPos)
 
 }
 
-void CStrikeFlag::Reset()
+void CCSDOMFlag::Reset()
 {
 	CFlag::Reset();
 	m_Hidden = false;
 	m_IsCapturing = false;
 }
 
-void CStrikeFlag::Snap(int SnappingClient)
+void CCSDOMFlag::Snap(int SnappingClient)
 {
 	if (m_Hidden)
 		return;
@@ -34,17 +34,17 @@ void CStrikeFlag::Snap(int SnappingClient)
 	CFlag::Snap(SnappingClient);
 }
 
-void CStrikeFlag::Hide()
+void CCSDOMFlag::Hide()
 {
 	m_Hidden = true;
 }
 
-void CStrikeFlag::Show()
+void CCSDOMFlag::Show()
 {
 	m_Hidden = false;
 }
 
-void CStrikeFlag::SetCapturing(bool IsCapturing)
+void CCSDOMFlag::SetCapturing(bool IsCapturing)
 {
 	m_IsCapturing = IsCapturing;
 }

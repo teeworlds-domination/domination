@@ -9,7 +9,7 @@
 
 #include <game/server/entities/character.h>
 #include <game/server/entities/dspot.h>
-#include <game/server/entities/strike_pickup.h>
+#include <game/server/entities/csdom_pickup.h>
 
 #include "dom.h"
 
@@ -926,7 +926,7 @@ void CGameControllerDOM::ShowSpawns(int Spot) const
 			default: PickupType = PICKUP_AMMO; break;
 			}
 			for (int Spawn = 0; Spawn < m_aaNumSpotSpawnPoints[Spot][Type]; ++Spawn)
-				new CStrikePickup(&GameServer()->m_World, PickupType, m_aaaSpotSpawnPoints[Spot][Type][Spawn], true);
+				new CCSDOMPickup(&GameServer()->m_World, PickupType, m_aaaSpotSpawnPoints[Spot][Type][Spawn], true);
 		}
 	}
 	else

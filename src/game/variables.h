@@ -106,7 +106,7 @@ MACRO_CONFIG_INT(SvMatchSwap, sv_match_swap, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVE
 MACRO_CONFIG_INT(SvPowerups, sv_powerups, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Allow powerups like ninja")
 MACRO_CONFIG_INT(SvScorelimit, sv_scorelimit, 20, 0, 1000, CFGFLAG_SAVE|CFGFLAG_SERVER, "Score limit (0 disables)")
 MACRO_CONFIG_INT(SvTimelimit, sv_timelimit, 0, 0, 1000, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time limit in minutes (0 disables)")
-MACRO_CONFIG_STR(SvGametype, sv_gametype, 32, "dom", CFGFLAG_SAVE|CFGFLAG_SERVER, "Game type (dom, kdom, conq)")
+MACRO_CONFIG_STR(SvGametype, sv_gametype, 32, "dom", CFGFLAG_SAVE|CFGFLAG_SERVER, "Game type (dom, kdom, conq, csdom)")
 MACRO_CONFIG_INT(SvTournamentMode, sv_tournament_mode, 0, 0, 2, CFGFLAG_SAVE|CFGFLAG_SERVER, "Tournament mode. When enabled, players joins the server as spectator (2=additional restricted spectator chat)")
 MACRO_CONFIG_INT(SvPlayerReadyMode, sv_player_ready_mode, 0, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "When enabled, players can pause/unpause the game and start the game on warmup via their ready state")
 MACRO_CONFIG_INT(SvSpamprotection, sv_spamprotection, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Spam protection")
@@ -145,14 +145,14 @@ MACRO_CONFIG_INT(SvConqCapTime, sv_conq_captime, 10, 0, 60, CFGFLAG_SAVE|CFGFLAG
 MACRO_CONFIG_INT(SvConqRespawnDelay, sv_conq_respawn_delay, 10, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "How many seconds to wait before respawning")
 MACRO_CONFIG_INT(SvConqWintime, sv_conq_wintime, 30, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time a team has to recapture their base spot (0 = infinite)")
 
-MACRO_CONFIG_INT(SvStrikeCapTime, sv_strike_captime, 5, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Base captime for strike")
-MACRO_CONFIG_INT(SvStrikeBuyTimelimit, sv_strike_buy_timelimit, 10, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Buytime limit in seconds (0 disables)")
-MACRO_CONFIG_INT(SvStrikeDropAmmoOnDeath, sv_strike_drop_ammo, 4, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Drop x remaining ammo on death (0 = no ammo drop)")
-MACRO_CONFIG_INT(SvStrikeExplodeTime, sv_strike_explode_time, 40, 0, 300, CFGFLAG_SAVE|CFGFLAG_SERVER, "Duration before the captured spot explodes")
-MACRO_CONFIG_INT(SvStrikeHalftime, sv_strike_halftime, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Swap teams after half of the match (0 = no swap during match)")
-MACRO_CONFIG_INT(SvStrikeSpawnArmor, sv_strike_spawn_armor, 10, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Amount of armor to spawn with")
-MACRO_CONFIG_INT(SvStrikeTimelimit, sv_strike_timelimit, 2, 0, 5, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time limit in minutes (0 disables)")
-MACRO_CONFIG_INT(SvStrikeWeaponRespawn, sv_strike_weapon_respawn, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Respawn weapons until buytime expires (0 = no respawn)")
+MACRO_CONFIG_INT(SvCsdomCapTime, sv_csdom_captime, 5, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Base captime for csdom")
+MACRO_CONFIG_INT(SvCsdomBuyTimelimit, sv_csdom_buy_timelimit, 10, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Buytime limit in seconds (0 disables)")
+MACRO_CONFIG_INT(SvCsdomDropAmmoOnDeath, sv_csdom_drop_ammo, 4, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Drop x remaining ammo on death (0 = no ammo drop)")
+MACRO_CONFIG_INT(SvCsdomExplodeTime, sv_csdom_explode_time, 40, 0, 300, CFGFLAG_SAVE|CFGFLAG_SERVER, "Duration before the captured spot explodes")
+MACRO_CONFIG_INT(SvCsdomHalftime, sv_csdom_halftime, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Swap teams after half of the match (0 = no swap during match)")
+MACRO_CONFIG_INT(SvCsdomSpawnArmor, sv_csdom_spawn_armor, 10, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Amount of armor to spawn with")
+MACRO_CONFIG_INT(SvCsdomTimelimit, sv_csdom_timelimit, 2, 0, 5, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time limit in minutes (0 disables)")
+MACRO_CONFIG_INT(SvCsdomWeaponRespawn, sv_csdom_weapon_respawn, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Respawn weapons until buytime expires (0 = no respawn)")
 
 // debug
 #ifdef CONF_DEBUG // this one can crash the server if not used correctly

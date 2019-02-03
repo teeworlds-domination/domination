@@ -1,11 +1,11 @@
 /* (c) Magnus Auvinen. See licence.txt in the root of the distribution for more information. */
 /* If you are missing that file, acquire a complete release at teeworlds.com.                */
-#ifndef GAME_SERVER_GAMEMODES_STRIKE_H
-#define GAME_SERVER_GAMEMODES_STRIKE_H
+#ifndef GAME_SERVER_GAMEMODES_CSDOM_H
+#define GAME_SERVER_GAMEMODES_CSDOM_H
 
 #include "dom.h"
 
-class CGameControllerSTRIKE : public CGameControllerDOM
+class CGameControllerCSDOM : public CGameControllerDOM
 {
 private:
 	int  m_BombPlacedCID;
@@ -14,7 +14,7 @@ private:
 	int  m_WinTick;
 
 private:
-	class CStrikeFlag *m_apFlags[2];
+	class CCSDOMFlag *m_apFlags[2];
 
 private:
 	int  GetCharacterPrimaryWeaponAmmo(CCharacter *pChr) const;
@@ -41,7 +41,7 @@ protected:
 	virtual bool WithNeutralState() const override { return false; }
 
 public:
-	CGameControllerSTRIKE(class CGameContext *pGameServer);
+	CGameControllerCSDOM(class CGameContext *pGameServer);
 	virtual void Tick() override;
 
 	virtual void DoWincheckMatch() override;

@@ -9,12 +9,12 @@
 
 #include <game/server/entities/character.h>
 #include <game/server/entities/dspot.h>
-#include <game/server/entities/strike_flag.h>
-#include <game/server/entities/strike_pickup.h>
+#include <game/server/entities/csdom_flag.h>
+#include <game/server/entities/csdom_pickup.h>
 
-#include "strike.h"
+#include "csdom.h"
 
-CGameControllerSTRIKE::CGameControllerSTRIKE(CGameContext *pGameServer)
+CGameControllerCSDOM::CGameControllerCSDOM(CGameContext *pGameServer)
 : CGameControllerDOM(pGameServer)
 		, m_BombPlacedCID(-1)
 		, m_PurchaseTick(-1)
@@ -27,16 +27,16 @@ CGameControllerSTRIKE::CGameControllerSTRIKE(CGameContext *pGameServer)
 	m_apFlags[TEAM_RED] = 0;
 	m_apFlags[TEAM_BLUE] = 0;
 
-	SetCapTime(g_Config.m_SvStrikeCapTime);
+	SetCapTime(g_Config.m_SvCsdomCapTime);
 }
 
-void CGameControllerSTRIKE::Init()
+void CGameControllerCSDOM::Init()
 {
 	CGameControllerDOM::Init();
 
 	if (m_NumOfDominationSpots)
 	{
-		m_apFlags[TEAM_BLUE] = new CStrikeFlag(&GameServer()->m_World, TEAM_BLUE, vec2(0.0f, 0.0f));
+		m_apFlags[TEAM_BLUE] = new CCSDOMFlag(&GameServer()->m_World, TEAM_BLUE, vec2(0.0f, 0.0f));
 		if (!m_apFlags[TEAM_RED])
 			GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "CS:DOM", "Red flag is missing: red team can not capture.");
 	}
@@ -44,22 +44,22 @@ void CGameControllerSTRIKE::Init()
 		m_apFlags[TEAM_RED]->Destroy();
 }
 
-void CGameControllerSTRIKE::OnReset()
+void CGameControllerCSDOM::OnReset()
 {
 	CGameControllerDOM::OnReset();
 
-	m_GameInfo.m_TimeLimit = g_Config.m_SvStrikeTimelimit;
+	m_GameInfo.m_TimeLimit = g_Config.m_SvCsdomTimelimit;
 	UpdateGameInfo(-1);
 
 	m_SentPersonalizedBroadcast = false;
 	m_WinTick = -1;
-	m_PurchaseTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvStrikeBuyTimelimit;
+	m_PurchaseTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvCsdomBuyTimelimit;
 	m_BombPlacedCID = -1;
 	if (m_apFlags[TEAM_BLUE])
 		m_apFlags[TEAM_BLUE]->Hide();
 }
 
-void CGameControllerSTRIKE::Tick()
+void CGameControllerCSDOM::Tick()
 {
 	CGameControllerDOM::Tick();
 
@@ -79,7 +79,7 @@ void CGameControllerSTRIKE::Tick()
 	}
 }
 
-bool CGameControllerSTRIKE::OnEntity(int Index, vec2 Pos)
+bool CGameControllerCSDOM::OnEntity(int Index, vec2 Pos)
 {
 	if (Index + ENTITY_OFFSET >= TILE_DOM_FLAG_A && Index + ENTITY_OFFSET <= TILE_DOM_CAPAREA_E)
 		return CGameControllerDOM::OnEntity(Index, Pos);
@@ -122,7 +122,7 @@ bool CGameControllerSTRIKE::OnEntity(int Index, vec2 Pos)
 
 	if(Type != -1)
 	{
-		new CStrikePickup(&GameServer()->m_World, Type, Pos, false);
+		new CCSDOMPickup(&GameServer()->m_World, Type, Pos, false);
 		return true;
 	}
 
@@ -132,24 +132,24 @@ bool CGameControllerSTRIKE::OnEntity(int Index, vec2 Pos)
 	if(Team == -1 || m_apFlags[Team])
 		return false;
 
-	m_apFlags[Team] = new CStrikeFlag(&GameServer()->m_World, Team, Pos);
+	m_apFlags[Team] = new CCSDOMFlag(&GameServer()->m_World, Team, Pos);
 	return true;
 }
 
-void CGameControllerSTRIKE::UpdatePickups()
+void CGameControllerCSDOM::UpdatePickups()
 {
 	if (m_PurchaseTick != -1 && Server()->Tick() >= m_PurchaseTick)
 		m_PurchaseTick = -1;
 }
 
-void CGameControllerSTRIKE::DoWincheckMatch()
+void CGameControllerCSDOM::DoWincheckMatch()
 {
 	// check score win condition
 	if (m_GameInfo.m_ScoreLimit > 0 && (m_aTeamscore[TEAM_RED] >= m_GameInfo.m_ScoreLimit || m_aTeamscore[TEAM_BLUE] >= m_GameInfo.m_ScoreLimit))
 		EndMatch();
 }
 
-void CGameControllerSTRIKE::DoWincheckRound()
+void CGameControllerCSDOM::DoWincheckRound()
  {
 	int Count[2] = {0};
 	for(int i = 0; i < MAX_CLIENTS; ++i)
@@ -191,11 +191,11 @@ void CGameControllerSTRIKE::DoWincheckRound()
 	}
 }
 
-void CGameControllerSTRIKE::EndRound()
+void CGameControllerCSDOM::EndRound()
 {
 	m_WinTick = -1;
 	IGameController::EndRound();
-	if (g_Config.m_SvStrikeHalftime && m_GameInfo.m_ScoreLimit > 1
+	if (g_Config.m_SvCsdomHalftime && m_GameInfo.m_ScoreLimit > 1
 			&& (m_aTeamscore[TEAM_RED] + m_aTeamscore[TEAM_BLUE] == m_GameInfo.m_ScoreLimit))
 	{
 		swap(m_aTeamscore[TEAM_RED], m_aTeamscore[TEAM_BLUE]);
@@ -203,7 +203,7 @@ void CGameControllerSTRIKE::EndRound()
 	}
 }
 
-void CGameControllerSTRIKE::ExplodeBomb()
+void CGameControllerCSDOM::ExplodeBomb()
 {
 	int Spot = -1;
 	while ((Spot = GetNextSpot(Spot)) > -1)
@@ -221,7 +221,7 @@ void CGameControllerSTRIKE::ExplodeBomb()
 	GameServer()->CreateGlobalSound(SOUND_GRENADE_EXPLODE);
 }
 
-void CGameControllerSTRIKE::OnStartCapturing(int Spot, int Team)
+void CGameControllerCSDOM::OnStartCapturing(int Spot, int Team)
 {
 	GameServer()->CreateSound(m_apDominationSpots[Spot]->GetPos(), SOUND_PLAYER_SPAWN);
 
@@ -229,7 +229,7 @@ void CGameControllerSTRIKE::OnStartCapturing(int Spot, int Team)
 		m_apFlags[Team]->SetCapturing(true);
 }
 
-void CGameControllerSTRIKE::OnAbortCapturing(int Spot)
+void CGameControllerCSDOM::OnAbortCapturing(int Spot)
 {
 	if (m_apFlags[TEAM_RED] && m_apFlags[TEAM_RED]->IsCapturing())
 	{
@@ -243,7 +243,7 @@ void CGameControllerSTRIKE::OnAbortCapturing(int Spot)
 	}
 }
 
-void CGameControllerSTRIKE::OnCapture(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS])
+void CGameControllerCSDOM::OnCapture(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS])
 {
 	if (m_apFlags[Team])
 	{
@@ -261,7 +261,7 @@ void CGameControllerSTRIKE::OnCapture(int Spot, int Team, int NumOfCapCharacters
 			m_BombPlacedCID = apCapCharacters[0]->GetPlayer()->GetCID();
 		}
 
-		m_WinTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvStrikeExplodeTime;
+		m_WinTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvCsdomExplodeTime;
 		m_GameInfo.m_TimeLimit = 0;
 		UpdateGameInfo(-1);
 	}
@@ -277,11 +277,11 @@ void CGameControllerSTRIKE::OnCapture(int Spot, int Team, int NumOfCapCharacters
 	}
 }
 
-int CGameControllerSTRIKE::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, int Weapon)
+int CGameControllerCSDOM::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKiller, int Weapon)
 {
 	CGameControllerDOM::OnCharacterDeath(pVictim, pKiller, Weapon);
 
-	if (pVictim && g_Config.m_SvStrikeDropAmmoOnDeath)
+	if (pVictim && g_Config.m_SvCsdomDropAmmoOnDeath)
 		DropAmmo(pVictim);
 
 	int HadFlag = 0;
@@ -316,7 +316,7 @@ int CGameControllerSTRIKE::OnCharacterDeath(CCharacter *pVictim, CPlayer *pKille
 	return HadFlag;
 }
 
-int CGameControllerSTRIKE::GetCharacterPrimaryWeaponAmmo(CCharacter *pChr) const
+int CGameControllerCSDOM::GetCharacterPrimaryWeaponAmmo(CCharacter *pChr) const
 {
 	if (!pChr)
 		return 0;
@@ -331,13 +331,13 @@ int CGameControllerSTRIKE::GetCharacterPrimaryWeaponAmmo(CCharacter *pChr) const
 		return 0;
 }
 
-void CGameControllerSTRIKE::DropAmmo(CCharacter *pChr) const
+void CGameControllerCSDOM::DropAmmo(CCharacter *pChr) const
 {
 	int Amount = GetCharacterPrimaryWeaponAmmo(pChr);
 	if (!Amount)
 		return;
 
-	int RemainingAmount = clamp(Amount, 0, g_Config.m_SvStrikeDropAmmoOnDeath);
+	int RemainingAmount = clamp(Amount, 0, g_Config.m_SvCsdomDropAmmoOnDeath);
 	if (!RemainingAmount)
 		return;
 
@@ -354,18 +354,18 @@ void CGameControllerSTRIKE::DropAmmo(CCharacter *pChr) const
 		{
 			for (int p = 0; p < 4 && RemainingAmount; ++p)
 			{
-				new CStrikePickup(&GameServer()->m_World, PICKUP_AMMO, NextTilePos+PickupPosAlt[p], true);
+				new CCSDOMPickup(&GameServer()->m_World, PICKUP_AMMO, NextTilePos+PickupPosAlt[p], true);
 				--RemainingAmount;
 			}
 		}
 	}
 }
 
-void CGameControllerSTRIKE::OnCharacterSpawn(CCharacter *pChr)
+void CGameControllerCSDOM::OnCharacterSpawn(CCharacter *pChr)
 {
 	// give start equipment
 	pChr->IncreaseHealth(10);
-	pChr->IncreaseArmor(g_Config.m_SvStrikeSpawnArmor);
+	pChr->IncreaseArmor(g_Config.m_SvCsdomSpawnArmor);
 
 	pChr->GiveWeapon(WEAPON_HAMMER, -1);
 	pChr->GiveWeapon(WEAPON_GUN, 10);
@@ -374,7 +374,7 @@ void CGameControllerSTRIKE::OnCharacterSpawn(CCharacter *pChr)
 	pChr->GetPlayer()->m_RespawnDisabled = GetStartRespawnState();
 }
 
-void CGameControllerSTRIKE::OnPlayerDisconnect(CPlayer *pPlayer)
+void CGameControllerCSDOM::OnPlayerDisconnect(CPlayer *pPlayer)
 {
 	if (pPlayer->GetCID() == m_BombPlacedCID)
 		m_BombPlacedCID = -1;
@@ -382,7 +382,7 @@ void CGameControllerSTRIKE::OnPlayerDisconnect(CPlayer *pPlayer)
 	CGameControllerDOM::OnPlayerDisconnect(pPlayer);
 }
 
-int CGameControllerSTRIKE::CalcCaptureStrength(int Spot, CCharacter* pChr, bool IsFirst) const
+int CGameControllerCSDOM::CalcCaptureStrength(int Spot, CCharacter* pChr, bool IsFirst) const
 {
 	if (pChr->GetPlayer()->GetTeam() == TEAM_BLUE)
 	{
@@ -404,7 +404,7 @@ int CGameControllerSTRIKE::CalcCaptureStrength(int Spot, CCharacter* pChr, bool 
 	return m_apFlags[TEAM_RED] && m_apFlags[TEAM_RED]->GetCarrier() == pChr? BASE_CAPSTRENGTH : 0;
 }
 
-bool CGameControllerSTRIKE::SendPersonalizedBroadcast(int ClientID)
+bool CGameControllerCSDOM::SendPersonalizedBroadcast(int ClientID)
 {
 	CCharacter *pChr = GameServer()->m_apPlayers[ClientID]->GetCharacter();
 	if (m_PurchaseTick != -1)
@@ -467,9 +467,9 @@ bool CGameControllerSTRIKE::SendPersonalizedBroadcast(int ClientID)
 	return false;
 }
 
-void CGameControllerSTRIKE::SendChatInfo(int ClientID) const
+void CGameControllerCSDOM::SendChatInfo(int ClientID) const
 {
-	CGameControllerDOM::SendChat(ClientID, "GAMETYPE: STRIKE");
+	CGameControllerDOM::SendChat(ClientID, "GAMETYPE: CS:DOM");
 	CGameControllerDOM::SendChat(ClientID, "——————————————————————————");
 	CGameControllerDOM::SendChat(ClientID, "Red: Pick the flag and capture a spot.");
 	CGameControllerDOM::SendChat(ClientID, "Blue: Neutralize the spot again.");
@@ -481,7 +481,7 @@ void CGameControllerSTRIKE::SendChatInfo(int ClientID) const
 
 
 
-bool CGameControllerSTRIKE::CanBeMovedOnBalance(int ClientID) const
+bool CGameControllerCSDOM::CanBeMovedOnBalance(int ClientID) const
 {
 	CCharacter* Character = GameServer()->m_apPlayers[ClientID]->GetCharacter();
 	if(Character)
@@ -496,9 +496,9 @@ bool CGameControllerSTRIKE::CanBeMovedOnBalance(int ClientID) const
 	return true;
 }
 
-void CGameControllerSTRIKE::UpdateBomb()
+void CGameControllerCSDOM::UpdateBomb()
 {
-	CStrikeFlag *F = m_apFlags[TEAM_RED];
+	CCSDOMFlag *F = m_apFlags[TEAM_RED];
 
 	if(!F)
 		return;
@@ -579,7 +579,7 @@ void CGameControllerSTRIKE::UpdateBomb()
 	}
 }
 
-void CGameControllerSTRIKE::Snap(int SnappingClient)
+void CGameControllerCSDOM::Snap(int SnappingClient)
 {
 	CGameControllerDOM::Snap(SnappingClient);
 
