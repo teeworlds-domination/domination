@@ -10,7 +10,6 @@ class CGameControllerCSDOM : public CGameControllerDOM
 private:
 	int  m_BombPlacedCID;
 	int  m_PurchaseTick;
-	bool m_SentPersonalizedBroadcast;
 	int  m_WinTick;
 
 private:

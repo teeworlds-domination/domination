@@ -37,8 +37,6 @@ private:
 	int   m_LastBroadcastCalcTick;
 	int   m_aLastBroadcastState[DOM_MAXDSPOTS];
 	int   m_aLastSpotCapStrength[DOM_MAXDSPOTS];
-	bool  m_SentPersonalizedBroadcast;
-	bool  m_UpdateBroadcast;									//	reports if the capturing braoadcast message should be changed
 
 	void UpdateBroadcastOverview();
 	const char* GetDominationSpotBroadcastOverview(int Spot, char *pBuf);

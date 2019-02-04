@@ -18,7 +18,6 @@ CGameControllerCSDOM::CGameControllerCSDOM(CGameContext *pGameServer)
 : CGameControllerDOM(pGameServer)
 		, m_BombPlacedCID(-1)
 		, m_PurchaseTick(-1)
-		, m_SentPersonalizedBroadcast(false)
 		, m_WinTick(-1)
 {
 	m_pGameType = "CS:DOM";
@@ -51,7 +50,6 @@ void CGameControllerCSDOM::OnReset()
 	m_GameInfo.m_TimeLimit = g_Config.m_SvCsdomTimelimit;
 	UpdateGameInfo(-1);
 
-	m_SentPersonalizedBroadcast = false;
 	m_WinTick = -1;
 	m_PurchaseTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvCsdomBuyTimelimit;
 	m_BombPlacedCID = -1;
@@ -414,7 +412,6 @@ bool CGameControllerCSDOM::SendPersonalizedBroadcast(int ClientID)
 			char aBuf[128];
 			str_format(aBuf, sizeof(aBuf), "%sPick one weapon: %s%2i %sseconds left", GetTeamBroadcastColor(GameServer()->m_apPlayers[ClientID]->GetTeam() == TEAM_RED? DOM_RED : DOM_BLUE), GetTeamBroadcastColor(DOM_NEUTRAL), (m_PurchaseTick - Server()->Tick()) / Server()->TickSpeed(), GetTeamBroadcastColor(GameServer()->m_apPlayers[ClientID]->GetTeam() == TEAM_RED? DOM_RED : DOM_BLUE));
 			CGameControllerDOM::SendBroadcast(ClientID, aBuf);
-			m_SentPersonalizedBroadcast = true;
 			return true;
 		}
 	}
@@ -426,7 +423,6 @@ bool CGameControllerCSDOM::SendPersonalizedBroadcast(int ClientID)
 			char aBuf[128];
 			str_format(aBuf, sizeof(aBuf), "%sThe flag has no carrier", GetTeamBroadcastColor(DOM_RED));
 			CGameControllerDOM::SendBroadcast(ClientID, aBuf);
-			m_SentPersonalizedBroadcast = true;
 			return true;
 		}
 		else if (!m_apFlags[TEAM_RED]->IsHidden() && (!pChr || m_apFlags[TEAM_RED]->GetCarrier() == GameServer()->m_apPlayers[ClientID]->GetCharacter()))
@@ -434,7 +430,6 @@ bool CGameControllerCSDOM::SendPersonalizedBroadcast(int ClientID)
 			char aBuf[128];
 			str_format(aBuf, sizeof(aBuf), "%sPlace the flag on a spot", GetTeamBroadcastColor(DOM_RED));
 			CGameControllerDOM::SendBroadcast(ClientID, aBuf);
-			m_SentPersonalizedBroadcast = true;
 			return true;
 		}
 	}
@@ -449,22 +444,10 @@ bool CGameControllerCSDOM::SendPersonalizedBroadcast(int ClientID)
 			str_format(aBuf, sizeof(aBuf), "%sNeutralize the spot: %s%2i %sseconds left.", GetTeamBroadcastColor(DOM_BLUE), GetTeamBroadcastColor(DOM_NEUTRAL)
 					, (m_WinTick - Server()->Tick()) / Server()->TickSpeed(), GetTeamBroadcastColor(DOM_BLUE));
 		CGameControllerDOM::SendBroadcast(ClientID, aBuf);
-		m_SentPersonalizedBroadcast = true;
 		return true;
 	}
 
-	if (CGameControllerDOM::SendPersonalizedBroadcast(ClientID))
-	{
-		m_SentPersonalizedBroadcast = false;
-		return true;
-	}
-	else if (m_SentPersonalizedBroadcast)
-	{
-		CGameControllerDOM::SendBroadcast(ClientID, "");
-		m_SentPersonalizedBroadcast = false;
-		return true;
-	}
-	return false;
+	return CGameControllerDOM::SendPersonalizedBroadcast(ClientID);
 }
 
 void CGameControllerCSDOM::SendChatInfo(int ClientID) const

@@ -18,8 +18,6 @@ CGameControllerDOM::CGameControllerDOM(CGameContext *pGameServer)
 		, m_ConstructorTick(Server()->Tick())
 		, m_LastBroadcastTick(-1)
 		, m_LastBroadcastCalcTick(-1)
-		, m_SentPersonalizedBroadcast(false)
-		, m_UpdateBroadcast(false)
 		, m_IsInit(false)
 		, m_DompointsCounter(0.0f)
 		, m_NumOfDominationSpots(0)
@@ -83,7 +81,6 @@ void CGameControllerDOM::OnReset()
 
 	m_LastBroadcastTick = -1;
 	m_LastBroadcastCalcTick = -1;
-	m_SentPersonalizedBroadcast = false;
 
 	mem_zero(m_aaBufBroadcastSpotOverview, DOM_MAXDSPOTS * 48 * sizeof(char));
 	for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
@@ -470,17 +467,10 @@ void CGameControllerDOM::UpdateBroadcast()
 	m_LastBroadcastCalcTick = Server()->Tick();
 	UpdateBroadcastOverview();
 
-	bool DoUpdate = m_UpdateBroadcast || m_LastBroadcastTick + Server()->TickSpeed()*8.0f <= Server()->Tick();
-	if (DoUpdate)
-	{
-		m_LastBroadcastTick = Server()->Tick();
-		m_UpdateBroadcast = false;
-	}
-
 	for (int cid = 0; cid < MAX_CLIENTS; ++cid)
 	{
-		if (GameServer()->m_apPlayers[cid] && !SendPersonalizedBroadcast(cid) && DoUpdate)
-			SendBroadcast(cid, "");
+		if (GameServer()->m_apPlayers[cid] && !SendPersonalizedBroadcast(cid))
+			SendBroadcast(cid, ""); // clean up previous personalized broadcast
 	}
 }
 
@@ -536,13 +526,6 @@ bool CGameControllerDOM::SendPersonalizedBroadcast(int ClientID)
 		char aBuf[32] = {0};
 		str_format(aBuf, sizeof(aBuf), "Respawn in %i seconds", (GameServer()->m_apPlayers[ClientID]->m_RespawnTick - Server()->Tick()) / Server()->TickSpeed());
 		SendBroadcast(ClientID, aBuf);
-		m_SentPersonalizedBroadcast = true;
-		return true;
-	}
-	if (m_SentPersonalizedBroadcast)
-	{
-		SendBroadcast(ClientID, "");
-		m_SentPersonalizedBroadcast = false;
 		return true;
 	}
 	return false;
@@ -585,7 +568,6 @@ const char* CGameControllerDOM::GetDominationSpotBroadcastOverview(int Spot, cha
 	{
 		m_aLastBroadcastState[Spot] = MarkerPos;
 		m_aLastSpotCapStrength[Spot] = m_apDominationSpots[Spot]->GetCapStrength();
-		m_UpdateBroadcast = true;
 
 		int CurrPos = 0;
 		AddColorizedOpenParenthesis (Spot, pBuf, CurrPos, MarkerPos);
