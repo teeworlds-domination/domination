@@ -85,7 +85,7 @@ void CGameControllerDOM::OnReset()
 	mem_zero(m_aaBufBroadcastSpotOverview, DOM_MAXDSPOTS * 48 * sizeof(char));
 	for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
 	{
-		m_aLastBroadcastState[Spot] = -2; // force update
+		ForceSpotBroadcastUpdate(Spot);
 		m_aLastSpotCapStrength[Spot] = 0;
 	}
 
@@ -432,7 +432,7 @@ void CGameControllerDOM::Capture(int Spot, int NumOfCapCharacters, CCharacter* a
 	}
 
 	++m_aNumOfTeamDominationSpots[m_apDominationSpots[Spot]->GetTeam()];
-	m_aLastBroadcastState[Spot] = -2; // force update
+	ForceSpotBroadcastUpdate(Spot);
 	m_aLastSpotCapStrength[Spot] = 0;
 
 	OnCapture(Spot, m_apDominationSpots[Spot]->GetTeam(), NumOfCapCharacters, apCapCharacters);
@@ -453,7 +453,7 @@ void CGameControllerDOM::Neutralize(int Spot, int NumOfCapCharacters, CCharacter
 		return;
 
 	--m_aNumOfTeamDominationSpots[m_apDominationSpots[Spot]->GetCapTeam() ^ 1];
-	m_aLastBroadcastState[Spot] = -2; // force update
+	ForceSpotBroadcastUpdate(Spot);
 	m_aLastSpotCapStrength[Spot] = 0;
 
 	OnNeutralize(Spot, m_apDominationSpots[Spot]->GetCapTeam(), NumOfCapCharacters, apCapCharacters);
@@ -763,6 +763,7 @@ void CGameControllerDOM::ForceSpotBroadcastUpdate(int Spot) {
 		return;
 
 	m_aLastBroadcastState[Spot] = -2;
+	m_LastBroadcastCalcTick = -1;
 }
 
 

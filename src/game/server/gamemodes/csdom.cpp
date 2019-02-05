@@ -68,7 +68,7 @@ void CGameControllerCSDOM::Tick()
 	}
 	else if (m_GameState != IGS_GAME_RUNNING)
 	{
-		if (m_WinTick != -1)
+		if (m_WinTick > -1)
 			++m_WinTick;
 		if (m_PurchaseTick != -1)
 			++m_PurchaseTick;
@@ -156,7 +156,12 @@ void CGameControllerCSDOM::DoWincheckRound()
 			++Count[GameServer()->m_apPlayers[i]->GetTeam()];
 	}
 
-	if (m_WinTick == -1)
+	if (m_WinTick == -2) // hack: defused
+	{
+		++m_aTeamscore[TEAM_BLUE];
+		EndRound();
+	}
+	else if (m_WinTick == -1)
 	{
 		// bomb not placed, yet
 		if(Count[TEAM_RED] == 0
@@ -169,7 +174,7 @@ void CGameControllerCSDOM::DoWincheckRound()
 	}
 	else
 	{
-		if (m_WinTick != -1 && Server()->Tick() >= m_WinTick)
+		if (m_WinTick > -1 && Server()->Tick() >= m_WinTick)
 		{
 			// bomb exploded
 			++m_aTeamscore[TEAM_RED];
@@ -267,9 +272,7 @@ void CGameControllerCSDOM::OnCapture(int Spot, int Team, int NumOfCapCharacters,
 		if (NumOfCapCharacters)
 			apCapCharacters[0]->GetPlayer()->m_Score += g_Config.m_SvDomCapPoints;
 
-		m_WinTick = -1;
-		++m_aTeamscore[Team];
-		EndRound();
+		m_WinTick = -2; // Hack: defused
 	}
 }
 
@@ -432,7 +435,7 @@ bool CGameControllerCSDOM::SendPersonalizedBroadcast(int ClientID)
 		}
 	}
 
-	if (m_WinTick != -1)
+	if (m_WinTick > -1)
 	{
 		char aBuf[128];
 		if (GameServer()->m_apPlayers[ClientID]->GetTeam() == TEAM_RED)
