@@ -7,9 +7,9 @@ game element *Domination Spot*. Each map can have up to 5 of them.
 Domination Spots are initially neutral, but can be captured by any team. 
 Their effect on scoring varies for the different gametypes included. 
 
-You can find all relevant information about the gametypes, server setup, custom maps and more [in the projects wiki](https://github.com/teeworlds-domination/domination/wiki). Please visit the [Teeworlds.com Forum - Topic](https://www.teeworlds.com/forum/viewtopic.php?id=3289) for community generated content.
+You can find all relevant information about the gametypes, server setup, custom maps and more [in the projects wiki](https://github.com/teeworlds-domination/domination/wiki). Please visit the [Teeworlds.com Forum - Topic](https://www.teeworlds.com/forum/viewtopic.php?pid=122655) for community generated content.
 
-Currently this mod is being developed by *Slayer* and *Fisico*. Originally it was 
+Currently this mod is being developed by *Slayer* and *Fisico*. [Originally](https://www.teeworlds.com/forum/viewtopic.php?id=3289) it was 
 written by *ziltoide* and *Oy*.
 Special thanks go to aQua for the dommain mapres.
 
@@ -23,7 +23,7 @@ text including copyright information.
 
 ***
 
-IMPORTANT: This mod works best with enabled broadcast colors. To enable them, open the settings in Teeworlds and enable the checkbox _Enable colored server broadcasts_..
+IMPORTANT: This mod works best with enabled broadcast colors. To enable them, open the settings in Teeworlds and enable the checkbox _Enable colored server broadcasts_.
 
 ![Setting enable colored server broadcasts](https://user-images.githubusercontent.com/43857716/50727431-09efa400-111b-11e9-85f4-b94dcb12d935.jpg)
 
