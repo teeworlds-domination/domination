@@ -1488,6 +1488,7 @@ void CGameContext::OnInit()
 	}
 
 	m_Collision.Init(&m_Layers); // TODO why moved down?
+	static_cast<CGameControllerDOM*>(m_pController)->OnInit();
 
 	Console()->Chain("sv_motd", ConchainSpecialMotdupdate, this);
 

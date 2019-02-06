@@ -20,9 +20,9 @@ CGameControllerCONQ::CGameControllerCONQ(CGameContext *pGameServer)
 	SetCapTime(g_Config.m_SvConqCapTime);
 }
 
-void CGameControllerCONQ::Init()
+void CGameControllerCONQ::OnInit()
 {
-	CGameControllerDOM::Init();
+	CGameControllerDOM::OnInit();
 
 	if (m_NumOfDominationSpots > 1)
 	{
@@ -33,10 +33,10 @@ void CGameControllerCONQ::Init()
 		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "CONQ", "Initialization failed, not enough spots.");
 }
 
-void CGameControllerCONQ::OnReset()
+void CGameControllerCONQ::Init()
 {
-	CGameControllerDOM::OnReset();
-
+	CGameControllerDOM::Init();
+	
 	if (m_NumOfDominationSpots > 1)
 	{
 		m_WinTick = -1;
@@ -68,12 +68,8 @@ void CGameControllerCONQ::OnReset()
 void CGameControllerCONQ::Tick()
 {
 	CGameControllerDOM::Tick();
-
-	if(m_GameState == IGS_GAME_RUNNING && !GameServer()->m_World.m_ResetRequested)
-	{
-		DoWincheckMatch();
-	}
-	else if (m_GameState != IGS_GAME_RUNNING)
+	
+	if (IsGamePaused())
 	{
 		if (m_WinTick != -1)
 			++m_WinTick;
@@ -216,10 +212,10 @@ void CGameControllerCONQ::EvaluateSpawnTypeConq(CSpawnEval *pEval, int Type) con
 bool CGameControllerCONQ::CanSpawn(int Team, vec2 *pOutPos)
 {
 	// spectators can't spawn
-	if(Team == TEAM_SPECTATORS || GameServer()->m_World.m_Paused || GameServer()->m_World.m_ResetRequested)
+	if(Team == TEAM_SPECTATORS || IsGamePaused() || GameServer()->m_World.m_ResetRequested)
 		return false;
 
-	if (m_NumOfDominationSpots <= 1)
+	if (m_NumOfDominationSpots <= 1 || (!m_aNumOfTeamDominationSpots[Team] && m_GameState == IGS_WARMUP_GAME))
 		return CGameControllerDOM::CanSpawn(Team, pOutPos);
 
 	CSpawnEval Eval;
@@ -432,7 +428,8 @@ void CGameControllerCONQ::ShiftLocks(int Spot, int Team)
 			// win
 			if (PreviousSpot > -1)
 				LockSpot(PreviousSpot, Team ^ 1);
-			LockSpot(Spot, Team ^ 1);
+			if (m_GameState != IGS_WARMUP_GAME)
+				LockSpot(Spot, Team ^ 1);
 		}
 	}
 }

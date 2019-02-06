@@ -27,9 +27,9 @@ CGameControllerCSDOM::CGameControllerCSDOM(CGameContext *pGameServer)
 	SetCapTime(g_Config.m_SvCsdomCapTime);
 }
 
-void CGameControllerCSDOM::Init()
+void CGameControllerCSDOM::OnInit()
 {
-	CGameControllerDOM::Init();
+	CGameControllerDOM::OnInit();
 
 	if (m_NumOfDominationSpots)
 	{
@@ -41,38 +41,43 @@ void CGameControllerCSDOM::Init()
 		m_apFlags[TEAM_RED]->Destroy();
 }
 
-void CGameControllerCSDOM::OnReset()
+void CGameControllerCSDOM::Init()
 {
-	CGameControllerDOM::OnReset();
-
+	CGameControllerDOM::Init();
+	
 	m_GameInfo.m_TimeLimit = g_Config.m_SvCsdomTimelimit;
 	UpdateGameInfo(-1);
 
 	m_WinTick = -1;
-	m_PurchaseTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvCsdomBuyTimelimit;
 	m_BombPlacedCID = -1;
 	if (m_apFlags[TEAM_BLUE])
 		m_apFlags[TEAM_BLUE]->Hide();
+
+	if (m_GameState == IGS_WARMUP_GAME)
+	{
+		if (m_apFlags[TEAM_RED])
+			m_apFlags[TEAM_RED]->Hide();
+	}
+	else
+		m_PurchaseTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvCsdomBuyTimelimit;
 }
 
 void CGameControllerCSDOM::Tick()
 {
 	CGameControllerDOM::Tick();
 
-	if(m_GameState == IGS_GAME_RUNNING && !GameServer()->m_World.m_ResetRequested)
-	{
-		UpdatePickups();
-		UpdateBomb();
-
-		DoWincheckMatch();
-	}
-	else if (m_GameState != IGS_GAME_RUNNING)
+	if(GameServer()->m_World.m_ResetRequested || IsGamePaused())
 	{
 		if (m_WinTick > -1)
 			++m_WinTick;
 		if (m_PurchaseTick != -1)
 			++m_PurchaseTick;
+
+		return;
 	}
+
+	UpdatePickups();
+	UpdateBomb();
 }
 
 bool CGameControllerCSDOM::OnEntity(int Index, vec2 Pos)
@@ -164,7 +169,7 @@ void CGameControllerCSDOM::DoWincheckRound()
 	else if (m_WinTick == -1)
 	{
 		// bomb not placed, yet
-		if(Count[TEAM_RED] == 0
+		if ((Count[TEAM_RED] == 0)
 				|| (m_GameInfo.m_TimeLimit > 0 && (Server()->Tick()-m_GameStartTick) >= m_GameInfo.m_TimeLimit*Server()->TickSpeed()*60))
 		{
 			// all red dead or timelimit passed
@@ -332,6 +337,9 @@ int CGameControllerCSDOM::GetCharacterPrimaryWeaponAmmo(CCharacter *pChr) const
 
 void CGameControllerCSDOM::DropAmmo(CCharacter *pChr) const
 {
+	if (!GameServer()->m_pController->IsGameRunning())
+		return;
+
 	int Amount = GetCharacterPrimaryWeaponAmmo(pChr);
 	if (!Amount)
 		return;

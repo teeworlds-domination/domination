@@ -18,7 +18,6 @@ CGameControllerDOM::CGameControllerDOM(CGameContext *pGameServer)
 		, m_ConstructorTick(Server()->Tick())
 		, m_LastBroadcastTick(-1)
 		, m_LastBroadcastCalcTick(-1)
-		, m_IsInit(false)
 		, m_DompointsCounter(0.0f)
 		, m_NumOfDominationSpots(0)
 
@@ -40,6 +39,7 @@ CGameControllerDOM::CGameControllerDOM(CGameContext *pGameServer)
 		m_aPlayerIntroTick[cid] = -1;
 
 	mem_zero(m_aaaSpotSpawnPoints, DOM_MAXDSPOTS * 3 * 64);
+	mem_zero(m_aaBufBroadcastSpotOverview, DOM_MAXDSPOTS * 48 * sizeof(char));
 
 	m_aTeamscoreTick[0] = 0;
 	m_aTeamscoreTick[1] = 0;
@@ -47,10 +47,8 @@ CGameControllerDOM::CGameControllerDOM(CGameContext *pGameServer)
 	SetCapTime(g_Config.m_SvDomCapTime);
 }
 
-void CGameControllerDOM::Init()
+void CGameControllerDOM::OnInit()
 {
-	m_IsInit = true;
-
 	sscanf(g_Config.m_SvDomUseSpots, "%d %d %d %d %d", m_aDominationSpotsEnabled , m_aDominationSpotsEnabled + 1, m_aDominationSpotsEnabled + 2, m_aDominationSpotsEnabled + 3, m_aDominationSpotsEnabled + 4);
 	float Temp[6] = {0};
 	m_NumOfDominationSpots = 0;
@@ -70,19 +68,15 @@ void CGameControllerDOM::Init()
 
 	if (m_NumOfDominationSpots)
 		CalculateSpawns();
+
+	Init();
 }
 
-void CGameControllerDOM::OnReset()
+void CGameControllerDOM::Init()
 {
-	IGameController::OnReset();
-
-	if (!m_IsInit)
-		Init();
-
 	m_LastBroadcastTick = -1;
 	m_LastBroadcastCalcTick = -1;
 
-	mem_zero(m_aaBufBroadcastSpotOverview, DOM_MAXDSPOTS * 48 * sizeof(char));
 	for (int Spot = 0; Spot < DOM_MAXDSPOTS; ++Spot)
 	{
 		ForceSpotBroadcastUpdate(Spot);
@@ -96,20 +90,25 @@ void CGameControllerDOM::OnReset()
 	m_aTeamscoreTick[1] = 0;
 }
 
+void CGameControllerDOM::OnReset()
+{
+	IGameController::OnReset();
+
+	Init();
+}
+
 void CGameControllerDOM::Tick()
 {
 	IGameController::Tick();
 
-	if(m_GameState == IGS_GAME_RUNNING && !GameServer()->m_World.m_ResetRequested)
-	{
-		UpdateCaptureProcess();
-		UpdateBroadcast();
-		UpdateScoring();
-	}
-	else if(m_LastBroadcastTick != -1)
-		UpdateBroadcast();
-
+	UpdateBroadcast();
 	UpdateChat();
+
+	if((m_GameState != IGS_GAME_RUNNING && m_GameState != IGS_WARMUP_GAME) || GameServer()->m_World.m_ResetRequested)
+		return;
+
+	UpdateCaptureProcess();
+	UpdateScoring();
 }
 
 bool CGameControllerDOM::OnEntity(int Index, vec2 Pos)
@@ -267,7 +266,7 @@ void CGameControllerDOM::EvaluateSpawnTypeDom(CSpawnEval *pEval, int SpotTeam) c
 bool CGameControllerDOM::CanSpawn(int Team, vec2 *pOutPos)
 {
 	// spectators can't spawn
-	if(Team == TEAM_SPECTATORS || GameServer()->m_World.m_Paused || GameServer()->m_World.m_ResetRequested)
+	if(Team == TEAM_SPECTATORS || IsGamePaused() || GameServer()->m_World.m_ResetRequested)
 		return false;
 
 	if (!m_NumOfDominationSpots)

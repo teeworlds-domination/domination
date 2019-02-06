@@ -16,9 +16,8 @@ protected:
 	float EvaluateSpawnPosConq(vec2 Pos, int SpawnSpot, int NextSpot, int PreviousSpot, bool &IsStartpointAfterPreviousSpot) const;
 	void  EvaluateSpawnTypeConq(CSpawnEval *pEval, int Type) const;
 
-	virtual void Init() override;
-
 	void EndMatch();
+	virtual void Init() override;
 	virtual void UpdateScoring() override {};
 
 	void UnlockSpot(int Spot, int Team);
@@ -46,7 +45,7 @@ public:
 
 	virtual float GetRespawnDelay(bool Self) const override;
 
-	virtual void OnReset() override;
+	virtual void OnInit() override;
 
 	virtual void OnCapture(int Spot, int Team, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]) override;
 	virtual void OnAbortCapturing(int Spot) override;

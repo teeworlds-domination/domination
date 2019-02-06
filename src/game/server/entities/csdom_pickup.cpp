@@ -3,6 +3,7 @@
 #include <generated/server_data.h>
 
 #include <game/server/gamecontext.h>
+#include <game/server/gamecontroller.h>
 #include <game/server/player.h>
 
 #include "character.h"
@@ -36,9 +37,11 @@ CCSDOMPickup::CCSDOMPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Temp
 	else if (Type == PICKUP_AMMO)
 		m_SpawnTick = -1;
 
-	if (m_IsWeapon)
+	if (m_IsWeapon) {
 		m_Ammo = GetMaxAmmo(Type == PICKUP_SHOTGUN? WEAPON_SHOTGUN
 							: Type == PICKUP_GRENADE? WEAPON_GRENADE : WEAPON_LASER);
+		m_DespawnTick = Server()->Tick() + Server()->TickSpeed() * g_Config.m_SvCsdomBuyTimelimit;
+	}
 }
 
 void CCSDOMPickup::Reset()
@@ -75,7 +78,7 @@ void CCSDOMPickup::Tick()
 	if (m_SpawnTick == NO_RESPAWN)
 		return;
 
-	if (m_DespawnTick > 0 && Server()->Tick() > m_DespawnTick)
+	if (m_DespawnTick > 0 && Server()->Tick() > m_DespawnTick && GameServer()->m_pController->IsGameRunning())
 	{
 		Despawn();
 		return;
@@ -178,7 +181,7 @@ void CCSDOMPickup::Tick()
 					m_SpawnTick = Server()->Tick() + Server()->TickSpeed() * RespawnTime;
 			}
 			else
-				m_SpawnTick = m_IsWeapon && g_Config.m_SvCsdomWeaponRespawn? Server()->Tick() + Server()->TickSpeed()/3 : NO_RESPAWN;
+				m_SpawnTick = (m_IsWeapon && g_Config.m_SvCsdomWeaponRespawn) || !GameServer()->m_pController->IsGameRunning()? Server()->Tick() + Server()->TickSpeed()/3 : NO_RESPAWN;
 		}
 	}
 }
@@ -259,7 +262,7 @@ bool CCSDOMPickup::GiveCharacterWeapon(CCharacter *pChr, int Weapon, int Ammo)
 
 	if (GaveWeapon)
 	{
-		if (OldWeapon != -1 && !g_Config.m_SvCsdomWeaponRespawn)
+		if (OldWeapon != -1 && !g_Config.m_SvCsdomWeaponRespawn && GameServer()->m_pController->IsGameRunning())
 		{
 			// drop weapon
 			int PickupType;

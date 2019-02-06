@@ -23,7 +23,6 @@ private:
 
 protected:
 	virtual void Init() override;
-
 	virtual void UpdateScoring() override {};
 	virtual void UpdatePickups();
 	virtual void UpdateBomb();
@@ -47,8 +46,8 @@ public:
 	void EndRound();
 
 	virtual bool OnEntity(int Index, vec2 Pos) override;
+	virtual void OnInit() override;
 	virtual void OnPlayerDisconnect(class CPlayer *pPlayer) override;
-	virtual void OnReset() override;
 
 	virtual void OnStartCapturing(int Spot, int Team) override;
 	virtual void OnAbortCapturing(int Spot) override;

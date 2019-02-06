@@ -40,8 +40,6 @@ private:
 	const char* GetDominationSpotBroadcastOverview(int Spot, char *pBuf);
 
 private:
-	bool m_IsInit;
-
 	int   m_aCapTimes[MAX_PLAYERS / 2 + 1];						// Dynamic capture timer, considering the team sizes (dyn_captimes[get_team_size])
 	float m_DompointsCounter;									//	points a domination point generates in a second
 	float m_aTeamscoreTick[DOM_NUMOFTEAMS];						//	number of ticks a team captured the dspots (updated)
@@ -56,14 +54,13 @@ protected:
 	int   m_NumOfDominationSpots;								//	number of domination spots
 
 protected:
+	virtual void Init();
 	virtual void CalculateSpawns();
 	virtual void CalculateSpotSpawns(int Spot, int Type);
 	
 	bool IsSpawnAtSpot(vec2 Pos, int Spot) const;
 	void EvaluateSpawnTypeDom(CSpawnEval *pEval, int SpotTeam) const;
 	void EvaluateSpawnTypeDom(CSpawnEval *pEval, int SpotTeam, int SpawnType) const;
-
-	virtual void Init();
 
 	virtual void StartCapturing(int Spot, int RedCapStrength, int BlueCapStrength);
 	virtual void Capture(int Spot, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS]);
@@ -121,6 +118,7 @@ public:
 	virtual float GetRespawnDelay(bool Self) const override;
 
 	virtual bool OnEntity(int Index, vec2 Pos) override;
+	virtual void OnInit();
 	virtual void OnPlayerConnect(class CPlayer *pPlayer) override;
 	virtual void OnReset() override;
 
