@@ -142,7 +142,7 @@ MACRO_CONFIG_STR(SvDomScorings, sv_dom_scorings, 64, "2.0 1.0 0.7 0.5 0.4", CFGF
 MACRO_CONFIG_INT(SvKdomCapTeamscoreMultiplier, sv_kdom_capscore, 0, 0, 100, CFGFLAG_SAVE|CFGFLAG_SERVER, "Multiplier for the score the team gets for capturing a domination spot")
 
 MACRO_CONFIG_INT(SvConqCapTime, sv_conq_captime, 10, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Base captime for conq")
-MACRO_CONFIG_INT(SvConqRespawnDelay, sv_conq_respawn_delay, 10, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "How many seconds to wait before respawning")
+MACRO_CONFIG_INT(SvConqRespawnDelay, sv_conq_respawn_delay, 8, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "How many seconds to wait before respawning")
 MACRO_CONFIG_INT(SvConqWintime, sv_conq_wintime, 30, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time a team has to recapture their base spot (0 = infinite)")
 
 MACRO_CONFIG_INT(SvCsdomCapTime, sv_csdom_captime, 5, 0, 60, CFGFLAG_SAVE|CFGFLAG_SERVER, "Base captime for csdom")
