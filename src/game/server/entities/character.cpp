@@ -828,5 +828,5 @@ void CCharacter::PostSnap()
 
 bool CCharacter::IsNinja()
 {
-	return m_Ninja.m_ActivationTick > 0 && (m_Ninja.m_ActivationTick + g_pData->m_Weapons.m_Ninja.m_Duration * Server()->TickSpeed() / 1000 > Server()->Tick());
+	return m_ActiveWeapon == WEAPON_NINJA;
 }
