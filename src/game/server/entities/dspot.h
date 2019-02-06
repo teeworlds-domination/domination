@@ -31,7 +31,7 @@ public:
 	virtual void Reset() override;
 	virtual void Snap(int SnappingClient) override;
 
-	void StartCapturing(int CaptureTeam, int CaptureTeamSize, int DefTeamSize);
+	void StartCapturing(int CaptureTeam, int CaptureTeamSize, int CapStrength, int DefStrength);
 	bool UpdateCapturing(int CapStrength, int DefStrength);
 	void AbortCapturing();
 	void Neutralize();

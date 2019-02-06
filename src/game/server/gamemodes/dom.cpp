@@ -412,7 +412,7 @@ void CGameControllerDOM::StartCapturing(int Spot, int RedCapStrength, int BlueCa
 	else
 		return;
 
-	m_apDominationSpots[Spot]->StartCapturing(Team, GetTeamSize(Team), GetTeamSize(Team ^ 1));
+	m_apDominationSpots[Spot]->StartCapturing(Team, GetTeamSize(Team), Team == TEAM_RED? RedCapStrength : BlueCapStrength, Team == TEAM_RED? BlueCapStrength : RedCapStrength);
 }
 
 void CGameControllerDOM::Capture(int Spot, int NumOfCapCharacters, CCharacter* apCapCharacters[MAX_PLAYERS])

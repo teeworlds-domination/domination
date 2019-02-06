@@ -62,12 +62,13 @@ void CDominationSpot::Snap(int SnappingClient)
 	}
 }
 
-void CDominationSpot::StartCapturing(int CaptureTeam, int CaptureTeamSize, int DefTeamSize)
+void CDominationSpot::StartCapturing(int CaptureTeam, int CaptureTeamSize, int CapStrength, int DefStrength)
 {
 	if (m_IsLocked[CaptureTeam])
 		return;
 
 	m_CapTime = m_aCapTimes[min(CaptureTeamSize, MAX_PLAYERS / DOM_NUMOFTEAMS + 1)];
+	m_CapStrength = CapStrength - DefStrength;
 	m_Timer = m_CapTime * Server()->TickSpeed();
 	m_CapTeam = CaptureTeam;
 	m_NextTeam = m_WithNeutral && m_Team != DOM_NEUTRAL? DOM_NEUTRAL : m_CapTeam;
@@ -89,7 +90,7 @@ bool CDominationSpot::UpdateCapturing(int CapStrength, int DefStrength)
 	m_CapStrength = CapStrength - DefStrength;
 	if (!m_CapStrength)
 	{
-		if (CapStrength) // even number on both sides
+		if (CapStrength)
 			return false;
 		else
 			m_CapStrength = -50; // no player at all // BASE_STRENGTH / 2 = 100 / 2
