@@ -150,7 +150,7 @@ MACRO_CONFIG_INT(SvCsdomBuyTimelimit, sv_csdom_buy_timelimit, 10, 0, 60, CFGFLAG
 MACRO_CONFIG_INT(SvCsdomDropAmmoOnDeath, sv_csdom_drop_ammo, 4, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Drop x remaining ammo on death (0 = no ammo drop)")
 MACRO_CONFIG_INT(SvCsdomExplodeTime, sv_csdom_explode_time, 40, 0, 300, CFGFLAG_SAVE|CFGFLAG_SERVER, "Duration before the captured spot explodes")
 MACRO_CONFIG_INT(SvCsdomHalftime, sv_csdom_halftime, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Swap teams after half of the match (0 = no swap during match)")
-MACRO_CONFIG_INT(SvCsdomSpawnArmor, sv_csdom_spawn_armor, 10, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Amount of armor to spawn with")
+MACRO_CONFIG_INT(SvCsdomSpawnArmor, sv_csdom_spawn_armor, 5, 0, 10, CFGFLAG_SAVE|CFGFLAG_SERVER, "Amount of armor to spawn with and max armor")
 MACRO_CONFIG_INT(SvCsdomTimelimit, sv_csdom_timelimit, 2, 0, 5, CFGFLAG_SAVE|CFGFLAG_SERVER, "Time limit in minutes (0 disables)")
 MACRO_CONFIG_INT(SvCsdomWeaponRespawn, sv_csdom_weapon_respawn, 1, 0, 1, CFGFLAG_SAVE|CFGFLAG_SERVER, "Respawn weapons until buytime expires (0 = no respawn)")
 
