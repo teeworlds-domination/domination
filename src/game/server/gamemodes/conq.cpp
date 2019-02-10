@@ -215,7 +215,7 @@ bool CGameControllerCONQ::CanSpawn(int Team, vec2 *pOutPos)
 	if(Team == TEAM_SPECTATORS || IsGamePaused() || GameServer()->m_World.m_ResetRequested)
 		return false;
 
-	if (m_NumOfDominationSpots <= 1 || (!m_aNumOfTeamDominationSpots[Team] && m_GameState == IGS_WARMUP_GAME))
+	if (m_NumOfDominationSpots <= 1 || (!m_aNumOfTeamDominationSpots[Team] && (m_GameState == IGS_WARMUP_GAME || m_GameState == IGS_WARMUP_USER)) )
 		return CGameControllerDOM::CanSpawn(Team, pOutPos);
 
 	CSpawnEval Eval;
@@ -369,13 +369,16 @@ float CGameControllerCONQ::EvaluateSpawnPosConq(vec2 Pos, int SpawnSpot, int Nex
 
 bool CGameControllerCONQ::SendPersonalizedBroadcast(int ClientID)
 {
-	if (m_WinTick != -1)
+	if ((m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_GAME_PAUSED) && !GameServer()->m_World.m_ResetRequested)
 	{
-		char aBuf[128];
-		str_format(aBuf, sizeof(aBuf), "%s will win in %2i seconds.", GetTeamName(!m_aTeamscore[TEAM_RED] ? DOM_BLUE : DOM_RED)
-				, g_Config.m_SvConqWintime - (Server()->Tick() - m_WinTick) / Server()->TickSpeed());
-		CGameControllerDOM::SendBroadcast(-1, aBuf);
-		return true;
+		if (m_WinTick != -1)
+		{
+			char aBuf[128];
+			str_format(aBuf, sizeof(aBuf), "%s will win in %2i seconds.", GetTeamName(!m_aTeamscore[TEAM_RED] ? DOM_BLUE : DOM_RED)
+					, g_Config.m_SvConqWintime - (Server()->Tick() - m_WinTick) / Server()->TickSpeed());
+			CGameControllerDOM::SendBroadcast(-1, aBuf);
+			return true;
+		}
 	}
 	return CGameControllerDOM::SendPersonalizedBroadcast(ClientID);
 }
@@ -428,7 +431,7 @@ void CGameControllerCONQ::ShiftLocks(int Spot, int Team)
 			// win
 			if (PreviousSpot > -1)
 				LockSpot(PreviousSpot, Team ^ 1);
-			if (m_GameState != IGS_WARMUP_GAME)
+			if (m_GameState != IGS_WARMUP_GAME && m_GameState != IGS_WARMUP_USER)
 				LockSpot(Spot, Team ^ 1);
 		}
 	}

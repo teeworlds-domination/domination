@@ -413,47 +413,50 @@ int CGameControllerCSDOM::CalcCaptureStrength(int Spot, CCharacter* pChr, bool I
 
 bool CGameControllerCSDOM::SendPersonalizedBroadcast(int ClientID)
 {
-	CCharacter *pChr = GameServer()->m_apPlayers[ClientID]->GetCharacter();
-	if (m_PurchaseTick != -1)
+	if ((m_GameState == IGS_GAME_RUNNING || m_GameState == IGS_GAME_PAUSED) && !GameServer()->m_World.m_ResetRequested)
 	{
-		if (!pChr || (!pChr->m_aWeapons[WEAPON_SHOTGUN].m_Got && !pChr->m_aWeapons[WEAPON_GRENADE].m_Got && !pChr->m_aWeapons[WEAPON_LASER].m_Got))
+		CCharacter *pChr = GameServer()->m_apPlayers[ClientID]->GetCharacter();
+		if (m_PurchaseTick != -1)
 		{
-			char aBuf[128];
-			str_format(aBuf, sizeof(aBuf), "%sPick one weapon: %s%2i %sseconds left", GetTeamBroadcastColor(GameServer()->m_apPlayers[ClientID]->GetTeam() == TEAM_RED? DOM_RED : DOM_BLUE), GetTeamBroadcastColor(DOM_NEUTRAL), (m_PurchaseTick - Server()->Tick()) / Server()->TickSpeed(), GetTeamBroadcastColor(GameServer()->m_apPlayers[ClientID]->GetTeam() == TEAM_RED? DOM_RED : DOM_BLUE));
-			CGameControllerDOM::SendBroadcast(ClientID, aBuf);
-			return true;
+			if (!pChr || (!pChr->m_aWeapons[WEAPON_SHOTGUN].m_Got && !pChr->m_aWeapons[WEAPON_GRENADE].m_Got && !pChr->m_aWeapons[WEAPON_LASER].m_Got))
+			{
+				char aBuf[128];
+				str_format(aBuf, sizeof(aBuf), "%sPick one weapon: %s%2i %sseconds left", GetTeamBroadcastColor(GameServer()->m_apPlayers[ClientID]->GetTeam() == TEAM_RED? DOM_RED : DOM_BLUE), GetTeamBroadcastColor(DOM_NEUTRAL), (m_PurchaseTick - Server()->Tick()) / Server()->TickSpeed(), GetTeamBroadcastColor(GameServer()->m_apPlayers[ClientID]->GetTeam() == TEAM_RED? DOM_RED : DOM_BLUE));
+				CGameControllerDOM::SendBroadcast(ClientID, aBuf);
+				return true;
+			}
 		}
-	}
 
-	if (m_apFlags[TEAM_RED] && GameServer()->m_apPlayers[ClientID]->GetTeam() != TEAM_BLUE)
-	{
-		if ((m_apFlags[TEAM_RED]->IsAtStand() || !m_apFlags[TEAM_RED]->GetCarrier()) && !m_apFlags[TEAM_RED]->IsHidden())
+		if (m_apFlags[TEAM_RED] && GameServer()->m_apPlayers[ClientID]->GetTeam() != TEAM_BLUE)
 		{
-			char aBuf[128];
-			str_format(aBuf, sizeof(aBuf), "%sThe flag has no carrier", GetTeamBroadcastColor(DOM_RED));
-			CGameControllerDOM::SendBroadcast(ClientID, aBuf);
-			return true;
+			if ((m_apFlags[TEAM_RED]->IsAtStand() || !m_apFlags[TEAM_RED]->GetCarrier()) && !m_apFlags[TEAM_RED]->IsHidden())
+			{
+				char aBuf[128];
+				str_format(aBuf, sizeof(aBuf), "%sThe flag has no carrier", GetTeamBroadcastColor(DOM_RED));
+				CGameControllerDOM::SendBroadcast(ClientID, aBuf);
+				return true;
+			}
+			else if (!m_apFlags[TEAM_RED]->IsHidden() && (!pChr || m_apFlags[TEAM_RED]->GetCarrier() == GameServer()->m_apPlayers[ClientID]->GetCharacter()))
+			{
+				char aBuf[128];
+				str_format(aBuf, sizeof(aBuf), "%sPlace the flag on a spot", GetTeamBroadcastColor(DOM_RED));
+				CGameControllerDOM::SendBroadcast(ClientID, aBuf);
+				return true;
+			}
 		}
-		else if (!m_apFlags[TEAM_RED]->IsHidden() && (!pChr || m_apFlags[TEAM_RED]->GetCarrier() == GameServer()->m_apPlayers[ClientID]->GetCharacter()))
-		{
-			char aBuf[128];
-			str_format(aBuf, sizeof(aBuf), "%sPlace the flag on a spot", GetTeamBroadcastColor(DOM_RED));
-			CGameControllerDOM::SendBroadcast(ClientID, aBuf);
-			return true;
-		}
-	}
 
-	if (m_WinTick > -1)
-	{
-		char aBuf[128];
-		if (GameServer()->m_apPlayers[ClientID]->GetTeam() == TEAM_RED)
-			str_format(aBuf, sizeof(aBuf), "%sDefend the spot: %s%2i %sseconds left.", GetTeamBroadcastColor(DOM_RED), GetTeamBroadcastColor(DOM_NEUTRAL)
-					, (m_WinTick - Server()->Tick()) / Server()->TickSpeed(), GetTeamBroadcastColor(DOM_RED));
-		else
-			str_format(aBuf, sizeof(aBuf), "%sNeutralize the spot: %s%2i %sseconds left.", GetTeamBroadcastColor(DOM_BLUE), GetTeamBroadcastColor(DOM_NEUTRAL)
-					, (m_WinTick - Server()->Tick()) / Server()->TickSpeed(), GetTeamBroadcastColor(DOM_BLUE));
-		CGameControllerDOM::SendBroadcast(ClientID, aBuf);
-		return true;
+		if (m_WinTick > -1)
+		{
+			char aBuf[128];
+			if (GameServer()->m_apPlayers[ClientID]->GetTeam() == TEAM_RED)
+				str_format(aBuf, sizeof(aBuf), "%sDefend the spot: %s%2i %sseconds left.", GetTeamBroadcastColor(DOM_RED), GetTeamBroadcastColor(DOM_NEUTRAL)
+						, (m_WinTick - Server()->Tick()) / Server()->TickSpeed(), GetTeamBroadcastColor(DOM_RED));
+			else
+				str_format(aBuf, sizeof(aBuf), "%sNeutralize the spot: %s%2i %sseconds left.", GetTeamBroadcastColor(DOM_BLUE), GetTeamBroadcastColor(DOM_NEUTRAL)
+						, (m_WinTick - Server()->Tick()) / Server()->TickSpeed(), GetTeamBroadcastColor(DOM_BLUE));
+			CGameControllerDOM::SendBroadcast(ClientID, aBuf);
+			return true;
+		}
 	}
 
 	return CGameControllerDOM::SendPersonalizedBroadcast(ClientID);

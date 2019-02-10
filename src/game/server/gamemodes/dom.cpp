@@ -104,7 +104,7 @@ void CGameControllerDOM::Tick()
 	UpdateBroadcast();
 	UpdateChat();
 
-	if((m_GameState != IGS_GAME_RUNNING && m_GameState != IGS_WARMUP_GAME) || GameServer()->m_World.m_ResetRequested)
+	if((m_GameState != IGS_GAME_RUNNING && m_GameState != IGS_WARMUP_GAME && m_GameState != IGS_WARMUP_USER) || GameServer()->m_World.m_ResetRequested)
 		return;
 
 	UpdateCaptureProcess();
