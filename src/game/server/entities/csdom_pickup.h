@@ -23,6 +23,7 @@ protected:
 private:
 	CCSDOMPickup(CGameWorld *pGameWorld, int Type, vec2 Pos, bool Temporary, int Ammo, int DespawnTick);
 
+	bool GiveCharacterArmor(CCharacter *pChr);
 	bool GiveCharacterWeapon(CCharacter *pChr, int Weapon, int Ammo);
 	bool GiveCharacterAmmo(CCharacter *pChr) const;
 	int  GetMaxAmmo(int Weapon) const;

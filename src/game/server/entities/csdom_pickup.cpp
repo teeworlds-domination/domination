@@ -101,7 +101,7 @@ void CCSDOMPickup::Tick()
 				break;
 
 			case PICKUP_ARMOR:
-				if(pChr->IncreaseArmor(1))
+				if(GiveCharacterArmor(pChr))
 				{
 					Picked = true;
 					GameServer()->CreateSound(m_Pos, SOUND_PICKUP_ARMOR);
@@ -234,6 +234,15 @@ void CCSDOMPickup::Despawn()
 	m_DespawnTick = -1;
 	m_SpawnTick = NO_RESPAWN;
 	GameServer()->CreateSound(m_Pos, SOUND_WEAPON_SPAWN);
+}
+
+bool CCSDOMPickup::GiveCharacterArmor(CCharacter *pChr)
+{
+	if (pChr->m_Armor >= g_Config.m_SvCsdomSpawnArmor)
+		return false;
+	
+	pChr->IncreaseArmor(1);
+	return true;
 }
 
 bool CCSDOMPickup::GiveCharacterWeapon(CCharacter *pChr, int Weapon, int Ammo)
