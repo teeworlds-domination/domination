@@ -37,8 +37,15 @@ void CGameControllerCSDOM::OnInit()
 		if (!m_apFlags[TEAM_RED])
 			GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "CS:DOM", "Red flag is missing: red team can not capture.");
 	}
-	else if (m_apFlags[TEAM_RED])
+	else if (m_apFlags[TEAM_RED]) {
 		m_apFlags[TEAM_RED]->Destroy();
+		m_apFlags[TEAM_RED] = 0;
+	}
+
+	if (!m_apFlags[TEAM_RED])
+	{
+		GameServer()->Console()->Print(IConsole::OUTPUT_LEVEL_STANDARD, "CS:DOM", "Red team can not capture: red wins by eliminating the blue team.");
+	}
 }
 
 void CGameControllerCSDOM::Init()
@@ -169,10 +176,10 @@ void CGameControllerCSDOM::DoWincheckRound()
 	else if (m_WinTick == -1)
 	{
 		// bomb not placed, yet
-		if ((Count[TEAM_RED] == 0)
+		if (Count[TEAM_RED] == 0 || Count[TEAM_BLUE] == 0
 				|| (m_GameInfo.m_TimeLimit > 0 && (Server()->Tick()-m_GameStartTick) >= m_GameInfo.m_TimeLimit*Server()->TickSpeed()*60))
 		{
-			// all red dead or timelimit passed
+			// all red or all blue dead or timelimit passed
 			++m_aTeamscore[TEAM_BLUE];
 			EndRound();
 		}
