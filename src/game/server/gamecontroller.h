@@ -102,7 +102,7 @@ protected:
 	float EvaluateSpawnPos(CSpawnEval *pEval, vec2 Pos) const;
 	virtual void EvaluateSpawnType(CSpawnEval *pEval, int Type) const;
 
-	virtual void DoWincheckMatch();
+	virtual bool DoWincheckMatch();
 	virtual void DoWincheckRound() {};
 
 	void EndMatch() { SetGameState(IGS_END_MATCH, TIMER_END); }
@@ -188,6 +188,7 @@ public:
 		else
 			SetGameState(IGS_WARMUP_USER, Seconds);
 	}
+	void SwapTeamscore();
 
 	// general
 	virtual void Snap(int SnappingClient);
