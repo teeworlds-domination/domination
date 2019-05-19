@@ -25,7 +25,7 @@ protected:
 
 	virtual bool SendPersonalizedBroadcast(int ClientID);
 
-	virtual void DoWincheckMatch() override;
+	virtual bool DoWincheckMatch() override;
 
 	int GetNextSpot(int Spot) const override    { return CGameControllerDOM::GetNextSpot(Spot); }
 	int GetPreviousSpot(int Spot) const override { return CGameControllerDOM::GetPreviousSpot(Spot); }

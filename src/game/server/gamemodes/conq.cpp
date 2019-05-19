@@ -83,10 +83,10 @@ void CGameControllerCONQ::EndMatch()
 	IGameController::EndMatch();
 }
 
-void CGameControllerCONQ::DoWincheckMatch()
+bool CGameControllerCONQ::DoWincheckMatch()
 {
 	if (m_NumOfDominationSpots <= 1)
-		return;
+		return false;
 
 	//	check if teams have players alive
 	for (int Team = 0; Team < DOM_NUMOFTEAMS; ++Team)
@@ -101,7 +101,7 @@ void CGameControllerCONQ::DoWincheckMatch()
 			if (!PlayerAlive)
 			{
 				EndMatch();
-				break;
+				return true;
 			}
 
 			if (g_Config.m_SvConqWintime && m_WinTick == -1)
@@ -124,13 +124,13 @@ void CGameControllerCONQ::DoWincheckMatch()
 				if (NoCapturing)
 				{
 					EndMatch(); // Opponent owns all spots -> game over
-					break;
+					return true;
 				}
 			}
 			else
 			{
 				EndMatch();
-				break;
+				return true;
 			}
 		}
 	}
@@ -138,7 +138,12 @@ void CGameControllerCONQ::DoWincheckMatch()
 	// Check timelimit
 	if ( (m_GameInfo.m_TimeLimit > 0 && (Server()->Tick()-m_GameStartTick) >= m_GameInfo.m_TimeLimit*Server()->TickSpeed()*60)
 			|| (m_WinTick != -1 && (Server()->Tick()-m_WinTick >= g_Config.m_SvConqWintime*Server()->TickSpeed())) )
+	{
 	 	EndMatch();
+		return true;
+	}
+
+	return false;
 }
 
 float CGameControllerCONQ::GetRespawnDelay(bool Self) const

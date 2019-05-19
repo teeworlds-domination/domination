@@ -150,15 +150,20 @@ void CGameControllerCSDOM::UpdatePickups()
 		m_PurchaseTick = -1;
 }
 
-void CGameControllerCSDOM::DoWincheckMatch()
+bool CGameControllerCSDOM::DoWincheckMatch()
 {
 	// check score win condition
 	if (m_GameInfo.m_ScoreLimit > 0 && (m_aTeamscore[TEAM_RED] >= m_GameInfo.m_ScoreLimit || m_aTeamscore[TEAM_BLUE] >= m_GameInfo.m_ScoreLimit))
+	{
 		EndMatch();
+		return true;
+	}
+
+	return false;
 }
 
 void CGameControllerCSDOM::DoWincheckRound()
- {
+{
 	int Count[2] = {0};
 	for(int i = 0; i < MAX_CLIENTS; ++i)
 	{
@@ -211,7 +216,9 @@ void CGameControllerCSDOM::EndRound()
 	if (g_Config.m_SvCsdomHalftime && m_GameInfo.m_ScoreLimit > 1
 			&& (m_aTeamscore[TEAM_RED] + m_aTeamscore[TEAM_BLUE] == m_GameInfo.m_ScoreLimit))
 	{
-		swap(m_aTeamscore[TEAM_RED], m_aTeamscore[TEAM_BLUE]);
+		int tmp = m_aTeamscore[TEAM_RED];
+		m_aTeamscore[TEAM_RED] = m_aTeamscore[TEAM_BLUE];
+		m_aTeamscore[TEAM_BLUE] = tmp;
 		GameServer()->SwapTeams();
 	}
 }

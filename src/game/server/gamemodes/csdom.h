@@ -40,7 +40,7 @@ public:
 	CGameControllerCSDOM(class CGameContext *pGameServer);
 	virtual void Tick() override;
 
-	virtual void DoWincheckMatch() override;
+	virtual bool DoWincheckMatch() override;
 	virtual void DoWincheckRound() override;
 
 	void EndRound();
