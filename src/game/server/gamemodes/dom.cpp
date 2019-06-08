@@ -833,7 +833,7 @@ void CGameControllerDOM::SendChat(int ClientID, const char *pText) const
 {
 	CNetMsg_Sv_Chat Msg;
 	Msg.m_Mode = CHAT_WHISPER;
-	Msg.m_ClientID = -1;
+	Msg.m_ClientID = ClientID;
 	Msg.m_pMessage = pText;
 	Msg.m_TargetID = ClientID;
 	Server()->SendPackMsg(&Msg, MSGFLAG_VITAL, ClientID);
