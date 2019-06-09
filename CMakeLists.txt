@@ -1451,6 +1451,12 @@ set_src(GAME_SERVER GLOB_RECURSE src/game/server
   alloc.h
   entities/character.cpp
   entities/character.h
+  entities/csdom_flag.cpp
+  entities/csdom_flag.h
+  entities/csdom_pickup.cpp
+  entities/csdom_pickup.h
+  entities/dspot.cpp
+  entities/dspot.h
   entities/flag.cpp
   entities/flag.h
   entities/laser.cpp
@@ -1467,10 +1473,18 @@ set_src(GAME_SERVER GLOB_RECURSE src/game/server
   gamecontext.h
   gamecontroller.cpp
   gamecontroller.h
+  gamemodes/conq.cpp
+  gamemodes/conq.h
+  gamemodes/csdom.cpp
+  gamemodes/csdom.h
   gamemodes/ctf.cpp
   gamemodes/ctf.h
   gamemodes/dm.cpp
   gamemodes/dm.h
+  gamemodes/dom.cpp
+  gamemodes/dom.h
+  gamemodes/kdom.cpp
+  gamemodes/kdom.h
   gamemodes/lms.cpp
   gamemodes/lms.h
   gamemodes/lts.cpp
